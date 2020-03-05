@@ -44,12 +44,20 @@ h1 {
 	text-align: center;
 }
 
-a {
+a.title {
 	color: #ffffff;
 }
 
-a:hover {
+a.title:hover {
 	color: #f0aa28;
+}
+
+a.list {
+	color: black;
+}
+
+a.list:hover {
+	color: red;
 }
 
 h2 {
