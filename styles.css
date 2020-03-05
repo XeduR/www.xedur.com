@@ -100,8 +100,7 @@ ul li {
 	display: block;
 	list-style-type: none;
 	overflow: hidden;
-	padding-left: 40px;
-	padding-right: 40px;
+	padding: 10px 40px;
 }
 
 ul li:hover {
