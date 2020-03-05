@@ -233,6 +233,10 @@
 		</noscript>
 
 		<script>
+			console.log( window.location.search );
+			console.log( window.location.search.substring(1) );
+			console.log( window.location.search.substring(1).split('&') );
+
 			function GetURLParameter(sParam)
 			{
 			    var sPageURL = window.location.search.substring(1);
@@ -247,7 +251,7 @@
 			    }
 			}
 			var test = GetURLParameter('demo');
-			console.log( test );
+			console.log( GetURLParameter('demo') );
 
 		</script>
 
