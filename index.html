@@ -1,249 +1,29 @@
 <!DOCTYPE HTML>
 <html lang="en-US">
-<head>
-	<!-- <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-	<link rel="manifest" href="/site.webmanifest">
-	<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
-	<meta name="msapplication-TileColor" content="#da532c">
-	<meta name="theme-color" content="#ffffff"> -->
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link href="https://fonts.googleapis.com/css?family=Work+Sans" rel="stylesheet">
+		<link rel="stylesheet" href="/styles.css">
+		<meta charset="UTF-8">
 
-	<link href="https://fonts.googleapis.com/css?family=Work+Sans" rel="stylesheet">
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>XeduR - GitHub</title>
+	</head>
 
-	<title>XeduR - Projects</title>
+	<body>
+		<div id="wrapper">
+			<h1><a href="https://xedur.github.io/" target="">XeduR's Projects</a></h1>
 
-	<style type="text/css">
+			<noscript>
+				<h4>JavaScript disabled. You must enable JavaScript to run the demo projects.</h4>
+			</noscript>
 
-		* {
-			margin: 0;
-			padding: 0;
-			border: none;
-		}
+			<ul>
+				<li><a href="demo.html?verifyDomain">verifyDomain</a></li>
+				<li>Link 2</li>
+				<li>Link 3</li>
+			</ul>
 
-		body {
-			font-family: 'Work Sans', sans-serif;
-			text-align: center;
-			font-size: 14px;
-			color: #000000;
-		}
-
-		#wrapper {
-			max-width: 960px;
-			*width: 960px;
-			margin: 0 auto;
-			text-align: left;
-		}
-
-		body#left {
-			text-align: left;
-		}
-
-		body#left #wrapper {
-			margin: 0 20px;
-		}
-
-		img {
-			display: block;
-			margin-left: auto;
-			margin-right: auto;
-			width: 40%;
-			margin-top: 10px;
-		}
-
-		h1 {
-			font-family: 'Work Sans', sans-serif;
-			color: #ffffff;
-			background-color: #1f1f1f;
-			font-size: 36px;
-			padding: 20px 20px;
-			margin: 20px 0 0;
-			text-align: center;
-		}
-
-		a {
-			color: #ffffff;
-		}
-
-		a:hover {
-			color: #f0aa28;
-		}
-
-		h2 {
-			font-family: 'Work Sans', sans-serif;
-			font-size: 21px;
-			padding: 0 10px;
-			margin: 10px 0 0;
-			font-weight: bold;
-		}
-
-		h3 {
-			font-family: 'Work Sans', sans-serif;
-			font-size: 17px;
-			padding: 0 10px;
-			margin: 10px 0 0;
-			color: #494949;
-			font-weight: normal;
-		}
-
-		h4 {
-			font-family: 'Work Sans', sans-serif;
-			color: #ffffff;
-			background-color: #be0019;
-			font-size: 22px;
-			padding: 20px 20px;
-			margin: 20px 0 0;
-			text-align: center;
-		}
-
-		a {
-			text-decoration: none;
-		}
-
-		ul#header {
-			margin-top: 20px;
-		}
-
-		ul li {
-			display: block;
-			list-style-type: none;
-			overflow: hidden;
-			padding: 10px;
-		}
-
-		ul li:nth-child(odd) {
-		  background: #e6e6e6;
-		}
-
-		ul li:nth-child(even) {
-		  background: #d6d6d6;
-		}
-
-		ul li:hover {
-			background-color: #f3f3f3;
-		}
-
-		ul li .date {
-			text-align: center;
-			width: 120px;
-		}
-
-		ul li .size {
-			text-align: right;
-			width: 90px;
-		}
-
-		ul li .date, ul li .size {
-			font-family: 'Work Sans', sans-serif;
-			float: right;
-			font-size: 14px;
-			display: block;
-			color: #666666;
-		}
-
-		ul#header li {
-			font-family: 'Work Sans', sans-serif;
-			font-size: 14px;
-			font-weight: bold;
-			border-bottom: 1px solid #cccccc;
-		}
-
-		ul#header li:hover {
-			background-color: transparent;
-		}
-
-		ul#header li * {
-			color: #000000;
-			font-family: 'Work Sans', sans-serif;
-			font-size: 14px;
-		}
-
-		ul#header li a:hover {
-			color: #666666;
-		}
-
-		ul#header li .asc span, ul#header li .desc span {
-			padding-right: 15px;
-			background-position: right center;
-			background-repeat: no-repeat;
-		}
-
-		ul li.item {
-			border-top: 1px solid #f3f3f3;
-		}
-
-		ul li.item:first-child {
-			border-top: none;
-		}
-
-		ul li.item .name {
-			color: #003399;
-			font-weight: bold;
-		}
-
-		ul li.item .name:hover {
-			color: #0066cc;
-		}
-
-		ul li.item a:hover {
-			text-decoration: underline;
-		}
-
-		ul li.item .directory, ul li.item .file {
-			padding-left: 20px;
-			background-position: left center;
-			background-repeat: no-repeat;
-		}
-
-		#footer {
-			font-family: 'Work Sans', sans-serif;
-			background-color: #1f1f1f;
-			text-align: center;
-			color: #ffffff;
-			font-size: 16px;
-			margin-top: 40px;
-			margin-bottom: 20px;
-			padding: 20px 20px;
-		}
-
-		#footer a {
-			color: #ffffff;
-		}
-
-		#footer a:hover {
-			color: #f0aa28;
-		}
-
-	</style>
-
-</head>
-
-<body>
-
-	<div id="wrapper">
-
-		<h1><a href="https://www.spyric.com/code" target="">XeduR - Spyric</a></h1>
-		<!-- <a href="https://www.spyric.com" target="">
-			<img src="https://www.spyric.com/code/media/Spyric%20Logo.svg" alt="Spyric Entertainment">
-		</a> -->
-		<noscript>
-			<h4>JavaScript disabled. You must enable JavaScript to run the demo projects.</h4>
-		</noscript>
-
-		<p><br><br>NB! Like the professional web developer that I am, I decided to start developing this live. The current project below is a Corona physics sample project, which is MIT licensed by Corona Labs.<br><br><br></p>
-
-		<ul>
-			<li><a href="demo.html?verifyDomain">verifyDomain</a></li>
-			<li>Link 2</li>
-			<li>Link 3</li>
-		</ul>
-
-	    <iframe src="verifyDomain/index.html" style="height:640px;width:100%"></iframe>
-
-		<p id="footer">Copyright © 2019<script>document.write("-"+new Date().getFullYear());</script> Eetu Rantanen</a></p>
-	</div>
-
-</body>
+			<p id="footer">Copyright © 2019<script>document.write("-"+new Date().getFullYear());</script> Eetu Rantanen</a></p>
+		</div>
+	</body>
 </html>
