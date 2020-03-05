@@ -11,19 +11,19 @@ body {
 	color: #000000;
 }
 
-#wrapper {
-	max-width: 960px;
-	*width: 960px;
-	margin: 0 auto;
-	text-align: left;
-}
-
 body#left {
 	text-align: left;
 }
 
 body#left #wrapper {
 	margin: 0 20px;
+}
+
+#wrapper {
+	max-width: 960px;
+	*width: 960px;
+	margin: 0 auto;
+	text-align: left;
 }
 
 img {
@@ -34,14 +34,8 @@ img {
 	margin-top: 10px;
 }
 
-h1 {
-	font-family: 'Work Sans', sans-serif;
-	color: #ffffff;
-	background-color: #1f1f1f;
-	font-size: 36px;
-	padding: 20px 20px;
-	margin: 20px 0 0;
-	text-align: center;
+a {
+	text-decoration: none;
 }
 
 a.title {
@@ -58,6 +52,19 @@ a.list {
 
 a.list:hover {
 	color: red;
+}
+
+h1 {
+	font-family: 'Work Sans', sans-serif;
+	color: #ffffff;
+	background-color: #1f1f1f;
+	font-size: 36px;
+	/* padding: 20px 20px;
+	margin: 20px 0 0; */
+	margin-top: 20px;
+	margin-bottom: 20px;
+	padding: 20px 20px;
+	text-align: center;
 }
 
 h2 {
@@ -87,10 +94,6 @@ h4 {
 	text-align: center;
 }
 
-a {
-	text-decoration: none;
-}
-
 ul#header {
 	margin-top: 20px;
 }
@@ -99,40 +102,43 @@ ul li {
 	display: block;
 	list-style-type: none;
 	overflow: hidden;
-	padding: 10px;
-}
-
-ul li:nth-child(odd) {
-  background: #e6e6e6;
-}
-
-ul li:nth-child(even) {
-  background: #d6d6d6;
+	padding: 40px;
 }
 
 ul li:hover {
 	background-color: #f3f3f3;
 }
 
-ul li .date {
-	text-align: center;
-	width: 120px;
+ul li:nth-child(odd) {
+	background: #e6e6e6;
 }
 
-ul li .size {
-	text-align: right;
-	width: 90px;
+ul li:nth-child(even) {
+	background: #d6d6d6;
 }
 
-ul li .date, ul li .size {
+#footer {
 	font-family: 'Work Sans', sans-serif;
-	float: right;
-	font-size: 14px;
-	display: block;
-	color: #666666;
+	background-color: #1f1f1f;
+	text-align: center;
+	color: #ffffff;
+	font-size: 16px;
+	margin-top: 20px;
+	margin-bottom: 20px;
+	padding: 20px 20px;
 }
 
-ul#header li {
+#footer a {
+	color: #ffffff;
+}
+
+#footer a:hover {
+	color: #f0aa28;
+}
+
+
+
+/* ul#header li {
 	font-family: 'Work Sans', sans-serif;
 	font-size: 14px;
 	font-weight: bold;
@@ -184,23 +190,4 @@ ul li.item .directory, ul li.item .file {
 	padding-left: 20px;
 	background-position: left center;
 	background-repeat: no-repeat;
-}
-
-#footer {
-	font-family: 'Work Sans', sans-serif;
-	background-color: #1f1f1f;
-	text-align: center;
-	color: #ffffff;
-	font-size: 16px;
-	margin-top: 40px;
-	margin-bottom: 20px;
-	padding: 20px 20px;
-}
-
-#footer a {
-	color: #ffffff;
-}
-
-#footer a:hover {
-	color: #f0aa28;
-}
+} */
