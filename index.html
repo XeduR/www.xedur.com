@@ -13,6 +13,8 @@
 		<script src="/js/jquery-3.4.1.min.js"></script>
 		<script>
 		$(document).ready(function(){
+			$('#header').load("/header.html");
+			$('#coffee').load("/coffee.html");
 			$('#footer').load("/footer.html");
 		});
 		</script>
@@ -22,12 +24,15 @@
 
 	<body>
 		<div id="wrapper">
+			<div id="header"></div>
 
-			<h1><a class="title" href="https://xedur.github.io/" target="">XeduR's Projects</a></h1>
+			<!-- <h1><a class="title" href="https://xedur.github.io/" target="">XeduR's Projects</a></h1> -->
 
 			<h2>Hello!</h2>
 
 			<p>My name is Eetu Rantanen. Here on the interwebz I often by by XeduR. I am the founder and lead developer of Spyric, a Finnish mobile game studio.
+
+			<div id="coffee"></div>
 
 			<noscript><h4>JavaScript disabled. You must enable JavaScript to run the demo projects.</h4></noscript>
 
@@ -65,8 +70,6 @@
 			</ul>
 
 			<div id="footer"></div>
-			<!-- <p id="footer">Copyright © 2019<script>document.write("-"+new Date().getFullYear());</script> Eetu Rantanen</p> -->
 		</div>
-		<!-- <div id="footer"></div> -->
 	</body>
 </html>
