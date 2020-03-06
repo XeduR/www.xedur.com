@@ -55,6 +55,21 @@ a.list:hover {
 	color: red;
 }
 
+.btn-cta-2 {
+    border: 1px solid #ff5f5f;
+    color: #ff5f5f !important;
+    border-radius: 8px !important;
+    padding: 3px 12px;
+    line-height: 1.75;
+    background: white;
+}
+
+.btn-cta-2:hover {
+    border: 1px solid #ff5f5f;
+    color: #fff !important;
+    background: #ff5f5f;
+}
+
 h1 {
 	font-family: 'Work Sans', sans-serif;
 	color: #ffffff;
