@@ -59,8 +59,8 @@ a.list:hover {
 .support {
 	font-family: 'Work Sans', sans-serif;
 	background-color: white;
-	color: #ff5f5f;
-	border: 1px solid #ff5f5f;
+	color: #434b57;
+	border: 2px solid #434b57;
 	padding: 16px 32px;
 	line-height: 1.75;
 	text-align: center;
@@ -74,8 +74,8 @@ a.list:hover {
 }
 
 .support:hover {
-	background-color: #ff5f5f;
-	color: white;
+	color: #575f6b;
+	border: 2px solid #575f6b;
 }
 
 h1 {
