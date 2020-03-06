@@ -9,7 +9,7 @@ body {
 	/* text-align: center; */
 	text-align: justify;
 	font-size: 16px;
-	color: #000000;
+	/* color: #000000; */
 	padding: 30px 30px;
 }
 
@@ -57,24 +57,25 @@ a.list:hover {
 }
 
 .support {
-  background-color: white;
-  color: #ff5f5f;
-  border: 1px solid #ff5f5f;
-  padding: 16px 32px;
-  line-height: 1.75;
-  border-radius: 8px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 4px 2px;
-  transition-duration: 0.5s;
-  cursor: pointer;
+	font-family: 'Work Sans', sans-serif;
+	background-color: white;
+	color: #ff5f5f;
+	border: 1px solid #ff5f5f;
+	padding: 16px 32px;
+	line-height: 1.75;
+	text-align: center;
+	border-radius: 8px;
+	text-decoration: none;
+	display: block;
+	font-size: 18px;
+	margin: 30px auto;
+	transition-duration: 0.5s;
+	cursor: pointer;
 }
 
 .support:hover {
-  background-color: #ff5f5f;
-  color: white;
+	background-color: #ff5f5f;
+	color: white;
 }
 
 h1 {
