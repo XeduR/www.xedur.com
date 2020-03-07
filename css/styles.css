@@ -64,6 +64,10 @@ p.source {
 	font-size: 16;
 }
 
+a.source::before {
+	content:attr(href);
+}
+
 a.source {
 	text-align: left;
 	color: grey;
