@@ -58,6 +58,18 @@ p.body {
 	text-align: justify;
 }
 
+p.source {
+	text-align: left;
+	color: grey;
+	font-size: 16;
+}
+
+a.source {
+	text-align: left;
+	color: grey;
+	font-size: 16;
+}
+
 h1 {
 	color: #ffffff;
 	background-color: #1f1f1f;
