@@ -56,6 +56,16 @@ a.list:hover {
 	color: red;
 }
 
+a.back {
+	background-color: #f1f1f1;
+	color: black;
+	border-radius: 20%;
+}
+
+a.back:hover {
+	background-color: #ddd;
+}
+
 h1 {
 	font-family: 'Work Sans', sans-serif;
 	color: #ffffff;
@@ -141,6 +151,10 @@ ul li:nth-child(even) {
 	padding-top: 66.66%;
 }
 
+#line {
+	background-color: #1f1f1f;
+	height: 4px;
+}
 
 
 #footer {
