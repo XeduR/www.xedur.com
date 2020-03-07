@@ -28,13 +28,13 @@ body#left #wrapper {
 	text-align: left;
 }
 
-img {
+/* img {
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
 	width: 40%;
 	margin-top: 10px;
-}
+} */
 
 a {
 	text-decoration: none;
