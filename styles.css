@@ -156,8 +156,8 @@ ul li:nth-child(even) {
 	outline: none;
 	position: relative;
 	display: block;
-    margin: 0 auto;
-	padding: 80px;
+    margin: 40px auto;
+	padding: 10px;
 }
 
 button::before {
