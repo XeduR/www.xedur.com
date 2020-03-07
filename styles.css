@@ -145,9 +145,10 @@ button {
 	justify-content: center;
 	align-items: center;
 	cursor: pointer;
-	text-transform: uppercase;
-	height: 60px;
-	width: 320px;
+	height: 90px;
+	width: 420px;
+	/* height: 60px;
+	width: 320px; */
 	opacity: 1;
 	background-color: #29abe0;
 }
