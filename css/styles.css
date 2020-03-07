@@ -28,6 +28,10 @@ body#left #wrapper {
 	text-align: left;
 }
 
+#test {
+	margin: 30px auto;
+}
+
 /* img {
 	display: block;
 	margin-left: auto;
