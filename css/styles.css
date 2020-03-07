@@ -28,10 +28,6 @@ body#left #wrapper {
 	text-align: left;
 }
 
-#test {
-	margin: 30px auto;
-}
-
 /* img {
 	display: block;
 	margin-left: auto;
@@ -151,6 +147,7 @@ button {
 	cursor: pointer;
 	height: 60px;
 	width: 360px;
+	margin: 30px auto;
 	opacity: 1;
 	background-color: #29abe0;
 }
