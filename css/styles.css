@@ -175,13 +175,6 @@ button {
 	background-color: #29abe0;
 }
 
-/* button span {
-	color: #164ca7;
-	font-size: 12px;
-	font-weight: 500;
-	letter-spacing: 0.7px;
-} */
-
 button:hover {
 	animation: rotate 0.7s ease-in-out both;
 }
