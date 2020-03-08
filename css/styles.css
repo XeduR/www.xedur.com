@@ -187,7 +187,8 @@ button {
 	align-items: center;
 	cursor: pointer;
 	height: 60px;
-	width: 360px;
+	width: 100%;
+	max-width: 360px;
 	margin: 30px auto;
 	background-color: #29abe0;
 }
