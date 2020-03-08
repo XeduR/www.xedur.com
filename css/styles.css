@@ -64,9 +64,9 @@ p.source {
 	font-size: 16;
 }
 
-a.source::before {
+/* a.source::before {
 	content:attr(href);
-}
+} */
 
 a.source {
 	text-align: left;
