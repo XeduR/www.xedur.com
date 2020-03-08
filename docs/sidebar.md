@@ -6,7 +6,7 @@
 - [Morph](morph)
 - [Window](window)
 - [Resolution](resolution)
-- [Font Loader](font-Loader)
+- [Font Loader](font-loader)
 - **Links**
 - [Corona Game Engine](https://coronalabs.com/)
 - [Xedur's Dev Stuff](https://xedur.com/)
