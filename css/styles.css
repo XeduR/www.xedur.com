@@ -29,12 +29,33 @@ a.title:hover {
 	color: #f0aa28;
 }
 
-a.list {
+/* a.list {
 	color: black;
 }
 
 a.list:hover {
 	color: red;
+} */
+
+a.list {
+	color: black;
+	display: block;
+	list-style-type: none;
+	overflow: hidden;
+	/* padding: 10px 40px; */
+}
+
+a.list:hover {
+	color: white;
+	background-color: #f3f3f3;
+}
+
+a.list:nth-child(odd) {
+	background: #e6e6e6;
+}
+
+a.list:nth-child(even) {
+	background: #d6d6d6;
 }
 
 a.back {
@@ -63,10 +84,6 @@ p.source {
 	color: grey;
 	font-size: 16;
 }
-
-/* a.source::before {
-	content:attr(href);
-} */
 
 a.source {
 	text-align: left;
@@ -110,7 +127,7 @@ ul#header {
 	margin-top: 20px;
 }
 
-ul li {
+/* ul li {
 	display: block;
 	list-style-type: none;
 	overflow: hidden;
@@ -127,7 +144,7 @@ ul li:nth-child(odd) {
 
 ul li:nth-child(even) {
 	background: #d6d6d6;
-}
+} */
 
 .iframe-container {
 	overflow: hidden;

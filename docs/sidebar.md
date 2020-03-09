@@ -1,5 +1,7 @@
 - [Introduction](introduction)
 - **Plugins**
+- [Performance](performance)
+- **Plugins (to be added)**
 - [Shadows](shadows)
 - [Weaver](weaver)
 - [Bitmap Fonts](bitmap-fonts)
