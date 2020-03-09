@@ -150,6 +150,13 @@ ul#header {
 	margin-bottom: 10px;
 }
 
+#lineSmall {
+	background: grey;
+	height: 1px;
+	margin-top: 2px;
+	margin-bottom: 2px;
+}
+
 
 #footer {
 	font-family: 'Work Sans', sans-serif;
