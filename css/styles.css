@@ -29,25 +29,12 @@ a.title:hover {
 	color: #f0aa28;
 }
 
-/* a.list {
-	color: black;
-}
-
-a.list:hover {
-	color: red;
-} */
-
 a.list {
 	color: black;
 	display: block;
 	list-style-type: none;
 	overflow: hidden;
-	/* padding: 10px 40px; */
-}
-
-a.list:hover {
-	color: white;
-	background-color: #f3f3f3;
+	padding: 10px 40px;
 }
 
 a.list:nth-child(odd) {
@@ -58,16 +45,21 @@ a.list:nth-child(even) {
 	background: #d6d6d6;
 }
 
+a.list:hover {
+	color: #1f1f1f;
+	background: #f3f3f3;
+}
+
 a.back {
 	text-decoration: none;
 	display: inline-block;
 	padding: 0px 4px 3px;
-	background-color: #1f1f1f;
+	background: #1f1f1f;
 	color: white;
 }
 
 a.back:hover {
-	background-color: #f0aa28;
+	background: #f0aa28;
 	color: black;
 }
 
@@ -93,7 +85,7 @@ a.source {
 
 h1 {
 	color: #ffffff;
-	background-color: #1f1f1f;
+	background: #1f1f1f;
 	font-size: 36px;
 	padding: 20px 20px;
 	text-align: center;
@@ -116,7 +108,7 @@ h3 {
 
 h4 {
 	color: #ffffff;
-	background-color: #be0019;
+	background: #be0019;
 	font-size: 22px;
 	padding: 20px 20px;
 	margin: 20px 0 0;
@@ -126,25 +118,6 @@ h4 {
 ul#header {
 	margin-top: 20px;
 }
-
-/* ul li {
-	display: block;
-	list-style-type: none;
-	overflow: hidden;
-	padding: 10px 40px;
-}
-
-ul li:hover {
-	background-color: #f3f3f3;
-}
-
-ul li:nth-child(odd) {
-	background: #e6e6e6;
-}
-
-ul li:nth-child(even) {
-	background: #d6d6d6;
-} */
 
 .iframe-container {
 	overflow: hidden;
@@ -171,7 +144,7 @@ ul li:nth-child(even) {
 }
 
 #line {
-	background-color: #1f1f1f;
+	background: #1f1f1f;
 	height: 2px;
 	margin-top: 10px;
 	margin-bottom: 10px;
@@ -180,7 +153,7 @@ ul li:nth-child(even) {
 
 #footer {
 	font-family: 'Work Sans', sans-serif;
-	background-color: #1f1f1f;
+	background: #1f1f1f;
 	text-align: center;
 	color: #ffffff;
 	font-size: 16px;
@@ -207,7 +180,7 @@ button {
 	width: 100%;
 	max-width: 360px;
 	margin: 30px auto;
-	background-color: #29abe0;
+	background: #29abe0;
 }
 
 button:hover {

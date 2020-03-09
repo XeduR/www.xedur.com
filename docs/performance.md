@@ -20,7 +20,7 @@ performance:start( [startVisible] )
 ```
 
 **startVisible** (optional)
-- *Boolean*. You can optionally start the performance meter so that it isn't visible. Default value is true (for visible).
+- *Boolean*. You can optionally start the performance meter so that it isn't visible. Default value is true.
 
 ## Customisation
 You can customise the performance meter's appearance and change its location on the screen by simply modifying these variables within the plugin file.
