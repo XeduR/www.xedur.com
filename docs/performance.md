@@ -35,3 +35,10 @@ local bgColor = { 0 }
 local fontSize = 28
 local font = "Helvetica"
 ```
+
+## Example
+
+```lua
+local performance = require( "spyric.performance" )
+performance:start()
+```
