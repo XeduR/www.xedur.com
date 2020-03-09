@@ -1,4 +1,4 @@
-- **[Introduction](introduction)**
+- [Introduction](introduction)
 - **Plugins**
 - [Shadows](shadows)
 - [Weaver](weaver)

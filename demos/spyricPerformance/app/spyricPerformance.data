@@ -1,17 +1,13 @@
-settings = 
+settings =
 {
 
-	orientation = 
+	orientation =
 	{
-		default = "portrait",
-		supported = 
-		{
-		"portrait",
-		},
-					
+		default = "landscapeLeft",
+		supported = { "landscapeLeft", "landscapeRight" },
 	},
 }
-	Apache License
+Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
 
@@ -1704,20 +1700,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 # spyricPerformance
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/XeduR/spyricPerformance/blob/master/LICENSE)
+[![License: MIT](https://xedur.com/img/License-MIT-yellow.svg)](https://github.com/XeduR/spyricPerformance/blob/master/LICENSE)
 
 A simple and easily customisable performance meter to keep track of FPS, texture memory and memory usage in Corona projects. This module is heavily inspired by Sergey Lerg's original Performance.lua module for Corona.
 
-### How to use
-In order to use this module in your Corona projects, all you need to do is copy spyricPerformance.lua to your project folder, then require it and start it once.
+## How to use
+In order to use this module in your Corona projects, all you need to do is copy performance.lua to your project folder, then require it and start it once.
 ```lua
-local performance = require( "spyricPerformance" )
+local performance = require( "spyric.performance" )
 performance:start()
 ```
-If you need to hide the performance meter at any point, simply tap it once and tap it again to reveal it.
+If you need to hide the performance meter at any point, simply tap it once, then tap it again if you want to reveal it.
 
-### Visual customisation
-You can customise the performance meter's appearance and change its position on the screen by simply modifying these variables within the module.
+## Visual customisation
+You can customise the performance meter's appearance and change its location on the screen by simply modifying these variables within the module.
 ```lua
 local x = display.contentCenterX
 local y = display.screenOriginY
@@ -1729,20 +1725,24 @@ local fontSize = 28
 local font = "Helvetica"
 ```
 
-### Closing remarks
-As this module is released under the [MIT license](https://github.com/XeduR/spyricPerformance/blob/master/LICENSE), you don't need to provide me with credits or anything like that for using this module, but as a fellow Corona developer, I would be happy to hear if my projects are actually helping others. So, feel free to drop by the Corona forums to say hi or send me an email!
-rac   p         |      spyric.performance.lu      (     main.lu    X     demoUI.ui.lu       Ä  	   config.lu      ¤     LuaQ                4   
-   E   F@À …   †€@ÁÀ   J€ A bA€ Š€ Á ¢A€ ÁÁ  EB F‚Â…B †ÂBÅ ÆBÃƒ Aƒ 	 Ä‡	€Áˆ¤    €      €  €        €äC         $„        €            €  €  €   dÄ        	@‰   €       display    contentCenterX    screenOriginY       4@      $@      ğ?              <@
+## Get in touch and support me
+If you have ideas for small new projects, troubles with an existing one or if you just want to say hi, you can reach me easily via email at <a href="mailto: eetu.rantanen@spyric.com">eetu.rantanen@spyric.com</a>. I am also active at the <a href="https://forums.coronalabs.com/">Corona forums</a>. Finally, if any of my projects have helped or inspired you, then consider buying me a cup of coffee at <a href="https://ko-fi.com/xedur">Ko-fi</a>.
+
+<a href="https://ko-fi.com/xedur"><img src="https://xedur.com/img/support-me.png" height="48"></a>
+rac   p         |      spyric.performance.lu      (	     main.lu    ´     demoUI.ui.lu       8  	   config.lu      ¤     LuaQ                6   
+   E   F@À …   †€@ÁÀ   J€ A bA€ Š€ Á ¢A€ ÁÁ  EB F‚Â…B †ÂBÅ ÆBÃƒ Aƒ 	 Ä‡	€Áˆ¤    €      €  €        €äC         $„        €            €  €  €  €   dÄ            	@‰   €       display    contentCenterX    screenOriginY       4@      $@      ğ?              <@
    Helvetica    system 	   getTimer    getInfo    math    floor       ?	   isActive 	   maxWidth    start           -     
 B      €€ E   @  \@ D € F€À …À  Ä  € ‚Ü  œ€  Á@ Á  D „ Á œ Ä€Á\ NÁÁ AA …Á  Ä   A  Ü  œ  •€I€ D € F€À F@Â „ € †€B@ @€D € „ € †€@†@BI€ …D € FÀÂ „ € †€@†@BÄ  Î ÃŒÀ I€€„D € FÀÂ K@Ã \@ D € F€À K@Ã \@  € €       collectgarbage    collect    text 	   tostring      @@        textureMemoryUsed {®Gáz„?   count    width 	   maxWidth    bg        @   toFront                     0   =    ,   F @ W@À € €F @ €À  	€EÀ    \@ D   F@Á Z   @€E€ KÀÁ Á  € \@  €E€ K@Â Á  € \@ D   F€Â „   †€B†ÀB“  I€€…D   F Ã „   † C†ÀB“  I€€…D   „   †@A“  I€€‚ €       phase    ended 
    cancelled    collectgarbage    collect 	   isActive    Runtime    removeEventListener    enterFrame    addEventListener    text 
-   isVisible    bg                     @   J   	  8      E@  F€À À  Ä €  D€AD „€\€ 	@ €    @  A …@ Ä  œ  @      @ 	ÀAƒ   E@  F@Â „ € Ä   D  FÀFÁÂ„€CL\€€	@ „    B @C € Ä €@     B  A …@ Ä  œ  @      B 	 Ä‡    B 	ÀAƒ €       text    display    newText        setFillColor    unpack    anchorY            bg    newRect       $@   height        @   addEventListener    touch    isHitTestable                     M   P       D   \@€ E   K@À Á€  € \@  €       Runtime    addEventListener    enterFrame                                (  "  LuaQ                -      @@ E   F€À @ À  A  € EÀ  @ \€ †€Á œ@€ …À  ÁÀ œ€ Ë BÜ@ Å   Æ@Â E  FÁÂ†C ŒACÆC Â Ü€  J   Á $    €dB    €   $    €        €€ œB€  €       display    setStatusBar    HiddenStatusBar    require 	   composer 
-   demoUI.ui    create    spyric.performance    start    newText -   Tap the performance meter to hide/reveal it.    contentCenterX    yTop       >@   font       <@      I@               
-      D   T € L À …@  †€@ÁÀ   AAA …A  †ÁAA€E FAÁ ÅA  ÆAÂÍÂ\€Á Å ÆAÁ A‚ Ü€œ€  	€€  €          ğ?   display    newText    Hello!    math    random       ^@   actualContentWidth      €k@   actualContentHeight       d@$   demoUI/OpenSans/OpenSansRegular.ttf       >@                                  @@ D   „   ”  F€€ @    D   T € 	€À       À@  €  @A A€ „ € @€ €       display    remove             timer    performWithDelay      @o@                       %           @@ D   „ € Ä  @    @@ D   „  N€€ L€À ¤       €  @€ €       timer    performWithDelay       9@       "   $           @@ D   „ € Ä  @  €       timer    performWithDelay                                              d  ]  LuaQ                	      A@  € J   ¤       I€ ^   €       require 	   composer    create           3    ”   E   F@À €  ÁÀ  \@€D   Š €Á@  AÁ ¢@€I€ ‚D   Š €Á@  AÁ  ¢@€I€ „D   I Ã…D   Š€  ‰ÀC‡‰@DˆI€€†D   Š@  ‰ÀDˆI€ ‰E   F@À   Á@ \@€E   F@À € Á@ \@€AÀ …   † FÁ@  A œ€ ‰@€Å   Æ@Ç‰À Å   Æ€Ç‰À ‡Å   ÆÀÇ  AGE  FÈ…  †AHÁ Ü€€ÁÈ	 Á	 	 @€ A É É’  FÃ†ÁÉL	A“  JAA
- †ÇÆÃÂÉÂEÌ‚ÌÊ  ÂBAÂ
-  KÁHÅ   AÜ \A  E  FÁÇ…  †AGÅ  ÆAË  HÍ‚  BHA‚ \€‹ÁÈ	 A	 	 À€ œA IAÂ’ŠÁ ‰ÁK—ÆÇ‰ÁÆÃÂÉÂEÍ‚‰Á‡‰AL˜Ä  ÆÁÂ‰Á…‰ÁL™‰AMšÅ  ÆÊ  Ü ÂÈ… Ä  ÆÁœ B    ‚M‚€ ÂM„  †NB€ € 9      display    setDefault    background ¸…ëQ¸¾?   colourA ®Gázî?q=
-×£på?{®GázÄ?   colourAPress       ğ?ö(\Âõè?   font $   demoUI/OpenSans/OpenSansRegular.ttf    header    y      €a@   size       G@   body       @@   magTextureFilter    nearest    minTextureFilter       à?   newImageRect    demoUI/spyric.png       €@   alpha    x    contentCenterX    contentCenterY    newRect    screenOriginY    actualContentWidth       ^@   setFillColor            anchorY    yTop    height    newText $   Spyric Performance - Sample Project       4@      <@   unpack    contentHeight    text ^   Spyric Morph is a free plugin for Corona SDK.
-For documentation, please visit www.spyric.com.    width      €@	   fontSize       8@   align    center    getCurrentStage    insert    stage                                   Ğ   Ë   LuaQ                	   
+   isVisible    bg                     @   K   
+  B      E@  F€À À  Ä €  D€AD „€\€ 	@ €    @  A …@ Ä  œ  @      @ 	ÀAƒ   D   F À F@Â 	@ „   E@  FÀÂ „ € Ä    @ABD€NÃAD  FÀFAÃ„€CL\€€	@ …   €B €C À Ä  @    €B  A …@ Ä €œ  @     €B 	@Dˆ   €B 	ÀAƒ €       text    display    newText    00 0.00 0000    setFillColor    unpack    anchorY         	   maxWidth    width    bg    newRect        @   height    addEventListener    touch    isHitTestable                     N   W    #   „   œ@€ …   À € œ€ @@@€€À À€„ € †À@Ä € ÆÀÀÆ ÁÓ €‰À ‚„ € †@AÄ € Æ@ÁÆ ÁÓ €‰À ‚„ € Ä € Æ€ÁÓ €‰À ƒ €…À ‹ BA D œ@  € 
+      type    boolean     text 
+   isVisible    bg 	   isActive    Runtime    addEventListener    enterFrame                                „  €  LuaQ                ;      @@ E   F€À @ À  A  € EÀ  @ \€ †€Á œ@€ …À  ÁÀ œ€ Ë BÜ@ Å   Æ@Â AÁ  ÆAC ‚ Ü€ ÁÃ… ÆAD œ A   J   Á $    €    dB    €   $    €        €€ œB€ †ÂDÆÂDÆÅÌBÅ‰ÂŠ†‚EÆ‚EÆÅÌBÅ‰ÂŠ €       display    setStatusBar    HiddenStatusBar    require 	   composer 
+   demoUI.ui    create    spyric.performance    start    newText 3   Tap the performance     >
+meter to hide/reveal it.      @o@      ^@   font       4@   setFillColor    unpack    fontColour       I@   text    y       T@   bg                
+      D   T € L À …@  †€@ÁÀ   AAA …A  †ÁAA€E FAÁ ÅA  ÆAÂÍÂ\€„€ †ÁBÅ ÆAÁ A‚ Ü€œ€  	€€  €          ğ?   display    newText    Hello!    math    random       ^@   actualContentWidth       i@   actualContentHeight      €a@   font       >@                                  @@ D   „   ”  F€€ @    D   T € 	€À       À@  €  @A A€ „ € @€ €       display    remove             timer    performWithDelay      àu@                        &           @@ D   „ € Ä  @    @@ D   „  N€€ L€À ¤       €  @€ €       timer    performWithDelay       9@       #   %           @@ D   „ € Ä  @  €       timer    performWithDelay                                            |  u  LuaQ                	      A@  € J   ¤       I€ ^   €       require 	   composer    create           -    w   E   F@À €  ÁÀ  \@€D   Š €Á@  AÁ ¢@€I€ ‚D   I@B„A€ …   †ÀBÁ  A AA œ€ Á  ‰ Ä‡‰À ‡Å   Æ€Ä‰À€ˆÅ   Æ Å‰À€‰‰@€ŠÅ   Æ€Å  DE  FÁÅ…  †FÁA Ü€€ÆÁ ÁÁ Â @€ A ÉÀF  AGA †AÄÆÁÄÂÇ‚BÌ‚  BA  KFÅA   AÜ \A  E  FÅ…  †DÅ  ÆÈ  ÂEÍ‚  FAB \€‹ÆÂ AÂ Â À€ œA IÁHŠÁ ‰AI’ÆAÄ‰ÁˆÆÁÄÂÇ‚BÍ‚‰Á‰‰ÁI“Ä  ÆÂ‰Á„‰H”‰Ê”Å  ÆAÇ  Ü ‚Æ…B Ä  ÆÁœ B    ÂJ‚€ K„  †BKB€ € .      display    setDefault    background ¸…ëQ¸¾?   fontColour ®Gázî?q=
+×£på?{®GázÄ?   font $   demoUI/OpenSans/OpenSansRegular.ttf       à?   newImageRect    demoUI/spyric.png       €@   xScale    yScale ÍÌÌÌÌÌì?   x    contentCenterX    y    contentCenterY    alpha    newRect    screenOriginY    actualContentWidth       T@   setFillColor            anchorY    newText $   Spyric Performance - Sample Project    height       4@   unpack    contentHeight       ğ?   text q   Spyric Performance is a free plugin for Corona game engine.
+For documentation, please visit www.spyric.com/docs.    width       ‰@	   fontSize    align    center    getCurrentStage    insert    stage                                   Ğ   Ë   LuaQ                	   
 @  J  IÀ@I@A‚IÀAƒI@B„	@€€    € 
       application    content    width       „@   height       @   scale 
    letterbox    fps       N@                 ÿÿÿÿ    ‰PNG
