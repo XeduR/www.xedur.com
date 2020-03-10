@@ -4,10 +4,19 @@
 	border: none;
 }
 
+/*
+	395A71
+	788EA7
+	B8D3DA
+	F2F0E7
+	D8D4C9
+*/
+
 body {
 	font-family: 'Work Sans', sans-serif;
 	font-size: 16px;
 	padding: 30px 30px;
+	background: #F2F0E7;
 }
 
 #wrapper {
@@ -38,11 +47,11 @@ a.list {
 }
 
 a.list:nth-child(odd) {
-	background: #e6e6e6;
+	background: rgba(0,0,0,0.1);
 }
 
 a.list:nth-child(even) {
-	background: #d6d6d6;
+	background: rgba(0,0,0,0.05);
 }
 
 a.list:hover {
@@ -59,7 +68,7 @@ a.back {
 }
 
 a.back:hover {
-	background: #f0aa28;
+	background: rgb(229, 226, 216);
 	color: black;
 }
 
@@ -115,10 +124,6 @@ h4 {
 	text-align: center;
 }
 
-ul#header {
-	margin-top: 20px;
-}
-
 .iframe-container {
 	overflow: hidden;
 	padding-top: 66.66%;
@@ -158,7 +163,7 @@ ul#header {
 }
 
 #block {
-	background: #c4dbff;
+	background: #D8D4C9;
 }
 
 #float {
