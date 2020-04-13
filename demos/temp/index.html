@@ -10,15 +10,18 @@
     <p id="demo"></p>
 
     <script>
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-        var myObj = JSON.parse(this.responseText);
-        document.getElementById("demo").innerHTML = myObj.name;
-        }
-        };
-        xmlhttp.open("GET", "https://www.w3schools.com/js/json_demo.txt", true);
-        xmlhttp.send();
+        // Replace ./data.json with your JSON feed
+        fetch('./json_demo.txt')
+          .then(response => {
+            return response.json()
+          })
+          .then(data => {
+            // Work with JSON data here
+            console.log(data)
+          })
+          .catch(err => {
+            // Do something for an error here
+          })
 
         </script>
 
