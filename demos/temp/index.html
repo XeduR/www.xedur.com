@@ -1,0 +1,55 @@
+<!-- <!DOCTYPE html>
+<html>
+
+<head>
+	<style>
+      button {
+        background: #1E88E5;
+        color: white;
+        padding: 2rem 4rem;
+        margin: 8px;
+        border: 5;
+        font-size: 1.5rem;
+      }
+    </style>
+</head>
+<body>
+
+<p>Click the button to make a BUTTON element with text.</p>
+
+<button onclick="myFunction()">Try it</button>
+
+<p>HEY</p>
+
+<script>
+function myFunction() {
+  var btn = document.createElement("BUTTON");
+  btn.innerHTML = "CLICK ME";
+  document.body.appendChild(btn);
+}
+</script>
+
+
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    </head>
+
+
+    <body>
+        <script>
+        var json = $.getJSON("https://koodihaaste.solidabis.com/reittiopas.json");
+        var data = eval("(" +json.responseText + ")");
+        // document.write(data["a"]);
+
+        $.getJSON("test.json", function(json) {
+            console.log(json); // this will show the info it in firebug console
+        });
+        </script>
+
+    </body>
+</html>
