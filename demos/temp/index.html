@@ -1,54 +1,25 @@
-<!-- <!DOCTYPE html>
-<html>
-
-<head>
-	<style>
-      button {
-        background: #1E88E5;
-        color: white;
-        padding: 2rem 4rem;
-        margin: 8px;
-        border: 5;
-        font-size: 1.5rem;
-      }
-    </style>
-</head>
-<body>
-
-<p>Click the button to make a BUTTON element with text.</p>
-
-<button onclick="myFunction()">Try it</button>
-
-<p>HEY</p>
-
-<script>
-function myFunction() {
-  var btn = document.createElement("BUTTON");
-  btn.innerHTML = "CLICK ME";
-  document.body.appendChild(btn);
-}
-</script>
-
-
-</body>
-</html> -->
-
 <!DOCTYPE html>
 <html>
     <head>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     </head>
 
+    <h2>Use the XMLHttpRequest to get the content of a file.</h2>
+    <p>The content is written in JSON format, and can easily be converted into a JavaScript object.</p>
 
-    <body>
-        <script>
-        var json = $.getJSON("https://koodihaaste.solidabis.com/reittiopas.json");
-        var data = eval("(" +json.responseText + ")");
-        // document.write(data["a"]);
+    <p id="demo"></p>
 
-        $.getJSON("test.json", function(json) {
-            console.log(json); // this will show the info it in firebug console
-        });
+    <script>
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+        var myObj = JSON.parse(this.responseText);
+        document.getElementById("demo").innerHTML = myObj.name;
+        }
+        };
+        xmlhttp.open("GET", "https://www.w3schools.com/js/json_demo.txt", true);
+        xmlhttp.send();
+
         </script>
 
     </body>
