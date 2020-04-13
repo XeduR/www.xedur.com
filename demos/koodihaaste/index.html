@@ -9,7 +9,14 @@
 
     <p id="demo"></p>
 
+    <!-- Käytä värejä koodihaasteen sivuilta.
+    1) sininen header,
+    2) harmaa tausta,
+    3) linjoilla omat värit,
+    4) pysäkit kaikki samanvärisiä. -->
+
     <script>
+        var reitit;
         // Replace ./data.json with your JSON feed
         fetch('./reittiopas.json')
           .then(response => {
@@ -17,11 +24,23 @@
           })
           .then(data => {
             // Work with JSON data here
-            console.log(data)
+            reitit = data;
+            console.log(data);
+
+
+            var i, len, text;
+            for (i = 0, len = reitit.pysakit.length, text = ""; i < len; i++) {
+                text += reitit.pysakit[i] + "<br>";
+            }
+            document.getElementById("demo").innerHTML = text;
+
+
           })
           .catch(err => {
             // Do something for an error here
           })
+
+
 
         </script>
 
