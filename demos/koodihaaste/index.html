@@ -41,7 +41,7 @@
             }
         }
 
-        function buttonListener( btn ) {
+        function buttonListener( element ) {
             // var prev;
             // if (btn.loc == "start") {
             //     prev = prevButtonA;
@@ -72,24 +72,22 @@
             //         prevButtonB = btn;
             //     }
             // }
-            btn.style.backgroundColor = "green";
-            console.log( btn, btn.node, btn.loc );
+            element.style.backgroundColor = "green";
+            console.log( element, element.node, element.loc );
             checkRoute();
         }
 
         function createButtons( loc ) {
             var div = document.getElementById( loc );
-            var btn = [];
             for ( var i = 0; i < routes.pysakit.length; i++ ) {
-                btn[i] = document.createElement("BUTTON");
-                btn[i].innerHTML = routes.pysakit[i];
-                btn[i].node = routes.pysakit[i];
-                btn[i].loc = loc;
-                btn[i].addEventListener( "click", function() {
-                    buttonListener( btn[i] );
+                var btn = document.createElement("BUTTON");
+                btn.innerHTML = routes.pysakit[i];
+                btn.node = routes.pysakit[i];
+                btn.loc = loc;
+                btn.addEventListener( "click", function() {
+                    buttonListener( btn );
                 });
-                div.appendChild( btn[i] );
-                console.log( btn );
+                div.appendChild( btn );
             }
         }
 
