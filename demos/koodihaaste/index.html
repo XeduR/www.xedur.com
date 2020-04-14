@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
     </head>
 
-    <h2>Use the XMLHttpRequest to get the content of a file.</h2>
-    <p>The content is written in JSON format, and can easily be converted into a JavaScript object.</p>
+    <h1>Reittiopas</h1>
+    <h2>Solidabis - Koodihaaste</h2>
 
-    <p id="demo"></p>
+    <p>Lähtöpysäkki</p>
+    <p id="start"></p>
+
+    <p>Määränpää</p>
+    <p id="end"></p>
 
     <!-- Käytä värejä koodihaasteen sivuilta.
     1) sininen header,
@@ -17,28 +21,31 @@
 
     <script>
         var reitit;
+
+        function createButtons() {
+
+        }
+
         // Replace ./data.json with your JSON feed
         fetch('./reittiopas.json')
-          .then(response => {
-            return response.json()
-          })
-          .then(data => {
-            // Work with JSON data here
-            reitit = data;
-            console.log(data);
+            .then(response => {
+                return response.json()
+            })
+            .then(data => {
+                // Work with JSON data here
+                reitit = data;
+                console.log(data);
 
-
-            var i, len, text;
-            for (i = 0, len = reitit.pysakit.length, text = ""; i < len; i++) {
+                var i, len, text;
+                for (i = 0, len = reitit.pysakit.length, text = ""; i < len; i++) {
                 text += reitit.pysakit[i] + "<br>";
-            }
-            document.getElementById("demo").innerHTML = text;
+                }
+                document.getElementById("start").innerHTML = text;
 
-
-          })
-          .catch(err => {
+            })
+            .catch(err => {
             // Do something for an error here
-          })
+        })
 
 
 
