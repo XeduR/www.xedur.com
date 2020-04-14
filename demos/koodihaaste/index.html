@@ -49,6 +49,8 @@
                 prev = prevButtonB;
             }
 
+            console.log( prev.loc );
+
             if (prev) {
                 prev.style.backgroundColor = "blue";
                 if (btn == prev) {
@@ -75,9 +77,8 @@
         }
 
         function createButtons( loc ) {
-            var div = document.getElementById( loc );
-
             for ( var i = 0; i < routes.pysakit.length; i++ ) {
+                var div = document.getElementById( loc );
                 var btn = document.createElement("BUTTON");
                 btn.innerHTML = routes.pysakit[i];
                 btn.node = routes.pysakit[i];
