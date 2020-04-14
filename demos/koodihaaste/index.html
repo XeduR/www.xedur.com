@@ -42,47 +42,35 @@
         }
 
         function buttonListener( btn ) {
-            var prev;
+            var sameButton = false;
             if (btn.loc == "start") {
-
-                prev = prevButtonA;
-            } else {
-                prev = prevButtonB;
-            }
-            //
-            console.log( prev, "X", btn );
-            //
-            if (prev) {
-                prev.style.backgroundColor = "blue";
-                if (btn == prev) {
-                    prev = null;
-                } else {
-                    prev = btn;
+                if (prevButtonA) {
+                    prevButtonA.style.backgroundColor = "blue";
+                    if (prevButtonA == btn) {
+                        prevButtonA = null;
+                    } else {
+                        sameButton = true;
+                    }
                 }
+                prevButtonA = btn;
             } else {
-                if (btn.loc == "start") {
-                    prevButtonA = btn;
-                } else {
-                    prevButtonB = btn;
+                if (prevButtonB) {
+                    prevButtonB.style.backgroundColor = "blue";
+                    if (prevButtonB == btn) {
+                        prevButtonB = null;
+                    } else {
+                        sameButton = true;
+                    }
                 }
+                prevButtonB = btn;
             }
-            console.log( prev, "Y", btn );
-            // if (btn.loc == "start") {
-            //     if (prevButtonA) {
-            //         if (prevButtonA == btn) {
-            //
-            //         } else {
-            //         }
-            //     }
-            // } else {
-            //     if (prevButtonB) {
-            //         prevButtonB.style.backgroundColor = "blue";
-            //         prevButtonB = btn;
-            //     }
-            // }
-            btn.style.backgroundColor = "green";
-            console.log( btn, btn.node, btn.loc );
-            checkRoute();
+            
+            console.log( prevButtonA, prevButtonB );
+            if (sameButton == false) {
+                btn.style.backgroundColor = "green";
+                console.log( btn, btn.node, btn.loc );
+                checkRoute();
+            }
         }
 
         function createButtons( i, loc ) {
