@@ -1,16 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <style>
-          button {
-            background: #1E88E5;
-            color: white;
-            padding: 2rem 4rem;
-            margin: 8px;
-            border: 5;
-            font-size: 1.5rem;
-          }
-        </style>
+
     </head>
 
     <h1>Reittiopas</h1>
@@ -31,22 +22,16 @@
     <script>
         var reitit;
 
-        function onPress( destination, busNode ) {
-            // console.log( destination, busNode );
-        };
-
         function createButtons( busNode ) {
             for (var i = 0; i < busNode.length; i++) {
                 var yourdiv = document.getElementById("start");
                 var btn = document.createElement("button");
                 btn.className = busNode[i];
-                // btn.addEventListener("click", onPress() );
                 var t = document.createTextNode(busNode[i]);
                 btn.appendChild(t);
-                yourdiv.appendChild(t)
-                // document.body.appendChild(btn);
+                document.body.appendChild(btn);
             }
-        };
+        }
 
         // Replace ./data.json with your JSON feed
         fetch('./reittiopas.json')
