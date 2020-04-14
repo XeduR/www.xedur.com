@@ -41,24 +41,24 @@
             }
         }
 
-        function buttonListener( element ) {
-            // var prev;
-            // if (btn.loc == "start") {
-            //     prev = prevButtonA;
-            // } else {
-            //     prev = prevButtonB;
-            // }
+        function buttonListener( btn ) {
+            var prev;
+            if (btn.loc == "start") {
+                prev = prevButtonA;
+            } else {
+                prev = prevButtonB;
+            }
             //
-            // console.log( prev, "X", btn );
+            console.log( prev, "X", btn );
             //
-            // if (prev) {
-            //     prev.style.backgroundColor = "blue";
-            //     if (btn == prev) {
-            //         prev = null;
-            //     } else {
-            //         prev = btn;
-            //     }
-            // }
+            if (prev) {
+                prev.style.backgroundColor = "blue";
+                if (btn == prev) {
+                    prev = null;
+                } else {
+                    prev = btn;
+                }
+            }
             // if (btn.loc == "start") {
             //     if (prevButtonA) {
             //         if (prevButtonA == btn) {
@@ -72,23 +72,21 @@
             //         prevButtonB = btn;
             //     }
             // }
-            element.style.backgroundColor = "green";
-            console.log( element, element.node, element.loc );
+            btn.style.backgroundColor = "green";
+            console.log( btn, btn.node, btn.loc );
             checkRoute();
         }
 
         function createButtons( loc ) {
             var div = document.getElementById( loc );
-            for ( var i = 0; i < routes.pysakit.length; i++ ) {
-                var btn = document.createElement("BUTTON");
-                btn.innerHTML = routes.pysakit[i];
-                btn.node = routes.pysakit[i];
-                btn.loc = loc;
-                btn.addEventListener( "click", function() {
-                    buttonListener( btn );
-                });
-                div.appendChild( btn );
-            }
+            var btn = document.createElement("button");
+            btn.innerHTML = routes.pysakit[i];
+            btn.node = routes.pysakit[i];
+            btn.loc = loc;
+            btn.addEventListener( "click", function() {
+                buttonListener( btn );
+            });
+            div.appendChild( btn );
         }
 
 
@@ -98,9 +96,12 @@
             })
             .then(data => {
                 routes = data;
-                console.log( routes );
-                createButtons( "start" );
-                createButtons( "end" );
+                for ( var i = 0; i < routes.pysakit.length; i++ ) {
+                    createButtons( i, "start" );
+                }
+                for ( var i = 0; i < routes.pysakit.length; i++ ) {
+                    createButtons( i, "end" );
+                }
             })
             .catch(err => {
             // Do something for an error here
