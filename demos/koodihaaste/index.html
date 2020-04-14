@@ -78,16 +78,17 @@
         }
 
         function createButtons( loc ) {
+            var div = document.getElementById( loc );
+            var btn = [];
             for ( var i = 0; i < routes.pysakit.length; i++ ) {
-                var div = document.getElementById( loc );
-                var btn = document.createElement("BUTTON");
-                btn.innerHTML = routes.pysakit[i];
-                btn.node = routes.pysakit[i];
-                btn.loc = loc;
-                btn.addEventListener( "click", function() {
-                    buttonListener( btn );
+                btn[i] = document.createElement("BUTTON");
+                btn[i].innerHTML = routes.pysakit[i];
+                btn[i].node = routes.pysakit[i];
+                btn[i].loc = loc;
+                btn[i].addEventListener( "click", function() {
+                    buttonListener( btn[i] );
                 });
-                div.appendChild( btn );
+                div.appendChild( btn[i] );
             }
         }
 
