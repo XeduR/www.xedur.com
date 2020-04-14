@@ -22,8 +22,13 @@
     <script>
         var reitit;
 
-        function createButtons() {
-
+        function createButtons( busNode ) {
+            for (var i = 0; i < busNode.length; i++) {
+                var btn = document.createElement("button");
+                var t = document.createTextNode(busNode[i]);
+                btn.appendChild(t);
+                document.body.appendChild(btn);
+            }
         }
 
         // Replace ./data.json with your JSON feed
@@ -42,6 +47,7 @@
                 }
                 document.getElementById("start").innerHTML = text;
 
+                createButtons(reitit.pysakit);
             })
             .catch(err => {
             // Do something for an error here
