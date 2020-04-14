@@ -37,7 +37,7 @@
 
         function checkRoute() {
             if (prevButtonA && prevButtonB) {
-                console.log( prevButtonA, prevButtonB );
+                console.log( "checkRoute", prevButtonA, prevButtonB );
             }
         }
 
@@ -74,6 +74,7 @@
             // }
             btn.style.backgroundColor = "green";
             console.log( btn, btn.node, btn.loc );
+            checkRoute();
         }
 
         function createButtons( loc ) {
