@@ -44,6 +44,7 @@
         function buttonListener( btn ) {
             var prev;
             if (btn.loc == "start") {
+
                 prev = prevButtonA;
             } else {
                 prev = prevButtonB;
@@ -58,7 +59,14 @@
                 } else {
                     prev = btn;
                 }
+            } else {
+                if (btn.loc == "start") {
+                    prevButtonA = btn;
+                } else {
+                    prevButtonB = btn;
+                }
             }
+            console.log( prev, "Y", btn );
             // if (btn.loc == "start") {
             //     if (prevButtonA) {
             //         if (prevButtonA == btn) {
