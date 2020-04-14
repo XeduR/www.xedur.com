@@ -1,7 +1,20 @@
 <!DOCTYPE html>
 <html>
     <head>
-
+        <style>
+            button {
+                background: #1E88E5;
+                color: white;
+                padding: 20px;
+                margin: 8px;
+                border: 5;
+                border-radius: 50%;
+                font-size: 24;
+            }
+            button:hover {
+                background: red;
+            }
+        </style>
     </head>
 
     <h1>Reittiopas</h1>
@@ -20,36 +33,48 @@
     4) pysäkit kaikki samanvärisiä. -->
 
     <script>
-        var reitit;
+        var routes, prevButtonA, prevButtonB;
 
-        function createButtons( busNode ) {
-            for (var i = 0; i < busNode.length; i++) {
-                var yourdiv = document.getElementById("start");
-                var btn = document.createElement("button");
-                btn.className = busNode[i];
-                var t = document.createTextNode(busNode[i]);
-                btn.appendChild(t);
-                document.body.appendChild(btn);
+        function buttonListener( btn ) {
+            if (btn.loc == "start") {
+                if (prevButtonA) {
+                    prevButtonA.style.backgroundColor = "red";
+                }
+                prevButtonA = btn;
+            } else {
+                if (prevButtonB) {
+                    prevButtonB.style.backgroundColor = "red";
+                }
+                prevButtonB = btn;
+            }
+            btn.style.backgroundColor = "green";
+            console.log( a, a.node, a.loc );
+        }
+
+        function createButtons( loc ) {
+            var div = document.getElementById( loc );
+
+            for ( var i = 0; i < reitit.pysakit.length; i++ ) {
+                var btn = document.createElement("BUTTON");
+                btn.innerHTML = reitit.pysakit[i];
+                btn.node = reitit.pysakit[i];
+                btn.loc = loc;
+                btn.addEventListener( "click", function() {
+                    buttonListener( btn );
+                });
+                div.appendChild( btn );
             }
         }
 
-        // Replace ./data.json with your JSON feed
+
         fetch('./reittiopas.json')
             .then(response => {
                 return response.json()
             })
             .then(data => {
-                // Work with JSON data here
-                reitit = data;
-                console.log(data);
-
-                // var i, len, text;
-                // for (i = 0, len = reitit.pysakit.length, text = ""; i < len; i++) {
-                // text += reitit.pysakit[i] + "<br>";
-                // }
-                // document.getElementById("start").innerHTML = text;
-
-                createButtons(reitit.pysakit);
+                routes = data;
+                createButtons( "start" );
+                createButtons( "end" );
             })
             .catch(err => {
             // Do something for an error here
