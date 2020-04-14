@@ -32,7 +32,7 @@
         var reitit;
 
         function onPress( destination, busNode ) {
-            console.log( destination, busNode );
+            // console.log( destination, busNode );
         };
 
         function createButtons( busNode ) {
@@ -40,9 +40,10 @@
                 var yourdiv = document.getElementById("start");
                 var btn = document.createElement("button");
                 btn.className = busNode[i];
-                btn.addEventListener("click", onPress() );
+                // btn.addEventListener("click", onPress() );
                 var t = document.createTextNode(busNode[i]);
                 btn.appendChild(t);
+                yourdiv.appendChild(t)
                 // document.body.appendChild(btn);
             }
         };
