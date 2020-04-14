@@ -3,7 +3,7 @@
     <head>
         <style>
             button {
-                background: #1E88E5;
+                background: blue;
                 color: white;
                 padding: 20px;
                 margin: 8px;
@@ -35,20 +35,43 @@
     <script>
         var routes, prevButtonA, prevButtonB;
 
+        function checkRoute() {
+            if (prevButtonA && prevButtonB) {
+                console.log( prevButtonA, prevButtonB );
+            }
+        }
+
         function buttonListener( btn ) {
+            var prev;
+            if (btn.loc == "start") {
+                prev = prevButtonA;
+            } else {
+                prev = prevButtonB;
+            }
+
+            if (prev) {
+                prev.style.backgroundColor = "blue";
+                if (btn == prev) {
+                    prev = null;
+                } else {
+                    prev = btn;
+                }
+            }
             // if (btn.loc == "start") {
             //     if (prevButtonA) {
-            //         prevButtonA.style.backgroundColor = "red";
+            //         if (prevButtonA == btn) {
+            //
+            //         } else {
+            //         }
             //     }
-            //     prevButtonA = btn;
             // } else {
             //     if (prevButtonB) {
-            //         prevButtonB.style.backgroundColor = "red";
+            //         prevButtonB.style.backgroundColor = "blue";
+            //         prevButtonB = btn;
             //     }
-            //     prevButtonB = btn;
             // }
-            // btn.style.backgroundColor = "green";
-            // console.log( a, a.node, a.loc );
+            btn.style.backgroundColor = "green";
+            console.log( btn, btn.node, btn.loc );
         }
 
         function createButtons( loc ) {
