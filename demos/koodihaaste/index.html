@@ -45,46 +45,43 @@
             }
         }
 
-        function buttonListener( btn ) {
-            var sameButton = false;
-            var whichButton = btn;
+    function buttonListener( btn ) {
+        var sameButton = false;
 
-            // if (btn.loc == "start") {
-                if (whichButton) {
-                    whichButton.style.backgroundColor = "blue";
-                    if (whichButton == btn) {
-                        whichButton = null;
-                        sameButton = true;
-                    } else {
-                        whichButton = btn;
-                    }
+        if (btn.loc == "start") {
+            if (prevButtonA) {
+                prevButtonA.style.backgroundColor = "blue";
+                if (prevButtonA == btn) {
+                    prevButtonA = null;
+                    sameButton = true;
                 } else {
-                    whichButton = btn;
+                    prevButtonA = btn;
                 }
-            // }
-            // } else {
-            //     if (prevButtonB) {
-            //         prevButtonB.style.backgroundColor = "blue";
-            //         if (prevButtonB == btn) {
-            //             prevButtonB = null;
-            //             sameButton = true;
-            //         } else {
-            //             prevButtonB = btn;
-            //         }
-            //     } else {
-            //         prevButtonB = btn;
-            //     }
-            // }
-
-            console.log( "prevButtonA", prevButtonA );
-            console.log( "prevButtonB", prevButtonB );
-
-            if (sameButton == false) {
-                btn.style.backgroundColor = "green";
-                // console.log( btn, btn.node, btn.loc );
-                checkRoute();
+            } else {
+                prevButtonA = btn;
+            }
+        } else {
+            if (prevButtonB) {
+                prevButtonB.style.backgroundColor = "blue";
+                if (prevButtonB == btn) {
+                    prevButtonB = null;
+                    sameButton = true;
+                } else {
+                    prevButtonB = btn;
+                }
+            } else {
+                prevButtonB = btn;
             }
         }
+
+        console.log( "prevButtonA", prevButtonA );
+        console.log( "prevButtonB", prevButtonB );
+
+        if (sameButton == false) {
+            btn.style.backgroundColor = "green";
+            checkRoute();
+        }
+    }
 
         function createButtons( i, loc ) {
             var div = document.getElementById( loc );
