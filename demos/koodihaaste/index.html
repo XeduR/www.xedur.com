@@ -5,10 +5,11 @@
             button {
                 background: blue;
                 color: white;
-                padding: 20px;
-                margin: 8px;
-                border: 5;
-                border-radius: 50%;
+                padding: 10px;
+                margin: 4px;
+                border-radius: 20px;
+                height: 40px;
+                width: 40px;
                 font-size: 24;
             }
             button:hover {
@@ -37,18 +38,18 @@
 
         function checkRoute() {
             if (prevButtonA && prevButtonB) {
-                console.log( "checkRoute", prevButtonA, prevButtonB );
+                console.log( "checkRoute", prevButtonA.node, prevButtonB.node );
             }
         }
 
         function buttonListener( btn ) {
             var sameButton = false;
+            var whichButton = btn;
             if (btn.loc == "start") {
                 if (prevButtonA) {
                     prevButtonA.style.backgroundColor = "blue";
                     if (prevButtonA == btn) {
                         prevButtonA = null;
-                    } else {
                         sameButton = true;
                     }
                 }
@@ -58,17 +59,16 @@
                     prevButtonB.style.backgroundColor = "blue";
                     if (prevButtonB == btn) {
                         prevButtonB = null;
-                    } else {
                         sameButton = true;
                     }
                 }
                 prevButtonB = btn;
             }
-            
-            console.log( prevButtonA, prevButtonB );
+
+            console.log( whichButton, prevButtonA, prevButtonB );
             if (sameButton == false) {
                 btn.style.backgroundColor = "green";
-                console.log( btn, btn.node, btn.loc );
+                // console.log( btn, btn.node, btn.loc );
                 checkRoute();
             }
         }
