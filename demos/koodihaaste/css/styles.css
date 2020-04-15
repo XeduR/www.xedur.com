@@ -1,6 +1,6 @@
 #wrapper {
 	max-width: 960px;
-	*width: 960px;
+	width: 960px;
 	margin: 0 auto;
 	text-align: justify;
 }
@@ -8,8 +8,16 @@
 body {
 	font-family: 'Work Sans', sans-serif;
 	font-size: 16px;
-	padding: 30px 30px;
-	background: #F2F0E7;
+	/* padding: 30px 30px; */
+	background: #b9b9b9;
+}
+
+footer {
+	color: #ffffff;
+	background: #007ac9;
+	font-size: 20px;
+	/* padding: 20px 20px; */
+	text-align: center;
 }
 
 p {
@@ -19,9 +27,9 @@ p {
 
 h1 {
 	color: #ffffff;
-	background: #395A71;
+	background: #007ac9;
 	font-size: 36px;
-	padding: 20px 20px;
+	/* padding: 20px 20px; */
 	text-align: center;
 }
 
