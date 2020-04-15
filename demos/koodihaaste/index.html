@@ -5,15 +5,11 @@
             button {
                 background: blue;
                 color: white;
-                padding: 10px;
                 margin: 4px;
                 border-radius: 20px;
                 height: 40px;
                 width: 40px;
                 font-size: 24;
-            }
-            button:hover {
-                background: red;
             }
         </style>
     </head>
@@ -65,7 +61,10 @@
                 prevButtonB = btn;
             }
 
-            console.log( whichButton, prevButtonA, prevButtonB );
+            console.log( "whichButton", whichButton );
+            console.log( "prevButtonA", prevButtonA );
+            console.log( "prevButtonB", prevButtonB );
+
             if (sameButton == false) {
                 btn.style.backgroundColor = "green";
                 // console.log( btn, btn.node, btn.loc );
