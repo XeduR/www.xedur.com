@@ -1,114 +1,120 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <style>
-            button {
-                background: blue;
-                color: white;
-                border-radius: 20px;
-                height: 40px;
-                width: 40px;
-                font-size: 24;
-            }
-        </style>
-    </head>
+<html lang="en-US">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="description" content="Reittiopas">
+		<meta name="keywords" content="XeduR, Koodihaaste, Solidabis, Reittiopas">
+		<meta name="author" content="Eetu Rantanen">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<!-- <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico"/> -->
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Work+Sans">
+		<link rel="stylesheet" href="/css/styles.css">
+</head>
 
-    <h1>Reittiopas</h1>
-    <h2>Solidabis - Koodihaaste</h2>
-    <h3 id="error"></h3>
+<body>
+	<div id="wrapper">
+        <h1>Reittiopas</h1>
+        <h2>Solidabis - Koodihaaste</h2>
+        <h3 id="error"></h3>
 
-    <noscript>
-        <h3>
-            Reittioppaan käyttö vaatii JavaScriptin. Varmistathan,<br>
-            ettei selaimesi tai sen jokin lisäosa estä JavaScriptiä.
-        </h3>
-    </noscript>
+        <noscript>
+            <h3>
+                Reittioppaan käyttö vaatii JavaScriptin. Varmistathan,<br>
+                ettei selaimesi tai sen jokin lisäosa estä JavaScriptiä.
+            </h3>
+        </noscript>
 
-    <p>Lähtöpysäkki</p>
-    <p id="start"></p>
+        <p>Lähtöpysäkki</p>
+        <p id="start"></p>
 
-    <p>Määränpää</p>
-    <p id="end"></p>
+        <p>Määränpää</p>
+        <p id="end"></p>
 
-    <!-- Käytä värejä koodihaasteen sivuilta.
-    1) sininen header,
-    2) harmaa tausta,
-    3) linjoilla omat värit,
-    4) pysäkit kaikki samanvärisiä. -->
+        <!-- Käytä värejä koodihaasteen sivuilta.
+        1) sininen header,
+        2) harmaa tausta,
+        3) linjoilla omat värit,
+        4) pysäkit kaikki samanvärisiä. -->
 
-    <script>
-        var routes, prevButtonA, prevButtonB;
+        <script>
+            var routes, prevButtonA, prevButtonB;
 
-        function checkRoute( a, b ) {
-            console.log( "checkRoute:", a, b );
-        }
-
-
-        function buttonListener( pressed ) {
-            var sameButton;
-
-            if (pressed.loc == "start") {
-                if (prevButtonA) {
-                    prevButtonA.style.backgroundColor = "blue";
-                }
-                if (!prevButtonA || prevButtonA != pressed) {
-                    prevButtonA = pressed;
+            function checkRoute( a, b ) {
+                if (a == b) {
+                    console.log( "Start and end are the same." )
                 } else {
-                    prevButtonA = false;
-                    sameButton = true;
+                    console.log( "checkRoute:", a, b );
                 }
-            } else {
-                if (prevButtonB) {
-                    prevButtonB.style.backgroundColor = "blue";
-                }
-                if (!prevButtonB || prevButtonB != pressed) {
-                    prevButtonB = pressed;
+            }
+
+
+            function buttonListener( pressed ) {
+                var sameButton;
+
+                if (pressed.loc == "start") {
+                    if (prevButtonA) {
+                        prevButtonA.style.backgroundColor = "blue";
+                    }
+                    if (!prevButtonA || prevButtonA != pressed) {
+                        prevButtonA = pressed;
+                    } else {
+                        prevButtonA = false;
+                        sameButton = true;
+                    }
                 } else {
-                    prevButtonB = false;
-                    sameButton = true;
+                    if (prevButtonB) {
+                        prevButtonB.style.backgroundColor = "blue";
+                    }
+                    if (!prevButtonB || prevButtonB != pressed) {
+                        prevButtonB = pressed;
+                    } else {
+                        prevButtonB = false;
+                        sameButton = true;
+                    }
+                }
+
+                if (!sameButton) {
+                    pressed.style.backgroundColor = "green";
+                    if (prevButtonA && prevButtonB) {
+                        checkRoute( prevButtonA.node, prevButtonB.node );
+                    }
                 }
             }
 
-            if (!sameButton) {
-                pressed.style.backgroundColor = "green";
-                if (prevButtonA && prevButtonB) {
-                    checkRoute( prevButtonA.node, prevButtonB.node );
+
+            function createButtons( i, loc ) {
+                var div = document.getElementById( loc );
+                var btn = document.createElement("button");
+                btn.innerHTML = routes.pysakit[i];
+                btn.node = routes.pysakit[i];
+                btn.loc = loc;
+                btn.addEventListener( "click", function() {
+                    buttonListener( btn );
+                });
+                div.appendChild( btn );
+            }
+
+
+            fetch('./reittiopas.json')
+            .then(response => {
+                return response.json()
+            })
+            .then(data => {
+                routes = data;
+                for ( var i = 0; i < routes.pysakit.length; i++ ) {
+                    createButtons( i, "start" );
                 }
-            }
-        }
-
-
-        function createButtons( i, loc ) {
-            var div = document.getElementById( loc );
-            var btn = document.createElement("button");
-            btn.innerHTML = routes.pysakit[i];
-            btn.node = routes.pysakit[i];
-            btn.loc = loc;
-            btn.addEventListener( "click", function() {
-                buttonListener( btn );
-            });
-            div.appendChild( btn );
-        }
-
-
-        fetch('./reittiopas.json')
-        .then(response => {
-            return response.json()
-        })
-        .then(data => {
-            routes = data;
-            for ( var i = 0; i < routes.pysakit.length; i++ ) {
-                createButtons( i, "start" );
-            }
-            for ( var i = 0; i < routes.pysakit.length; i++ ) {
-                createButtons( i, "end" );
-            }
-        })
-        .catch(err => {
-            document.getElementById("error").innerHTML = "Reittoppaan lataamisessa tapahtui virhe. Yritäthän uudelleen.";
-        })
+                for ( var i = 0; i < routes.pysakit.length; i++ ) {
+                    createButtons( i, "end" );
+                }
+            })
+            .catch(err => {
+                document.getElementById("error").innerHTML = "Reittoppaan lataamisessa tapahtui virhe. Yritäthän uudelleen.";
+            })
 
 
         </script>
-    </body>
+    </div>
+</body>
 </html>
