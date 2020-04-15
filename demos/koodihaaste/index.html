@@ -48,6 +48,7 @@
 
         function buttonListener( btn ) {
             var sameButton = false;
+            console.log( prevBtn );
             var prevBtn = btn.loc == "start" && prevButtonA ? prevButtonA : (btn.loc == "end" && prevButtonB ? prevButtonB : null);
 
             if (prevBtn) {
