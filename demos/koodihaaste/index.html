@@ -40,7 +40,7 @@
 
         function buttonListener( btn ) {
             var sameButton = false;
-            var whichButton = btn;
+
             if (btn.loc == "start") {
                 if (prevButtonA) {
                     prevButtonA.style.backgroundColor = "blue";
@@ -61,7 +61,6 @@
                 prevButtonB = btn;
             }
 
-            console.log( "whichButton", whichButton );
             console.log( "prevButtonA", prevButtonA );
             console.log( "prevButtonB", prevButtonB );
 
@@ -85,7 +84,7 @@
         }
 
 
-        fetch('./reittiopas.json')
+        fetch('./reittioxpas.json')
         .then(response => {
             return response.json()
         })
@@ -101,7 +100,6 @@
         .catch(err => {
             document.getElementById("error").innerHTML = "Reittoppaan lataamisessa tapahtui virhe. Yritäthän uudelleen.";
         })
-
 
 
         </script>
