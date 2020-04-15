@@ -48,7 +48,7 @@
 
         function buttonListener( btn ) {
             var sameButton = false;
-            var prevBtn = btn.loc == "start" && prevButtonA ? (prevButtonA : btn.loc == "end" && prevButtonB ? prevButtonB);
+            var prevBtn = btn.loc == "start" && prevButtonA ? prevButtonA : (btn.loc == "end" && prevButtonB ? prevButtonB : null);
 
             if (prevBtn) {
                 prevBtn.style.backgroundColor = "blue";
