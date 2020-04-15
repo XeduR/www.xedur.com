@@ -15,7 +15,7 @@
 	<div id="wrapper">
         <h1>Reittiopas</h1>
         <h2>Solidabis - Koodihaaste</h2>
-        <h4 id="error"></h4>
+        <div id="error"></div>
 
         <noscript>
             <h4>
@@ -109,7 +109,7 @@
                 }
             })
             .catch(err => {
-                document.getElementById("error").innerHTML = "Reittoppaan lataamisessa tapahtui virhe. Yritäthän uudelleen.";
+                document.getElementById("error").innerHTML = "<h4>Reittoppaan lataamisessa tapahtui virhe. Yritäthän uudelleen.</h4>";
             })
 
 
