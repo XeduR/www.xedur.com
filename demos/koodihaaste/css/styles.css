@@ -9,7 +9,7 @@ body {
 	font-family: 'Work Sans', sans-serif;
 	font-size: 16px;
 	/* padding: 30px 30px; */
-	background: #b9b9b9;
+	background: #F2F0E7;
 }
 
 footer {
@@ -17,19 +17,22 @@ footer {
 	background: #007ac9;
 	font-size: 20px;
 	/* padding: 20px 20px; */
+	height: 100px;
+	margin-top: -100px;
 	text-align: center;
+	clear: both;
 }
 
-p {
+/* p {
 	padding: 0 10px;
-}
+} */
 
 
 h1 {
 	color: #ffffff;
 	background: #007ac9;
 	font-size: 36px;
-	/* padding: 20px 20px; */
+	padding: 20px 20px;
 	text-align: center;
 }
 
@@ -37,6 +40,7 @@ h2 {
 	font-size: 21px;
 	padding: 0 10px;
 	margin: 10px 0 0;
+	text-align: center;
 	font-weight: bold;
 }
 
