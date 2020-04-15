@@ -39,45 +39,41 @@
     <script>
         var routes, prevButtonA, prevButtonB;
 
-        function checkRoute() {
-            if (prevButtonA && prevButtonB) {
-                console.log( "checkRoute", prevButtonA.node, prevButtonB.node );
-            }
+        function checkRoute( a, b ) {
+            console.log( "checkRoute:", a, b );
         }
 
 
-        function buttonListener( btn ) {
-            var sameButton = false;
-            console.log( prevBtn );
-            var prevBtn = btn.loc == "start" && prevButtonA ? prevButtonA : (btn.loc == "end" && prevButtonB ? prevButtonB : null);
+        function buttonListener( pressed ) {
+            var sameButton;
 
-            if (prevBtn) {
-                prevBtn.style.backgroundColor = "blue";
-                if (prevBtn == btn) {
-                    if (btn.loc == "start") {
-                        delete prevButtonA;
-                    } else {
-                        delete prevButtonB;
-                    }
-                    sameButton = true;
+            if (pressed.loc == "start") {
+                if (prevButtonA) {
+                    prevButtonA.style.backgroundColor = "blue";
+                }
+                if (!prevButtonA || prevButtonA != pressed) {
+                    prevButtonA = pressed;
                 } else {
-                    prevBtn = btn;
+                    delete prevButtonA;
+                    sameButton = true;
                 }
             } else {
-                if (btn.loc == "start") {
-                    prevButtonA = btn;
+                if (prevButtonB) {
+                    prevButtonB.style.backgroundColor = "blue";
+                }
+                if (!prevButtonB || prevButtonB != pressed) {
+                    prevButtonB = pressed;
                 } else {
-                    prevButtonB = btn;
+                    delete prevButtonB;
+                    sameButton = true;
                 }
             }
 
-            console.log( "btn", btn );
-            console.log( "prevButtonA", prevButtonA );
-            console.log( "prevButtonB", prevButtonB );
-
-            if (sameButton == false) {
-                btn.style.backgroundColor = "green";
-                checkRoute();
+            if !(sameButton) {
+                pressed.style.backgroundColor = "green";
+                if (prevButtonA && prevButtonB) {
+                    checkRoute( prevButtonA.node, prevButtonB.node );
+                }
             }
         }
 
