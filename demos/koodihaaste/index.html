@@ -47,31 +47,24 @@
 
     function buttonListener( btn ) {
         var sameButton = false;
+        var whichBtn;
 
         if (btn.loc == "start") {
-            if (prevButtonA) {
-                prevButtonA.style.backgroundColor = "blue";
-                if (prevButtonA == btn) {
-                    prevButtonA = null;
-                    sameButton = true;
-                } else {
-                    prevButtonA = btn;
-                }
+            whichBtn = prevButtonA;
+        } else {
+            whichBtn = prevButtonB;
+        }
+
+        if (whichBtn) {
+            whichBtn.style.backgroundColor = "blue";
+            if (whichBtn == btn) {
+                whichBtn = null;
+                sameButton = true;
             } else {
-                prevButtonA = btn;
+                whichBtn = btn;
             }
         } else {
-            if (prevButtonB) {
-                prevButtonB.style.backgroundColor = "blue";
-                if (prevButtonB == btn) {
-                    prevButtonB = null;
-                    sameButton = true;
-                } else {
-                    prevButtonB = btn;
-                }
-            } else {
-                prevButtonB = btn;
-            }
+            whichBtn = btn;
         }
 
         console.log( "prevButtonA", prevButtonA );
