@@ -15,7 +15,14 @@
 
     <h1>Reittiopas</h1>
     <h2>Solidabis - Koodihaaste</h2>
-    <h2 id="error"></h2>
+    <h3 id="error"></h3>
+
+    <noscript>
+        <h3>
+            Reittioppaan käyttö vaatii JavaScriptin. Varmistathan,<br>
+            ettei selaimesi tai sen jokin lisäosa estä JavaScriptiä.
+        </h3>
+    </noscript>
 
     <p>Lähtöpysäkki</p>
     <p id="start"></p>
@@ -40,26 +47,34 @@
 
         function buttonListener( btn ) {
             var sameButton = false;
+            var whichButton = btn;
 
-            if (btn.loc == "start") {
-                if (prevButtonA) {
-                    prevButtonA.style.backgroundColor = "blue";
-                    if (prevButtonA == btn) {
-                        prevButtonA = null;
+            // if (btn.loc == "start") {
+                if (whichButton) {
+                    whichButton.style.backgroundColor = "blue";
+                    if (whichButton == btn) {
+                        whichButton = null;
                         sameButton = true;
+                    } else {
+                        whichButton = btn;
                     }
+                } else {
+                    whichButton = btn;
                 }
-                prevButtonA = btn;
-            } else {
-                if (prevButtonB) {
-                    prevButtonB.style.backgroundColor = "blue";
-                    if (prevButtonB == btn) {
-                        prevButtonB = null;
-                        sameButton = true;
-                    }
-                }
-                prevButtonB = btn;
-            }
+            // }
+            // } else {
+            //     if (prevButtonB) {
+            //         prevButtonB.style.backgroundColor = "blue";
+            //         if (prevButtonB == btn) {
+            //             prevButtonB = null;
+            //             sameButton = true;
+            //         } else {
+            //             prevButtonB = btn;
+            //         }
+            //     } else {
+            //         prevButtonB = btn;
+            //     }
+            // }
 
             console.log( "prevButtonA", prevButtonA );
             console.log( "prevButtonB", prevButtonB );
