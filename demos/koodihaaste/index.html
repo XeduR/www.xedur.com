@@ -53,7 +53,7 @@
             if (prevBtn) {
                 prevBtn.style.backgroundColor = "blue";
                 if (prevBtn == btn) {
-                    prevBtn = null;
+                    delete prevBtn;
                     sameButton = true;
                 } else {
                     prevBtn = btn;
@@ -97,7 +97,7 @@
 
             if (sameButton == false) {
                 btn.style.backgroundColor = "green";
-                myFunction();
+                checkRoute();
             }
         }
 
