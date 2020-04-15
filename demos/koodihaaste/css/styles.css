@@ -57,3 +57,7 @@ button {
 	width: 40px;
 	font-size: 24;
 }
+
+button:hover {
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+}
