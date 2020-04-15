@@ -12,9 +12,9 @@
 </head>
 
 <body>
+    <h1>Reittiopas</h1>
+    <h2>Solidabis - Koodihaaste</h2>
 	<div id="wrapper">
-        <h1>Reittiopas</h1>
-        <h2>Solidabis - Koodihaaste</h2>
         <div id="error"></div>
 
         <noscript>
@@ -95,7 +95,7 @@
             }
 
 
-            fetch('./reittiopxas.json')
+            fetch('./reittiopas.json')
             .then(response => {
                 return response.json()
             })
@@ -115,5 +115,8 @@
 
         </script>
     </div>
+    <footer>
+        <p>Copyright © 2020 Eetu Rantanen</p>
+    </footer>
 </body>
 </html>
