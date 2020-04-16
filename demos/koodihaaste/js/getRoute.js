@@ -1,3 +1,3 @@
-function helloWorld() {
-   alert("Hello World!");
+function getRoute() {
+   console.log( "fancy algorithm goes here." );
 }
