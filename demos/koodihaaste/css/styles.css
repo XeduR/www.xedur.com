@@ -12,17 +12,6 @@ body {
 	margin: 0;
 }
 
-footer {
-	position: fixed;
-	bottom: 0;
-	width: 100%;
-	color: #ffffff;
-	background: #007ac9;
-	font-size: 20px;
-	padding: 20px 20px;
-	text-align: center;
-}
-
 h1 {
 	color: #ffffff;
 	background: #007ac9;
@@ -39,6 +28,18 @@ h2 {
 	text-align: center;
 	font-weight: bold;
 	text-decoration: underline;
+}
+
+h2 a:link {
+	color: black;
+}
+
+h2 a:visited {
+	color: black;
+}
+
+h2 a:hover {
+	color: #494949;
 }
 
 h3 {
@@ -71,4 +72,27 @@ button {
 
 button:hover {
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+}
+
+footer {
+	position: fixed;
+	bottom: 0;
+	width: 100%;
+	color: #ffffff;
+	background: #007ac9;
+	font-size: 20px;
+	padding: 20px 20px;
+	text-align: center;
+}
+
+footer a:link {
+	color: white;
+}
+
+footer a:visited {
+	color: white;
+}
+
+footer a:hover {
+	color: #acacac;
 }
