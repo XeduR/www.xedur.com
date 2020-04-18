@@ -28,8 +28,12 @@ body {
 	text-align: justify;
 }
 
-a {
-	text-decoration: none;
+a, a:visited {
+	color: #395A71;
+}
+
+a:hover {
+	color: #f0aa28;
 }
 
 a.title {
@@ -65,13 +69,13 @@ a.back {
 	text-decoration: none;
 	display: inline-block;
 	padding: 0px 4px 3px;
-	background: #1f1f1f;
-	color: white;
+	background: #395A71;
+	color: #ffffff;
 }
 
-a.back:hover {
-	background: rgb(229, 226, 216);
-	color: black;
+a.back:hover, a.back:visited {
+	background: #395A71;
+	color: #f0aa28;
 }
 
 a.source {
@@ -150,6 +154,11 @@ h4 {
 	padding-top: 66.66%;
 }
 
+.icon {
+	float:left!important;
+	margin-right:16px!important
+}
+
 #line {
 	background: #1f1f1f;
 	height: 2px;
@@ -166,14 +175,6 @@ h4 {
 
 #block {
 	background: #D8D4C9;
-}
-
-#float {
-	float: left;
-	width: 64px;
-	height: 64px;
-	margin: 12px;
-	background: #395A71;
 }
 
 #footer {

@@ -3,14 +3,14 @@
 	<head>
 		<meta charset="UTF-8">
 		<meta name="description" content="HTML5 demo projects">
-		<meta name="keywords" content="XeduR, Spyric, HTML5, Lua, Corona, gamedev">
+		<meta name="keywords" content="XeduR, Spyric, HTML5, Lua, Solar, Solar2D, 2D, gamedev">
 		<meta name="author" content="Eetu Rantanen">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico"/>
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Work+Sans">
 		<link rel="stylesheet" href="/css/styles.css">
 
-		<script src="/js/jquery-3.4.1.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 		<script>
 			$(document).ready(function(){
 				$('#header').load("/html/header.html");
@@ -19,29 +19,39 @@
 			});
 		</script>
 
-		<title>XeduR - GitHub</title>
+		<title>XeduR's Dev Stuff</title>
 	</head>
 
 	<body>
 		<div id="wrapper">
 			<div id="header"></div>
 
-			<div id="line"></div>
-			<h2>
-				<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;
-				*** TITLE HERE ***
-			</h2>
-			<div id="line"></div>
-
-			<p class="body">
-				*** DESCRIPTION HERE ***
-			</p>
-			<div id="line"></div>
-
-			<p class="source">
-				<b>Available for purchase at: </b><a class="source" href="https://wwww.xedur.com">STORE</a>
-				<b>Source available at: </b><a class="source" href="https://wwww.xedur.com">GitHub</a>
-			</p>
+			<div id="block">
+				<div id="line"></div>
+					<h2>PROJECT TITLE</h2>
+					<div id="lineSmall"></div>
+					<img src="icon_temp.png" alt="icon" class="icon" style="width:64px">
+					<p>
+						Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla tristique neque id ante vulputate, ut blandit libero consequat.
+						Praesent sodales sagittis magna in gravida. Suspendisse eu molestie dolor. Integer eu dignissim diam, quis luctus felis.
+						Aliquam congue felis vitae dolor imperdiet pharetra. Donec eu libero at elit rhoncus molestie. Quisque interdum nisl purus.
+						Mauris tortor justo, commodo a blandit a, viverra eget nulla. Aenean quis lacinia purus. Quisque ultrices semper ante vel volutpat.
+					</p>
+				<div id="line"></div>
+				<ul>
+					<a class="list" href="/demos/spyricPerformance">
+						<li>
+							Documentation available at: <a class="source" href="https://www.spyric.com/docs/#/performance"><b>Spyric Docs</b></a>
+						</li>
+					</a>
+					<a class="list" href="/demos/spyricProgressRing">
+						<li>
+							Source available at: <a class="source" href="https://github.com/XeduR/spyricPerformance"><b>GitHub</b></a>
+						</li>
+					</a>
+				</ul>
+				<div id="line"></div>
+			</div>
 
 			<div id="button"></div>
 
