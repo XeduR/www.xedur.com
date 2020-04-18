@@ -30,15 +30,16 @@ body {
 
 a {
 	text-decoration: none;
-	color: #395A71;
 }
 
-a:visited {
-	color: #395A71;
+a.body, a.body:visited {
+	text-decoration: none;
+	color: #0364ff;
+	font-weight: bold;
 }
 
-a:hover {
-	color: #f0aa28;
+a.body:hover {
+	color: #03a4f6;
 }
 
 a.title {
@@ -160,7 +161,7 @@ h4 {
 
 .icon {
 	float:left!important;
-	margin:4px 16px 8px!important;
+	margin:4px 16px 0px 8px!important;
 }
 
 #line {
