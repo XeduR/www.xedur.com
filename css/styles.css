@@ -11,6 +11,8 @@
 	B8D3DA
 	F2F0E7
 	D8D4C9
+
+	TODO:
 */
 
 
@@ -116,6 +118,7 @@ h2 {
 	padding: 0 10px;
 	margin: 10px 0 0;
 	font-weight: bold;
+	text-align: left;
 }
 
 h3 {
@@ -124,6 +127,7 @@ h3 {
 	margin: 10px 0 0;
 	color: #494949;
 	font-weight: normal;
+	text-align: left;
 }
 
 h4 {
