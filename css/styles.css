@@ -28,7 +28,12 @@ body {
 	text-align: justify;
 }
 
-a, a:visited {
+a {
+	text-decoration: none;
+	color: #395A71;
+}
+
+a:visited {
 	color: #395A71;
 }
 
@@ -65,15 +70,14 @@ a.list:hover {
 	background: #f3f3f3;
 }
 
-a.back {
-	text-decoration: none;
+a.back, a.back:visited {
 	display: inline-block;
 	padding: 0px 4px 3px;
 	background: #395A71;
 	color: #ffffff;
 }
 
-a.back:hover, a.back:visited {
+a.back:hover {
 	background: #395A71;
 	color: #f0aa28;
 }
@@ -156,7 +160,7 @@ h4 {
 
 .icon {
 	float:left!important;
-	margin-right:16px!important
+	margin:4px 16px 8px!important;
 }
 
 #line {
