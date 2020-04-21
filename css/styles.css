@@ -5,14 +5,12 @@
 }
 
 /*
-229, 226, 216
+	229, 226, 216
 	395A71
 	788EA7
 	B8D3DA
 	F2F0E7
 	D8D4C9
-
-	TODO:
 */
 
 
@@ -21,6 +19,14 @@ body {
 	font-size: 16px;
 	padding: 30px 30px;
 	background: #F2F0E7;
+}
+
+/* Testing darkmode */
+@media screen and (prefers-color-scheme: dark) {
+	body {
+		background: black;
+		color: white;
+	}
 }
 
 #wrapper {

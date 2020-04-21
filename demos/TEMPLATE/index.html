@@ -62,9 +62,21 @@
 
 			<noscript><h4>JavaScript disabled. You must enable JavaScript to run the demo projects.</h4></noscript>
 
+
 			<div class="iframe-container">
-				<iframe src="app/index.html"></iframe>
+				<iframe id="myiFrame" data-src="app/index.html" src="about:blank"></iframe>
+				<!-- <iframe src="app/index.html"></iframe> -->
 			</div>
+
+			<button type="button">Test Button</button>
+
+			<script>
+				$("button").click(function(){
+				    var iframe = $("#myiFrame");
+				    iframe.attr("src", iframe.data("src"));
+				});
+			</script>
+
 
 			<div id="footer"></div>
 		</div>
