@@ -15,6 +15,7 @@
 			$(document).ready(function(){
 				$('#header').load("/html/header.html");
 				$('#button').load("/html/button.html");
+				$('#iframe').load("/html/iframe.html");
 				$('#footer').load("/html/footer.html");
 			});
 		</script>
@@ -69,25 +70,8 @@
 			</div>
 
 			<div id="button"></div>
-
 			<noscript><h4>JavaScript disabled. You must enable JavaScript to run the demo projects.</h4></noscript>
-
-			<div class="iframe-container">
-				<iframe id="myiFrame" data-src="app/index.html" src="about:blank"></iframe>
-				<button class="load" type="button">Test Button</button>
-			</div>
-
-			<script>
-				$("button").click(function() {
-					const $iframe = $("#myiFrame");
-					const $but = $(this);
-					$iframe.on("load",function() {
-						$but.hide();
-						})
-					$iframe.attr("src", $iframe.data("src"));
-				});
-			</script>
-
+			<div id="iframe"></div>
 			<div id="footer"></div>
 		</div>
 	</body>
