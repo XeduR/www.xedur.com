@@ -87,7 +87,8 @@
 			<div id="button"></div>
 
 			<div class="iframe-container">
-				<iframe id="myiFrame" data-src="app/index.html" src="about:blank"></iframe>
+				<iframe id="myiFrame" src="about:blank"></iframe>
+				<!-- <iframe id="myiFrame" data-src="app/index.html" src="about:blank"></iframe> -->
 				<button class="load" type="button">Start The Demo</button>
 			</div>
 
@@ -98,7 +99,8 @@
 					$iframe.on("load",function() {
 						$but.hide();
 						})
-					$iframe.attr("src", $iframe.data("src"));
+					$iframe.attr("src", "demos/" + demo + "/index.html" );
+					// $iframe.attr("src", $iframe.data("src"));
 				});
 			</script>
 
