@@ -59,34 +59,51 @@
 			</div>
 
 			<script>
-				var demo;
+				var demo, path;
 				var url = window.location.href;
 				var n = url.indexOf("?");
-				if (n !== -1) { demo = url.substr(n+1) }
+				if (n !== -1) {
+					demo = url.substr(n+1);
+					path = "/demos/" + demo + "/info.json";
+				}
 
-				if (demo) {
-					$.getJSON( "/demos/" + demo + "/info.json", function(json) {
-						document.getElementById("title").innerHTML = '<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;' + json.title;
-						document.getElementById("description").innerHTML = '<div id="description"><img src="/demos/' + demo + '/icon.png" alt="icon" class="icon" style="width:64px">' + json.description + '</div>';
-
-						$("button").click(function() {
-							const $iframe = $("#app");
-							const $but = $(this);
-							$iframe.on("load",function() {
-								$but.hide();
-								})
-							$iframe.attr("src", "/demos/" + demo + "/app/index.html" );
-						});
-					});
-				} else {
+				function noDemo() {
 					document.getElementById("title").innerHTML = '<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;' + "There's nothing here.";
 					document.getElementById("description").innerHTML = '<img src="/img/lost.png" alt="icon" class="icon" style="width:64px">' + "Seems like you took a wrong turn somewhere.";
 					document.getElementById("frame").innerHTML = '<a href="https://xedur.com"><img alt="Wrong way!" src="wrong_way_TEMP.jpg" width="640" height="453"></a>';
 				}
+
+				if !(demo) {
+					noDemo();
+				} else {
+					$.ajax({
+						url: path,
+						type: "HEAD",
+						error: function()
+						{
+							noDemo();
+						},
+						success: function()
+						{
+							$.getJSON( path, function(json) {
+								document.getElementById("title").innerHTML = '<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;' + json.title;
+								document.getElementById("description").innerHTML = '<div id="description"><img src="/demos/' + demo + '/icon.png" alt="icon" class="icon" style="width:64px">' + json.description + '</div>';
+
+								$("button").click(function() {
+									const $iframe = $("#app");
+									const $but = $(this);
+									$iframe.on("load",function() {
+										$but.hide();
+										})
+									$iframe.attr("src", "/demos/" + demo + "/app/index.html" );
+								});
+							});
+						}
+					});
+				}
 			</script>
 
 			<noscript><h4>JavaScript disabled. You must enable JavaScript to run the demo projects.</h4></noscript>
-			<!-- <div id="iframe"></div> -->
 			<div id="footer"></div>
 		</div>
 	</body>
