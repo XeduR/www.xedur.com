@@ -22,12 +22,11 @@
 			var demo;
 			var url = window.location.href;
 			var n = url.indexOf("?");
-			if (n == -1) { // indexOf returns "-1" if given character (?) isn't found.
-				console.log( "Nothing to load!" )
-			} else {
+			if (n !== -1) {
 				var target = url.substr(n+1)
 				console.log( "Let's load: " + target );
-				var path ="./" + target + "/info.json"
+				var path ="/demos/" + target + "/info.json"
+				// var path ="./" + target + "/info.json"
 				console.log( path );
 
 				$.getJSON( path, function(json) {
@@ -95,18 +94,22 @@
 			</div>
 
 			<script>
-				console.log( demo.title )
-				console.log( demo.description )
-				
-				$("button").click(function() {
-					const $iframe = $("#myiFrame");
-					const $but = $(this);
-					$iframe.on("load",function() {
-						$but.hide();
-						})
-					$iframe.attr("src", "/demos/" + demo + "/app/index.html" );
-					// $iframe.attr("src", $iframe.data("src"));
-				});
+				if (demo) {
+					console.log( demo.title )
+					console.log( demo.description )
+
+					$("button").click(function() {
+						const $iframe = $("#myiFrame");
+						const $but = $(this);
+						$iframe.on("load",function() {
+							$but.hide();
+							})
+						$iframe.attr("src", "/demos/" + demo + "/app/index.html" );
+						// $iframe.attr("src", $iframe.data("src"));
+					});
+				} else {
+					console.log( "target demo not found" )
+				}
 			</script>
 
 			<noscript><h4>JavaScript disabled. You must enable JavaScript to run the demo projects.</h4></noscript>
