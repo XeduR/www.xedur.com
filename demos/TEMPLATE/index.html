@@ -89,8 +89,8 @@
 
 			<script>
 				$.getJSON( path, function(json) {
-					document.getElementById("title").innerHTML = demo.title;
-					document.getElementById("description").innerHTML = demo.description;
+					document.getElementById("title").innerHTML = json.title;
+					document.getElementById("description").innerHTML = json.description;
 
 					$("button").click(function() {
 						const $iframe = $("#myiFrame");
