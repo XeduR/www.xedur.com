@@ -53,13 +53,13 @@
 			<div id="block">
 				<div id="line"></div>
 					<h2 id="title">
-						<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;
+
 
 					</h2>
 					<div id="lineSmall"></div>
 					<div id="description">
 						<img src="icon_temp.png" alt="icon" class="icon" style="width:64px">
-						<p id="description">
+						<p id="desc">
 
 						</p>
 					</div>
@@ -89,8 +89,8 @@
 
 			<script>
 				$.getJSON( path, function(json) {
-					document.getElementById("title").innerHTML = json.title;
-					document.getElementById("description").innerHTML = json.description;
+					document.getElementById("title").innerHTML = '<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;' + json.title;
+					document.getElementById("desc").innerHTML = json.description;
 
 					$("button").click(function() {
 						const $iframe = $("#myiFrame");
