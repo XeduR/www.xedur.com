@@ -65,7 +65,7 @@
 				if (n !== -1) { demo = url.substr(n+1) }
 
 				if (demo) {
-					$.getJSON( path, function(json) {
+					$.getJSON( "/demos/" + demo + "/info.json", function(json) {
 						document.getElementById("title").innerHTML = '<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;' + json.title;
 						document.getElementById("description").innerHTML = '<img src="./icon.png" alt="icon" class="icon" style="width:64px">' + json.description;
 
