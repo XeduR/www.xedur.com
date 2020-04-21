@@ -16,11 +16,10 @@
 				$('#header').load("/html/header.html");
 				$('#button').load("/html/button.html");
 				$('#footer').load("/html/footer.html");
-				// $('#testButton').load("/html/testFrame.html");
 			});
 		</script>
 
-		<style>
+		<!-- <style>
 			/* Testing darkmode */
 			@media screen and (prefers-color-scheme: dark) {
 				body {
@@ -28,7 +27,7 @@
 					color: black;
 				}
 			}
-		</style>
+		</style> -->
 
 		<title>XeduR's Dev Stuff</title>
 	</head>
@@ -73,13 +72,11 @@
 
 			<noscript><h4>JavaScript disabled. You must enable JavaScript to run the demo projects.</h4></noscript>
 
-
 			<div class="iframe-container">
-				<iframe id="myiFrame" data-src="app/index.html" src="/html/testFrame.html"></iframe>
-				<!-- <iframe src="/html/testFrame.html"></iframe> -->
+				<iframe id="myiFrame" data-src="app/index.html" src="about:blank"></iframe>
 			</div>
 
-			<!-- <button type="button">Test Button</button> -->
+			<button type="button">Test Button</button>
 
 			<script>
 				$("button").click(function(){
