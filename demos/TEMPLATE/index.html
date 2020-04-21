@@ -70,7 +70,14 @@
 			</div>
 
 			<script>
-				console.log("The URL of this page is: " + window.location.href);
+				var url = window.location.href;
+				var n = url.indexOf("?");
+				if (n == -1) { // indexOf returns "-1" if given character (?) isn't found.
+					console.log( "Nothing to load!" )
+				} else {
+					var demo = url.substr(n+1)
+					console.log( "Let's load: " + demo );
+				}
 			</script>
 
 			<div id="button"></div>
