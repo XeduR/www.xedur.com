@@ -84,7 +84,7 @@
 								document.getElementById("description").innerHTML = '<img src="/demos/' + demo + '/icon.png" alt="icon" class="icon" style="width:64px"><p>' + json.description + '</p>';
 
 								var links = "";
-								for (var i = 0; i < json.links; i++) {
+								for (var i = 0; i < json.links.length; i++) {
 									links += '<a class="list" href="' + json.links[i].link + '"><li>' + json.links[i].text + '</li></a>';
 								}
 								document.getElementById("links").innerHTML = links;
