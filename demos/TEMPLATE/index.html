@@ -69,6 +69,24 @@
 				<div id="line"></div>
 			</div>
 
+			<script>
+				function GetURLParameter(sParam)
+				{
+				    var sPageURL = window.location.search.substring(1);
+				    var sURLVariables = sPageURL.split('&');
+				    for (var i = 0; i < sURLVariables.length; i++)
+				    {
+				        var sParameterName = sURLVariables[i].split('=');
+				        if (sParameterName[0] == sParam)
+				        {
+				            return sParameterName[1];
+				        }
+				    }
+				}​
+				var demo = GetURLParameter('demo');
+				console.log( demo );
+			</script>
+
 			<div id="button"></div>
 			<noscript><h4>JavaScript disabled. You must enable JavaScript to run the demo projects.</h4></noscript>
 			<div id="iframe"></div>
