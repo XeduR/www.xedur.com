@@ -32,7 +32,7 @@
 					<div id="lineSmall"></div>
 					<div id="description">
 						<!-- <img src="icon.png" alt="icon" class="icon" style="width:64px">
-						<p id="desc"></p> -->
+						<p id="description-text"></p> -->
 					</div>
 				<div id="line"></div>
 				<ul id="links">
@@ -67,7 +67,7 @@
 				if (demo) {
 					$.getJSON( "/demos/" + demo + "/info.json", function(json) {
 						document.getElementById("title").innerHTML = '<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;' + json.title;
-						document.getElementById("description").innerHTML = '<img src="./icon.png" alt="icon" class="icon" style="width:64px">' + json.description;
+						document.getElementById("description").innerHTML = '<div id="description"><img src="/demos/' + demo + '/icon.png" alt="icon" class="icon" style="width:64px">' + json.description + '</div>';
 
 						$("button").click(function() {
 							const $iframe = $("#app");
