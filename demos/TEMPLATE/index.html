@@ -30,13 +30,10 @@
 				<div id="line"></div>
 					<h2 id="title"></h2>
 					<div id="lineSmall"></div>
-					<div id="description">
-						<!-- <img src="icon.png" alt="icon" class="icon" style="width:64px">
-						<p id="description-text"></p> -->
-					</div>
+					<div id="description"></div>
 				<div id="line"></div>
 				<ul id="links">
-					<a class="list" href="https://www.spyric.com/docs/">
+					<!-- <a class="list" href="https://www.spyric.com/docs/">
 						<li>
 							Documentation available at: <b>Spyric Docs</b>
 						</li>
@@ -45,7 +42,7 @@
 						<li>
 							Source available at: <b>GitHub</b>
 						</li>
-					</a>
+					</a> -->
 				</ul>
 				<div id="line"></div>
 			</div>
@@ -54,7 +51,6 @@
 
 			<div id="frame" class="iframe-container">
 				<iframe id="app" src="about:blank"></iframe>
-				<!-- <iframe id="myiFrame" data-src="app/index.html" src="about:blank"></iframe> -->
 				<button class="load" type="button">Start The Demo</button>
 			</div>
 
@@ -70,7 +66,7 @@
 				function noDemo() {
 					document.getElementById("title").innerHTML = '<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;' + "There's nothing here.";
 					document.getElementById("description").innerHTML = '<img src="/img/lost.png" alt="icon" class="icon" style="width:64px">' + "Seems like you took a wrong turn somewhere.";
-					document.getElementById("frame").innerHTML = '<a href="https://xedur.com"><img alt="Wrong way!" src="wrong_way_TEMP.jpg" width="640" height="453"></a>';
+					document.getElementById("frame").innerHTML = '<a href="https://xedur.com"><img alt="Wrong way!" src="/img/wrong_way_TEMP.jpg" width="640" height="453"></a>';
 				}
 
 				if (!demo) {
@@ -79,15 +75,19 @@
 					$.ajax({
 						url: path,
 						type: "HEAD",
-						error: function()
-						{
+						error: function() {
 							noDemo();
 						},
-						success: function()
-						{
+						success: function() {
 							$.getJSON( path, function(json) {
 								document.getElementById("title").innerHTML = '<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;' + json.title;
 								document.getElementById("description").innerHTML = '<img src="/demos/' + demo + '/icon.png" alt="icon" class="icon" style="width:64px"><p>' + json.description + '</p>';
+
+								var links = "";
+								for (var i = 0; i < json.links; i++) {
+									links += '<a class="list" href="' + json.links[i].link + '"><li>' + json.links[i].text + '</li></a>';
+								}
+								document.getElementById("links").innerHTML = links;
 
 								$("button").click(function() {
 									const $iframe = $("#app");
