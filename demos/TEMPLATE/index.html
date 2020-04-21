@@ -15,9 +15,20 @@
 			$(document).ready(function(){
 				$('#header').load("/html/header.html");
 				$('#button').load("/html/button.html");
-				$('#iframe').load("/html/iframe.html");
+				// $('#iframe').load("/html/iframe.html");
 				$('#footer').load("/html/footer.html");
 			});
+
+			var url = window.location.href;
+			var n = url.indexOf("?");
+			if (n == -1) { // indexOf returns "-1" if given character (?) isn't found.
+				console.log( "Nothing to load!" )
+			} else {
+				var demo = url.substr(n+1)
+				console.log( "Let's load: " + demo );
+				src="./" + demo + "info.js"
+				console.log( title );
+			}
 		</script>
 
 		<style>
@@ -69,20 +80,26 @@
 				<div id="line"></div>
 			</div>
 
+			<div id="button"></div>
+
+			<div class="iframe-container">
+				<iframe id="myiFrame" data-src="app/index.html" src="about:blank"></iframe>
+				<button class="load" type="button">Start The Demo</button>
+			</div>
+
 			<script>
-				var url = window.location.href;
-				var n = url.indexOf("?");
-				if (n == -1) { // indexOf returns "-1" if given character (?) isn't found.
-					console.log( "Nothing to load!" )
-				} else {
-					var demo = url.substr(n+1)
-					console.log( "Let's load: " + demo );
-				}
+				$("button").click(function() {
+					const $iframe = $("#myiFrame");
+					const $but = $(this);
+					$iframe.on("load",function() {
+						$but.hide();
+						})
+					$iframe.attr("src", $iframe.data("src"));
+				});
 			</script>
 
-			<div id="button"></div>
 			<noscript><h4>JavaScript disabled. You must enable JavaScript to run the demo projects.</h4></noscript>
-			<div id="iframe"></div>
+			<!-- <div id="iframe"></div> -->
 			<div id="footer"></div>
 		</div>
 	</body>

@@ -1,0 +1,65 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="description" content="HTML5 demo projects">
+		<meta name="keywords" content="XeduR, Spyric, HTML5, Lua, Solar, Solar2D, 2D, gamedev">
+		<meta name="author" content="Eetu Rantanen">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico"/>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Work+Sans">
+		<link rel="stylesheet" href="/css/styles.css">
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+		<script>
+			$(document).ready(function(){
+				$('#header').load("/html/header.html");
+				$('#button').load("/html/button.html");
+				$('#footer').load("/html/footer.html");
+			});
+		</script>
+
+		<title>XeduR's Dev Stuff</title>
+	</head>
+
+	<body>
+		<div id="wrapper">
+			<div id="header"></div>
+
+			<div id="block">
+				<div id="line"></div>
+					<h2>
+						<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;
+						autotile
+					</h2>
+					<div id="lineSmall"></div>
+					<div id="description">
+						<img src="icon_temp.png" alt="icon" class="icon" style="width:64px">
+						<p>
+							autotile is a simple Lua module that determines what tile should be placed to a selected location. Upon placing a tile,
+							the module will also update all surrounding tiles as necessary. The GUI is developed using <a class="body" href="https://solar2d.com/">Solar2D</a>.
+						</p>
+					</div>
+				<div id="line"></div>
+				<ul>
+					<a class="list" href="https://github.com/XeduR/Public-Projects/tree/master/autotile">
+						<li>
+							Source available at: <b>GitHub</b>
+						</li>
+					</a>
+				</ul>
+				<div id="line"></div>
+			</div>
+
+			<div id="button"></div>
+
+			<noscript><h4>JavaScript disabled. You must enable JavaScript to run the demo projects.</h4></noscript>
+
+			<div class="iframe-container">
+				<iframe src="app/index.html"></iframe>
+			</div>
+
+			<div id="footer"></div>
+		</div>
+	</body>
+</html>
