@@ -15,33 +15,9 @@
 			$(document).ready(function(){
 				$('#header').load("/html/header.html");
 				$('#button').load("/html/button.html");
-				// $('#iframe').load("/html/iframe.html");
 				$('#footer').load("/html/footer.html");
 			});
-
-			var demo;
-			var url = window.location.href;
-			var n = url.indexOf("?");
-			if (n !== -1) {
-				var target = url.substr(n+1)
-				console.log( "Let's load: " + target );
-				var path ="/demos/" + target + "/info.json"
-				// var path ="./" + target + "/info.json"
-				console.log( path );
-
-
-			}
 		</script>
-
-		<style>
-			/* Testing darkmode */
-			@media screen and (prefers-color-scheme: dark) {
-				body {
-					background: grey;
-					/* color: black; */
-				}
-			}
-		</style>
 
 		<title>XeduR's Dev Stuff</title>
 	</head>
@@ -52,19 +28,14 @@
 
 			<div id="block">
 				<div id="line"></div>
-					<h2 id="title">
-
-
-					</h2>
+					<h2 id="title"></h2>
 					<div id="lineSmall"></div>
 					<div id="description">
-						<img src="icon_temp.png" alt="icon" class="icon" style="width:64px">
-						<p id="desc">
-
-						</p>
+						<!-- <img src="icon.png" alt="icon" class="icon" style="width:64px">
+						<p id="desc"></p> -->
 					</div>
 				<div id="line"></div>
-				<ul>
+				<ul id="links">
 					<a class="list" href="https://www.spyric.com/docs/">
 						<li>
 							Documentation available at: <b>Spyric Docs</b>
@@ -81,26 +52,37 @@
 
 			<div id="button"></div>
 
-			<div class="iframe-container">
-				<iframe id="myiFrame" src="about:blank"></iframe>
+			<div id="frame" class="iframe-container">
+				<iframe id="app" src="about:blank"></iframe>
 				<!-- <iframe id="myiFrame" data-src="app/index.html" src="about:blank"></iframe> -->
 				<button class="load" type="button">Start The Demo</button>
 			</div>
 
 			<script>
-				$.getJSON( path, function(json) {
-					document.getElementById("title").innerHTML = '<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;' + json.title;
-					document.getElementById("desc").innerHTML = json.description;
+				var demo;
+				var url = window.location.href;
+				var n = url.indexOf("?");
+				if (n !== -1) { demo = url.substr(n+1) }
 
-					$("button").click(function() {
-						const $iframe = $("#myiFrame");
-						const $but = $(this);
-						$iframe.on("load",function() {
-							$but.hide();
-							})
-						$iframe.attr("src", "/demos/" + target + "/app/index.html" );
+				if (demo) {
+					$.getJSON( path, function(json) {
+						document.getElementById("title").innerHTML = '<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;' + json.title;
+						document.getElementById("description").innerHTML = '<img src="./icon.png" alt="icon" class="icon" style="width:64px">' + json.description;
+
+						$("button").click(function() {
+							const $iframe = $("#app");
+							const $but = $(this);
+							$iframe.on("load",function() {
+								$but.hide();
+								})
+							$iframe.attr("src", "/demos/" + demo + "/app/index.html" );
+						});
 					});
-				});
+				} else {
+					document.getElementById("title").innerHTML = '<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;' + "There's nothing here.";
+					document.getElementById("description").innerHTML = '<img src="/img/lost.png" alt="icon" class="icon" style="width:64px">' + "Seems like you took a wrong turn somewhere.";
+					document.getElementById("frame").innerHTML = '<a href="https://xedur.com"><img alt="Wrong way!" src="wrong_way_TEMP.jpg" width="640" height="453"></a>';
+				}
 			</script>
 
 			<noscript><h4>JavaScript disabled. You must enable JavaScript to run the demo projects.</h4></noscript>

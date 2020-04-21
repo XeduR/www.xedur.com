@@ -207,6 +207,11 @@ h4 {
 	color: #f0aa28;
 }
 
+img.lost {
+	display: block;
+	margin: 0 auto;
+}
+
 button.load {
 	background: #29abe0;
 	color: white;
