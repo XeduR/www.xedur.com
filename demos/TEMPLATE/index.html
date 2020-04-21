@@ -87,7 +87,7 @@
 						{
 							$.getJSON( path, function(json) {
 								document.getElementById("title").innerHTML = '<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;' + json.title;
-								document.getElementById("description").innerHTML = '<div id="description"><img src="/demos/' + demo + '/icon.png" alt="icon" class="icon" style="width:64px">' + json.description + '</div>';
+								document.getElementById("description").innerHTML = '<img src="/demos/' + demo + '/icon.png" alt="icon" class="icon" style="width:64px"><p>' + json.description + '</p>';
 
 								$("button").click(function() {
 									const $iframe = $("#app");
