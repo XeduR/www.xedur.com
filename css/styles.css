@@ -221,6 +221,15 @@ button {
 	background: #29abe0;
 }
 
+button.test {
+	font-size: 20;
+	font-weight: bold;
+	top:40%;
+	left:45%;
+	justify-content: center;
+	z-index:999;
+}
+
 button:hover {
 	animation: rotate 0.7s ease-in-out both;
 }
