@@ -29,10 +29,7 @@
 				// var path ="./" + target + "/info.json"
 				console.log( path );
 
-				$.getJSON( path, function(json) {
-					demo = json;
-				    console.log(json);
-				});
+
 			}
 		</script>
 
@@ -55,18 +52,15 @@
 
 			<div id="block">
 				<div id="line"></div>
-					<h2>
+					<h2 id="title">
 						<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;
-						PROJECT TITLE
+
 					</h2>
 					<div id="lineSmall"></div>
 					<div id="description">
 						<img src="icon_temp.png" alt="icon" class="icon" style="width:64px">
-						<p>
-							Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla tristique neque id ante vulputate, ut blandit libero consequat.
-							Praesent sodales sagittis magna in gravida. Suspendisse eu molestie dolor. Integer eu dignissim diam, quis luctus felis.
-							Aliquam congue felis vitae dolor imperdiet pharetra. Donec eu libero at elit rhoncus molestie. Quisque interdum nisl purus.
-							Mauris tortor justo, commodo a blandit a, viverra eget nulla. Aenean quis lacinia purus. Quisque ultrices semper ante vel volutpat.
+						<p id="description">
+
 						</p>
 					</div>
 				<div id="line"></div>
@@ -94,9 +88,9 @@
 			</div>
 
 			<script>
-				if (demo) {
-					console.log( demo.title )
-					console.log( demo.description )
+				$.getJSON( path, function(json) {
+					document.getElementById("title").innerHTML = demo.title;
+					document.getElementById("description").innerHTML = demo.description;
 
 					$("button").click(function() {
 						const $iframe = $("#myiFrame");
@@ -105,11 +99,8 @@
 							$but.hide();
 							})
 						$iframe.attr("src", "/demos/" + target + "/app/index.html" );
-						// $iframe.attr("src", $iframe.data("src"));
 					});
-				} else {
-					console.log( "target demo not found" )
-				}
+				});
 			</script>
 
 			<noscript><h4>JavaScript disabled. You must enable JavaScript to run the demo projects.</h4></noscript>
