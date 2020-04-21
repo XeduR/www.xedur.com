@@ -21,14 +21,6 @@ body {
 	background: #F2F0E7;
 }
 
-/* Testing darkmode */
-@media screen and (prefers-color-scheme: dark) {
-	body {
-		background: black;
-		color: white;
-	}
-}
-
 #wrapper {
 	max-width: 960px;
 	*width: 960px;
