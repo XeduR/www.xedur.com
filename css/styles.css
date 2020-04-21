@@ -138,6 +138,7 @@ h4 {
 }
 
 .iframe-container {
+	background: black;
 	overflow: hidden;
 	padding-top: 66.66%;
 	position: relative;
