@@ -208,16 +208,16 @@ h4 {
 }
 
 button.load {
+	background: #29abe0;
 	color: white;
 	font-size: 32;
 	font-weight: bold;
 	position: absolute;
-	top: 0;
-	left: 0;
-	/* top: 50%; */
-	/* left: 50%; */
-	/* transform: translate(-50%, -50%); */
-	/* z-index:999; */
+	height: 60px;
+	width: 120px;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 }
 
 button.kofi {
