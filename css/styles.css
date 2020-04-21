@@ -120,11 +120,11 @@ h2 {
 }
 
 h3 {
-	font-size: 17px;
+	font-size: 18px;
 	padding: 0 10px;
 	margin: 10px 0 0;
 	color: #494949;
-	font-weight: normal;
+	font-weight: bold;
 	text-align: left;
 }
 
@@ -181,8 +181,8 @@ h4 {
 #lineSmall {
 	background: grey;
 	height: 1px;
-	margin-top: 4px;
-	margin-bottom: 4px;
+	margin-top: 10px;
+	margin-bottom: 10px;
 }
 
 #block {
