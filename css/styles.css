@@ -207,7 +207,20 @@ h4 {
 	color: #f0aa28;
 }
 
-button {
+button.load {
+	color: white;
+	font-size: 32;
+	font-weight: bold;
+	position: absolute;
+	top: 0;
+	left: 0;
+	/* top: 50%; */
+	/* left: 50%; */
+	/* transform: translate(-50%, -50%); */
+	/* z-index:999; */
+}
+
+button.kofi {
 	position: relative;
 	border-radius: 50px;
 	display: flex;
@@ -221,22 +234,11 @@ button {
 	background: #29abe0;
 }
 
-button.test {
-	color: white;
-	font-size: 32;
-	font-weight: bold;
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	z-index:999;
-}
-
-button:hover {
+button.kofi:hover {
 	animation: rotate 0.7s ease-in-out both;
 }
 
-button:hover span {
+button.kofi:hover span {
 	animation: shake 0.7s ease-in-out both;
 	animation-delay: 0.06s;
 }
