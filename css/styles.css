@@ -50,6 +50,14 @@ a.title:hover {
 	color: #f0aa28;
 }
 
+.vertical-center {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+
 a.list {
 	min-height: 40;
 	position: relative;
@@ -137,14 +145,6 @@ h4 {
 	padding: 20px 20px;
 	margin: 20px 0 0;
 	text-align: center;
-}
-
-.vertical-center {
-  margin: 0;
-  position: absolute;
-  top: 50%;
-  -ms-transform: translateY(-50%);
-  transform: translateY(-50%);
 }
 
 .iframe-container {
