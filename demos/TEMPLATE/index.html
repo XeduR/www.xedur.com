@@ -57,7 +57,7 @@
 				function noDemo() {
 					document.getElementById("title").innerHTML = '<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;' + "There's nothing here.";
 					document.getElementById("description").innerHTML = '<img src="/img/lost.png" alt="icon" class="icon" style="width:64px">' + "Seems like you took a wrong turn somewhere.";
-					document.getElementById("links").innerHTML = '<a class="list vertical-center" href="https://xedur.com"><li><img src="/img/lost.png" alt="icon" class="icon" style="width:32px"><p>Return to Homepage<p></li></a>';
+					document.getElementById("links").innerHTML = '<a class="list" href="https://xedur.com"><li><div class="vertical-center"><img src="/img/lost.png" alt="icon" class="icon" style="width:32px"><p>Return to Homepage<p></div></li></a>';
 					document.getElementById("frame").innerHTML = '<a href="https://xedur.com"><img alt="Wrong way!" src="/img/wrong_way_TEMP.jpg" width="640" height="453"></a>';
 				}
 
@@ -77,7 +77,7 @@
 
 								var links = "";
 								for (var i = 0; i < json.links.length; i++) {
-									links += '<a class="list vertical-center" href="' + json.links[i].link + '"><li><img src="/demos/' + demo + '/icon.png" alt="icon" class="icon" style="width:32px"><p>' + json.links[i].text + '<p></li></a>';
+									links += '<a class="list" href="' + json.links[i].link + '"><li><div class="vertical-center"><img src="/demos/' + demo + '/icon.png" alt="icon" class="icon" style="width:32px"><p>' + json.links[i].text + '<p></div></li></a>';
 								}
 								document.getElementById("links").innerHTML = links;
 

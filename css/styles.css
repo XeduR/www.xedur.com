@@ -51,6 +51,7 @@ a.title:hover {
 }
 
 a.list {
+	position: relative;
 	color: black;
 	display: block;
 	list-style-type: none;
