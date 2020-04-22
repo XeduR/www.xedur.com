@@ -4,16 +4,6 @@
 	border: none;
 }
 
-/*
-	229, 226, 216
-	395A71
-	788EA7
-	B8D3DA
-	F2F0E7
-	D8D4C9
-*/
-
-
 body {
 	font-family: 'Work Sans', sans-serif;
 	font-size: 16px;
@@ -25,7 +15,6 @@ body {
 	max-width: 960px;
 	*width: 960px;
 	margin: 0 auto;
-	text-align: justify;
 }
 
 a {
@@ -59,9 +48,8 @@ a.title:hover {
 }
 
 a.list {
-	min-height: 40;
+	min-height: 40px;
 	position: relative;
-	/* padding: 10px 40px; */
 	color: black;
 	display: block;
 	list-style-type: none;
@@ -101,10 +89,6 @@ a.source {
 
 p {
 	padding: 0 10px;
-}
-
-p.body {
-	text-align: justify;
 }
 
 p.source {
