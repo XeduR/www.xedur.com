@@ -51,12 +51,13 @@ a.title:hover {
 }
 
 a.list {
+	min-height: 40;
 	position: relative;
+	/* padding: 10px 40px; */
 	color: black;
 	display: block;
 	list-style-type: none;
 	overflow: hidden;
-	padding: 10px 40px;
 }
 
 a.list:nth-child(odd) {
