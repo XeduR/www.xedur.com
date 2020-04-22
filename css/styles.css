@@ -202,8 +202,11 @@ h4 {
 }
 
 img.lost {
-	display: block;
-	margin: 0 auto;
+	position: absolute;
+	width: 640px;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 }
 
 button.load {

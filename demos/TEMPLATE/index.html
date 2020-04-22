@@ -52,7 +52,7 @@
 
 			<div id="frame" class="iframe-container">
 				<iframe id="app" src="about:blank"></iframe>
-				<button class="load" type="button">Start The Demo</button>
+				<button id="start-button" class="load" type="button">Start The Demo</button>
 			</div>
 
 			<script>
@@ -60,7 +60,8 @@
 					document.getElementById("title").innerHTML = '<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;' + "There's nothing here.";
 					document.getElementById("description").innerHTML = '<img src="/img/lost.png" alt="icon" class="icon" style="width:64px">' + "Seems like you took a wrong turn somewhere.";
 					document.getElementById("links").innerHTML = '<a class="list" href="https://xedur.com"><li><div class="vertical-center"><img src="/img/lost.png" alt="icon" class="icon" style="width:32px">Return to Homepage</div></li></a>';
-					document.getElementById("frame").innerHTML = '<a href="https://xedur.com"><img alt="Wrong way!" src="/img/wrong_way_TEMP.jpg" width="640" height="453"></a>';
+					document.getElementById("app").innerHTML = '<a href="https://xedur.com"><img alt="Wrong way!" src="/img/wrong_way_TEMP.jpg" width="640" height="453"></a>';
+					// document.getElementById("start-button").style.display = "none";
 				}
 
 				if (!demo) {
