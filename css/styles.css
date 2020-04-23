@@ -220,6 +220,11 @@ h4 {
 	color: #f0aa28;
 }
 
+.icon {
+	float:left!important;
+	margin:4px 16px 0px 8px!important;
+}
+
 img.lost {
 	height: 100%;
 	width: 100%;
