@@ -44,7 +44,9 @@
 				<div id="line"></div>
 				<h3>Links:</h3>
 				<div id="lineSmall"></div>
-				<div id="links"></div>
+				<div id="links">
+					<div id="linksInner"></div>
+				</div>
 				<div id="line"></div>
 			</div>
 
@@ -59,7 +61,7 @@
 				function noDemo() {
 					document.getElementById("title").innerHTML = '<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;' + "There's nothing here.";
 					document.getElementById("description").innerHTML = '<img src="/img/lost.png" alt="icon" class="icon" style="width:64px">' + "Seems like you took a wrong turn somewhere.";
-					document.getElementById("links").innerHTML = '<a class="list" href="https://xedur.com"><li><div class="verticalCenter"><img src="/img/link.png" alt="icon" class="icon" style="width:32px">Return to Homepage</div></li></a>';
+					document.getElementById("linksInner").innerHTML = '<a class="list" href="https://xedur.com"><li><div class="verticalCenter"><img src="/img/link.png" alt="icon" class="icon" style="width:32px">Return to Homepage</div></li></a>';
 					document.getElementById("wrongWay").innerHTML = '<a href="https://xedur.com"><img class="lost" alt="Wrong way!" src="/img/wrong_way_TEMP.jpg" width="640" height="453"></a>';
 					document.getElementById("button").style.display = "none";
 					document.getElementById("frame").style.display = "none";
@@ -83,7 +85,7 @@
 								for (var i = 0; i < json.links.length; i++) {
 									links += '<div class="verticalCenter"><a class="list" href="' + json.links[i].link + '"><img src="/img/link.png" alt="icon" class="icon" style="width:32px">' + json.links[i].text + '</a></div>';
 								}
-								document.getElementById("links").innerHTML = links;
+								document.getElementById("linksInner").innerHTML = links;
 
 								$("button").click(function() {
 									const $iframe = $("#app");
