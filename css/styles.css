@@ -39,6 +39,38 @@ a.title:hover {
 	color: #f0aa28;
 }
 
+.list {
+	border-top: 1px solid black;
+	border-bottom: 1px solid black;
+    background: grey;
+    color: white;
+	font-size: 16px;
+	position: relative;
+	min-height: 40px;
+    margin: 10px 0px;
+    height: 100%;
+}
+
+.list:hover {
+	background: black;
+}
+
+.list-image {
+	width: 40px;
+    margin-left: 4px;
+}
+
+.list-text {
+    margin-left: 40px;
+}
+
+.vertical-center {
+	transform: translateY(-50%);
+	position: absolute;
+	margin: 0;
+	top: 50%;
+}
+
 a.list {
 	min-height: 40px;
 	position: relative;
@@ -46,14 +78,6 @@ a.list {
 	display: block;
 	list-style-type: none;
 	overflow: hidden;
-}
-
-.verticalCenter {
-  margin: 0;
-  position: absolute;
-  top: 50%;
-  -ms-transform: translateY(-50%);
-  transform: translateY(-50%);
 }
 
 a.list:nth-child(odd) {
@@ -154,11 +178,6 @@ h4 {
 
 .iframe-container-3x2 {
 	padding-top: 66.66%;
-}
-
-.icon {
-	float:left!important;
-	margin:4px 16px 0px 8px!important;
 }
 
 #description {

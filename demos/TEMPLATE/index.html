@@ -61,7 +61,7 @@
 				function noDemo() {
 					document.getElementById("title").innerHTML = '<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;' + "There's nothing here.";
 					document.getElementById("description").innerHTML = '<img src="/img/lost.png" alt="icon" class="icon" style="width:64px">' + "Seems like you took a wrong turn somewhere.";
-					document.getElementById("linksInner").innerHTML = '<a class="list" href="https://xedur.com"><li><div class="verticalCenter"><img src="/img/link.png" alt="icon" class="icon" style="width:32px">Return to Homepage</div></li></a>';
+					document.getElementById("linksInner").innerHTML = '<a href="https://xedur.com"><div class="list"><img class="list-image vertical-center" src="/img/link.png" alt="icon" class="icon" style="width:32px"><p class="list-text vertical-center">Return to Homepage</p></div></a>';
 					document.getElementById("wrongWay").innerHTML = '<a href="https://xedur.com"><img class="lost" alt="Wrong way!" src="/img/wrong_way_TEMP.jpg" width="640" height="453"></a>';
 					document.getElementById("button").style.display = "none";
 					document.getElementById("frame").style.display = "none";
@@ -81,9 +81,15 @@
 								document.getElementById("title").innerHTML = '<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;' + json.title;
 								document.getElementById("description").innerHTML = '<img src="/demos/' + demo + '/icon.png" alt="icon" class="icon" style="width:64px"><p>' + json.description + '</p>';
 
+								// .list
+								// .list:hover
+								// .list-image
+								// .list-text
+								// .vertical-center
+
 								var links = "";
 								for (var i = 0; i < json.links.length; i++) {
-									links += '<div class="verticalCenter"><a class="list" href="' + json.links[i].link + '"><img src="/img/link.png" alt="icon" class="icon" style="width:32px">' + json.links[i].text + '</a></div>';
+									links += '<a href="' + json.links[i].link + '"><div class="list"><img class="list-image vertical-center" src="/img/link.png" alt="icon" class="icon" style="width:32px"><p class="list-text vertical-center">' + json.links[i].text + '</p></div></a>';
 								}
 								document.getElementById("linksInner").innerHTML = links;
 
