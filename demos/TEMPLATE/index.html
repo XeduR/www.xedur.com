@@ -44,7 +44,7 @@
 				<div id="line"></div>
 				<h3>Links:</h3>
 				<div id="lineSmall"></div>
-				<ul id="links"></ul>
+				<div id="links"></div>
 				<div id="line"></div>
 			</div>
 
@@ -81,7 +81,7 @@
 
 								var links = "";
 								for (var i = 0; i < json.links.length; i++) {
-									links += '<a class="list" href="' + json.links[i].link + '"><li><div class="verticalCenter"><img src="/img/link.png" alt="icon" class="icon" style="width:32px">' + json.links[i].text + '</div></li></a>';
+									links += '<div class="verticalCenter"><a class="list" href="' + json.links[i].link + '"><img src="/img/link.png" alt="icon" class="icon" style="width:32px">' + json.links[i].text + '</a></div>';
 								}
 								document.getElementById("links").innerHTML = links;
 
