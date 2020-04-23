@@ -39,14 +39,6 @@ a.title:hover {
 	color: #f0aa28;
 }
 
-.vertical-center {
-  margin: 0;
-  position: absolute;
-  top: 50%;
-  -ms-transform: translateY(-50%);
-  transform: translateY(-50%);
-}
-
 a.list {
 	min-height: 40px;
 	position: relative;
@@ -54,6 +46,14 @@ a.list {
 	display: block;
 	list-style-type: none;
 	overflow: hidden;
+}
+
+.verticalCenter {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
 }
 
 a.list:nth-child(odd) {
@@ -202,8 +202,10 @@ h4 {
 }
 
 img.lost {
+	height: 100%;
 	width: 100%;
-	max-width: 640px;
+	max-height: 640px;
+	max-width: 960px;
 	display: block;
 	margin-left: auto;
 	margin-right: auto;

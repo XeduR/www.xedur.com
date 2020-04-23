@@ -6,9 +6,10 @@
 		<meta name="keywords" content="XeduR, Spyric, Solar2D, Solar, 2D, HTML5, Lua, gamedev, game, game development">
 		<meta name="author" content="Eetu Rantanen">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico"/>
+		<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Work+Sans">
 		<link rel="stylesheet" href="/css/styles.css">
+		<title>XeduR - Portfolio</title>
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 		<script>
@@ -29,7 +30,6 @@
 				document.title = "XeduR - Are you lost?"
 			}
 		</script>
-
 	</head>
 
 	<body>
@@ -59,7 +59,7 @@
 				function noDemo() {
 					document.getElementById("title").innerHTML = '<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;' + "There's nothing here.";
 					document.getElementById("description").innerHTML = '<img src="/img/lost.png" alt="icon" class="icon" style="width:64px">' + "Seems like you took a wrong turn somewhere.";
-					document.getElementById("links").innerHTML = '<a class="list" href="https://xedur.com"><li><div class="vertical-center"><img src="/img/lost.png" alt="icon" class="icon" style="width:32px">Return to Homepage</div></li></a>';
+					document.getElementById("links").innerHTML = '<a class="list" href="https://xedur.com"><li><div class="verticalCenter"><img src="/img/link.png" alt="icon" class="icon" style="width:32px">Return to Homepage</div></li></a>';
 					document.getElementById("wrongWay").innerHTML = '<a href="https://xedur.com"><img class="lost" alt="Wrong way!" src="/img/wrong_way_TEMP.jpg" width="640" height="453"></a>';
 					document.getElementById("button").style.display = "none";
 					document.getElementById("frame").style.display = "none";
@@ -81,7 +81,7 @@
 
 								var links = "";
 								for (var i = 0; i < json.links.length; i++) {
-									links += '<a class="list" href="' + json.links[i].link + '"><li><div class="vertical-center"><img src="/demos/' + demo + '/icon.png" alt="icon" class="icon" style="width:32px">' + json.links[i].text + '</div></li></a>';
+									links += '<a class="list" href="' + json.links[i].link + '"><li><div class="verticalCenter"><img src="/demos/link/icon.png" alt="icon" class="icon" style="width:32px">' + json.links[i].text + '</div></li></a>';
 								}
 								document.getElementById("links").innerHTML = links;
 
