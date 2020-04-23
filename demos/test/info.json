@@ -2,7 +2,7 @@
 	"title": "Sample title",
 	"description": "<b>Lorem ipsum dolor sit amet</b>,<br><br>consectetur adipiscing elit. Nulla tristique neque id ante vulputate, ut blandit libero consequat. Praesent sodales sagittis magna in gravida. Suspendisse eu molestie dolor. Integer eu dignissim diam, quis luctus felis. Aliquam congue felis vitae dolor imperdiet pharetra. Donec eu libero at elit rhoncus molestie. Quisque interdum nisl purus. Mauris tortor justo, commodo a blandit a, viverra eget nulla. Aenean quis lacinia purus. Quisque ultrices semper ante vel volutpat.",
 	"links": [
-		{"text":"Documentation available at: <b>Spyric Docs</b>","link":"https://www.spyric.com/docs/"},
-		{"text":"Source available at: <b>GitHub</b>","link":"https://github.com/XeduR/"}
+		{"text":"Documentation: <b>Spyric Docs</b>","link":"https://www.spyric.com/docs/"},
+		{"text":"Source: <b>GitHub</b>","link":"https://github.com/XeduR/"}
 	]
 }
