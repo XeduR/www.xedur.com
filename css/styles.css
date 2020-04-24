@@ -4,6 +4,34 @@
 	border: none;
 }
 
+/* possible color layouts */
+/*
+	bg - dark grey #141518
+
+	: SET 1 :
+	dark brown - #241909
+	light grey - #CAD8DE
+	light brown - #645853
+
+	: SET 2 :
+	red/crimson #49111C
+	white-ish #F2F4F3
+	light brown - #A9927D
+	mid brown - #5E503F
+
+	: SET 3 :
+	brown #3A2618
+	tuscan red #754043
+	light brown #9A8873
+	faded mid green #37423D
+
+	: SET 4 :
+	gunmetal #363946
+	dim grey #696773
+	morning blue #819595
+	ash grey #B1B6A6
+*/
+
 body {
 	font-family: 'Work Sans', sans-serif;
 	font-size: 16px;
