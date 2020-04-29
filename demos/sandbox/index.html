@@ -106,8 +106,9 @@
                 // console.log( getElementById("iframeId").contentWindow.testFunction() );
                 // document.getElementById("iframeId").contentWindow.testFunction();
                 // iframeEl.contentWindow.postMessage(msg, '*');
-                sneaky();
-
+                // sneaky();
+                var input = editor.getValue();
+                frames[0].testFunction( input );
             };
             
             function sneaky(fnc) {
