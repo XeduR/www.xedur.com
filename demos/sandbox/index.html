@@ -75,13 +75,25 @@
 
 <body>
     <div id="wrapper">
-        <h1>WIP - Sandbox Test</h1>
+        <h1>WIP - Solar2D Sandbox</h1>
         <div class="column">
             <p>
                 Write your code here and press <strong>RUN CODE</strong> button on the right when you are ready.<br><br>
                 Note: The code is run in global scope, so avoid creating "local" variables.
             </p>
-            <textarea id="editor"></textarea>
+            <textarea id="editor">
+physics = require("physics")
+physics.start()
+
+ball = display.newCircle( display.contentCenterX, display.contentCenterY-100, 64 )
+ball:setFillColor( 0.8, 0, 0 )
+physics.addBody( ball, "dynamic", {radius=64} )
+
+platform = display.newRect( display.contentCenterX, display.contentCenterY+120, 400, 30 )
+platform:setFillColor( 0, 0.8, 0.2 )
+platform.rotation = -35
+physics.addBody( platform, "static" )
+</textarea>
         </div>
         <div class="column">
             <div id="frame" class="iframe-container">
