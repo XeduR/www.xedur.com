@@ -107,11 +107,6 @@ physics.addBody( platform, "static" )
                 lineNumbers: true
             });
             
-            function submitCode() {
-                var code = editor.getValue();
-                frames[0].submitCode( code );
-            }
-            
             function getCode() {
                 var code = editor.getValue();
                 return code;
