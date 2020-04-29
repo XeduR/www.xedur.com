@@ -76,23 +76,13 @@
         <p>Remember! Solar2D apps won't update unless they are in focus, i.e. you need to touch the app after submitting code changes</p>
         <textarea id="editor"></textarea>
         <button class="button" id="buttonCode">RUN CODE</button>
-        
-        <h1>Parent Window</h1>
-        <p>Send Message: <button id="message_button">Hi there iframe</button></p>
-        <p>Got Message:</p>
-        <div id="results"></div>
-
+    
         <script>
             var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
                 mode: "lua",
                 theme: "dracula",
                 lineNumbers: true
             });
-
-            // function submit() {
-            //     var code = editor.getValue();
-            //     document.dispatchEvent(new CustomEvent('inputCode',{'detail':{input:code}}));
-            // }
             
             // Sending data to Iframe : start //
             // Original code by Petar Bojinov: https://gist.github.com/pbojinov/8965299

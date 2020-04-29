@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <body>
-
     <script>
         // Sending data to Iframe : start //
         // Original code by Petar Bojinov: https://gist.github.com/pbojinov/8965299
@@ -16,6 +15,7 @@
         }
 
         bindEvent(window, 'message', function (e) {
+            console.log( e.data );
             document.dispatchEvent(new CustomEvent('inputCode',{'detail':{input:e.data}}));
         });
         // Sending data to Iframe : end //
