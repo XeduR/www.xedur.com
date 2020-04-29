@@ -21,14 +21,21 @@
         p {
             background: white;
             padding: 20px;
-            text-align: center;
+            text-align: left;
         	font-weight: bold;
         }
         
         #wrapper {
-        	max-width: 960px;
-        	*width: 960px;
+        	max-width: 1920px;
+        	width: 100%;
         	margin: 0 auto;
+        }
+        
+        .column {
+            float: left;
+            width: 48%;
+            padding: 0 10px;
+            height: 300px;
         }
         
         .iframe-container {
@@ -57,11 +64,11 @@
             width: 200px;
             height: 40px;
             border: none;
-            text-align: center;
+            text-align: left;
             text-decoration: none;
             display: block;
             font-size: 16px;
-            margin: 10px auto;
+            margin: 0 auto;
         }
     </style>
 </head>
@@ -69,12 +76,18 @@
 <body>
     <div id="wrapper">
         <h1>WIP - Sandbox Test</h1>
-        <div id="frame" class="iframe-container">
-            <iframe src="app/index.html"></iframe>
+        <div class="column">
+            <p>
+                Write your code here and press <strong>RUN CODE</strong> button on the right when you are ready.<br><br>
+                Note: The code is run in global scope, so avoid creating "local" variables.
+            </p>
+            <textarea id="editor"></textarea>
         </div>
-        <p>Remember! Solar2D apps won't update unless they are in focus, i.e. you need to touch the app after submitting code changes</p>
-        <textarea id="editor"></textarea>
-        <button class="button" id="buttonCode" onclick="submitCode()"> RUN CODE</button>
+        <div class="column">
+            <div id="frame" class="iframe-container">
+                <iframe src="app/index.html"></iframe>
+            </div>
+        </div>
     
         <script>
             var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
