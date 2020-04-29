@@ -70,12 +70,11 @@
     <div id="wrapper">
         <h1>WIP - Sandbox Test</h1>
         <div id="frame" class="iframe-container">
-            <!-- <iframe id="iframeId" src="test.html"></iframe> -->
             <iframe src="app/index.html"></iframe>
         </div>
         <p>Remember! Solar2D apps won't update unless they are in focus, i.e. you need to touch the app after submitting code changes</p>
         <textarea id="editor"></textarea>
-        <button class="button" id="buttonCode">RUN CODE</button>
+        <button class="button" id="buttonCode" onclick="submitCode()"> RUN CODE</button>
     
         <script>
             var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
@@ -84,44 +83,10 @@
                 lineNumbers: true
             });
             
-            // Sending data to Iframe : start //
-            // Original code by Petar Bojinov: https://gist.github.com/pbojinov/8965299
-            
-            // addEventListener support for IE8
-            function bindEvent(element, eventName, eventHandler) {
-                if (element.addEventListener){
-                    element.addEventListener(eventName, eventHandler, false);
-                } else if (element.attachEvent) {
-                    element.attachEvent('on' + eventName, eventHandler);
-                }
+            function submitCode() {
+                var code = editor.getValue();
+                frames[0].testFunction( code );
             }
-    
-            // Send a message to the child iframe
-            var iframeEl = document.getElementById('iframeId'),
-                messageButton = document.getElementById('buttonCode');
-    
-            // Send a message to the child iframe
-            var sendMessage = function(msg) {
-                // Make sure you are sending a string, and to stringify JSON
-                // console.log( getElementById("iframeId").contentWindow.testFunction() );
-                // document.getElementById("iframeId").contentWindow.testFunction();
-                // iframeEl.contentWindow.postMessage(msg, '*');
-                // sneaky();
-                var input = editor.getValue();
-                frames[0].testFunction( input );
-            };
-            
-            function sneaky(fnc) {
-                fnc();
-            }
-                
-            // Send random messge data on every button click
-            bindEvent(messageButton, 'click', function (e) {
-                var input = editor.getValue();
-                sendMessage('' + input);
-            });
-
-            // Sending data to Iframe : end //
             
         </script>
     </div>
