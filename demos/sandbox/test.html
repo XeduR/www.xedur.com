@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+    <script>
+        // Sending data to Iframe : start //
+        // Original code by Petar Bojinov: https://gist.github.com/pbojinov/8965299
+        
+        // addEventListener support for IE8
+        function bindEvent(element, eventName, eventHandler) {
+            if (element.addEventListener) {
+                element.addEventListener(eventName, eventHandler, false);
+            } else if (element.attachEvent) {
+                element.attachEvent('on' + eventName, eventHandler);
+            }
+        }
+
+        bindEvent(window, 'message', function (e) {
+            document.dispatchEvent(new CustomEvent('inputCode',{'detail':{input:e.data}}));
+        });
+        // Sending data to Iframe : end //
+    </script>
+</body>
+</html>
