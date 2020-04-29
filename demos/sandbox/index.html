@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="codemirror/lib/codemirror.js"></script>
+    <script src="codemirror/lua.js"></script>
+    <link href="codemirror/lib/codemirror.css" rel="stylesheet"/>
+    <link href="codemirror/dracula.css" rel="stylesheet"/>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    <style>
+        body {
+            background: grey;
+        }
+        
+        .iframe-container {
+            <!-- background: black; -->
+            overflow: hidden;
+            padding-top: 66.66%;
+            position: relative;
+        }
+
+        .iframe-container iframe {
+            border: 0;
+            height: 100%;
+            max-height: 640px;
+            max-width: 960px;
+            left: 0;
+            position: absolute;
+            top: 0;
+            width: 100%;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .button {
+            background-color: black;
+            color: white;
+            width: 200px;
+            height: 40px;
+            border: none;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            font-size: 16px;
+            margin: 10px auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>WIP - Test</h1>
+    <p>Remember! Solar2D apps won't update unless they are in focus, i.e. you need to touch the app after submitting code changes</p>
+    <div id="frame" class="iframe-container">
+        <iframe src="app/index.html"></iframe>
+    </div>
+    <textarea id="editor"></textarea>
+    <button class="button" onclick="submit()">RUN CODE</button>
+
+    <script>
+        var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+            mode: "lua",
+            theme: "dracula",
+            lineNumbers: true
+        });
+
+        function submit() {
+            var code = editor.getValue();
+            document.dispatchEvent(new CustomEvent('inputCode',{'detail':{input:code}}));
+        }
+    </script>
+    
+</body>
+</html>

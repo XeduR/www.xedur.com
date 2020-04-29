@@ -8,6 +8,8 @@
 /*
 	bg - dark grey #141518
 
+	possibly the dark red cool set: 0e0e0e-fcba04-a50104-5a0001-250001
+
 	: SET 1 :
 	dark brown - #241909
 	light grey - #CAD8DE
@@ -206,10 +208,6 @@ h4 {
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
-}
-
-.iframe-container-3x2 {
-	padding-top: 66.66%;
 }
 
 #description {
