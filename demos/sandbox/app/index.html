@@ -201,9 +201,15 @@ k.p.toString(16)+", data=0x"+p.toString(16)))}return m};t.L=function(a){this.j=a
         document.activeElement.blur();
         window.focus();
       }, true);
-      // Sending data to Iframe : start //
-      // Original code by Petar Bojinov: https://gist.github.com/pbojinov/8965299
       
+        function testFunction() 
+        {
+            console.log( "called" );
+        };
+        
+    // Sending data to Iframe : start //
+    // Original code by Petar Bojinov: https://gist.github.com/pbojinov/8965299
+        
       // addEventListener support for IE8
       function bindEvent(element, eventName, eventHandler) {
           if (element.addEventListener) {

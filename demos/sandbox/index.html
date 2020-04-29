@@ -103,7 +103,8 @@
             // Send a message to the child iframe
             var sendMessage = function(msg) {
                 // Make sure you are sending a string, and to stringify JSON
-                iframeEl[0].contentWindow.postMessage(msg, '*');
+                console.log( document.getElementById("iframeId").contentWindow.testFunction(); )
+                // iframeEl.contentWindow.postMessage(msg, '*');
             };
     
             // Send random messge data on every button click
