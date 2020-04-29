@@ -1,19 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="codemirror/lib/codemirror.js"></script>
-    <script src="codemirror/lua.js"></script>
-    <link href="codemirror/lib/codemirror.css" rel="stylesheet"/>
-    <link href="codemirror/dracula.css" rel="stylesheet"/>
+    <script src="./codemirror/lib/codemirror.js"></script>
+    <link href="./codemirror/lib/codemirror.css" rel="stylesheet"/>
+    <script src="./codemirror/lua.js"></script>
+    <link href="./codemirror/dracula.css" rel="stylesheet"/>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
 
     <style>
         body {
             background: grey;
+            font-family: 'Roboto', sans-serif;
+        }
+        
+        h1 {
+            text-align: center;
+        }
+        
+        p {
+            background: white;
+            padding: 20px;
+            text-align: center;
+        	font-weight: bold;
+        }
+        
+        #wrapper {
+        	max-width: 960px;
+        	*width: 960px;
+        	margin: 0 auto;
         }
         
         .iframe-container {
-            <!-- background: black; -->
             overflow: hidden;
             padding-top: 66.66%;
             position: relative;
@@ -49,26 +67,27 @@
 </head>
 
 <body>
-    <h1>WIP - Test</h1>
-    <p>Remember! Solar2D apps won't update unless they are in focus, i.e. you need to touch the app after submitting code changes</p>
-    <div id="frame" class="iframe-container">
-        <iframe src="app/index.html"></iframe>
+    <div id="wrapper">
+        <h1>WIP - Test</h1>
+        <div id="frame" class="iframe-container">
+            <iframe src="app/index.html"></iframe>
+        </div>
+        <p>Remember! Solar2D apps won't update unless they are in focus, i.e. you need to touch the app after submitting code changes</p>
+        <textarea id="editor"></textarea>
+        <button class="button" onclick="submit()">RUN CODE</button>
+
+        <script>
+            var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+                mode: "lua",
+                theme: "dracula",
+                lineNumbers: true
+            });
+
+            function submit() {
+                var code = editor.getValue();
+                document.dispatchEvent(new CustomEvent('inputCode',{'detail':{input:code}}));
+            }
+        </script>
     </div>
-    <textarea id="editor"></textarea>
-    <button class="button" onclick="submit()">RUN CODE</button>
-
-    <script>
-        var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
-            mode: "lua",
-            theme: "dracula",
-            lineNumbers: true
-        });
-
-        function submit() {
-            var code = editor.getValue();
-            document.dispatchEvent(new CustomEvent('inputCode',{'detail':{input:code}}));
-        }
-    </script>
-    
 </body>
 </html>
