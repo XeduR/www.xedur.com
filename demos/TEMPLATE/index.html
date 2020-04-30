@@ -81,12 +81,6 @@
 								document.getElementById("title").innerHTML = '<a class="back" href="https://xedur.com">&#8592;</a>&nbsp;&nbsp;' + json.title;
 								document.getElementById("description").innerHTML = '<img src="/demos/' + demo + '/icon.png" alt="icon" class="icon" style="width:64px"><p>' + json.description + '</p>';
 
-								// .list
-								// .list:hover
-								// .list-image
-								// .list-text
-								// .vertical-center
-
 								var links = "";
 								for (var i = 0; i < json.links.length; i++) {
 									links += '<a href="' + json.links[i].link + '"><div class="list"><img class="list-image vertical-center" src="/img/link.png" alt="icon" style="width:32px"><p class="list-text vertical-center">' + json.links[i].text + '</p></div></a>';
