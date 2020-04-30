@@ -5,92 +5,45 @@
     <link href="./codemirror/lib/codemirror.css" rel="stylesheet"/>
     <script src="./codemirror/lua.js"></script>
     <link href="./codemirror/dracula.css" rel="stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
-
-    <style>
-        body {
-            background: grey;
-            font-family: 'Roboto', sans-serif;
-        }
-        
-        h1 {
-            text-align: center;
-        }
-        
-        p {
-            background: white;
-            padding: 20px;
-            text-align: left;
-        	font-weight: bold;
-        }
-        
-        #wrapper {
-        	max-width: 1920px;
-        	width: 100%;
-        	margin: 0 auto;
-        }
-        
-        .column {
-            float: left;
-            width: 45%;
-            padding: 0 10px;
-        }
-        
-        .iframe-container {
-            overflow: hidden;
-            padding-top: 66.66%;
-            position: relative;
-        }
-
-        .iframe-container iframe {
-            border: 0;
-            height: 100%;
-            max-height: 640px;
-            max-width: 960px;
-            left: 0;
-            position: absolute;
-            top: 0;
-            width: 100%;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
-    </style>
+    <title>XeduR - Solar2D Sandbox</title>
 </head>
 
 <body>
     <div id="wrapper">
         <h1>WIP - Solar2D Sandbox</h1>
-        <div class="column">
-            <p>
-                Write your code here and press <strong>RUN CODE</strong> button on the right when you are ready.<br><br>
-                Note: This is intended for desktop browsers only. If you are using a mobile browser, the application may not run at all, or the end result may look weird.
-            </p>
+        <p class="disclaimer">
+            Write your code here and press RUN CODE button on the right when you are ready.<br><br>
+            Note: You can't use network calls, also <u>this sandbox is not intended for mobile browsers</u> and it may not run on them.
+        </p>
+        
+        <div class="column-left">
             <textarea id="editor">
 -- Change the background to blue.
 display.setDefault( "background", 0, 0.3, 0.8 )
 
 -- Require and start the physics engine.
-physics = require("physics")
+local physics = require("physics")
 physics.start()
 
 -- Create a rock, the ground and the crate, and give them all physics bodies.
-rock = display.newImage( "images/rock.png", 510, 570 )
+local rock = display.newImage( "images/rock.png", 510, 570 )
 physics.addBody( rock, "static", { density=1, friction=0.9, bounce=0.1, shape={ -20,0, -3,-11, 3,-10, 20,0 } } )
 
-ground = display.newImage( "images/ground.png", 480, 608 )
+local ground = display.newImage( "images/ground.png", 480, 608 )
 physics.addBody( ground, "static", { density=1, friction=0.9, bounce=0.2 } )
 
-crate = display.newImage( "images/crate.png", 480, 100 )
+local crate = display.newImage( "images/crate.png", 480, 100 )
 physics.addBody( crate, "dynamic", { density=0.8, friction=0.9, bounce=0.2 } )
 -- crate:setFillColor( 1, 0, 0 ) -- Uncomment this line to apply red tint to the crate.
 
 -- Add two lines of text.
-text1 = display.newText( "Drag the crate with your mouse", 640, 30, native.systemFontBold, 40 )
-text2 = display.newText( "Or if you have other cool ideas, then try adding them!", 600, 64, native.systemFontBold, 20 )
+local text1 = display.newText( "Drag the crate with your mouse", 640, 30, native.systemFontBold, 40 )
+local text2 = display.newText( "Or if you have other cool ideas, then try adding them!", 600, 64, native.systemFontBold, 20 )
 
 -- And finally create a drag function for when the crate is touched.
-function drag( event )
+local function drag( event )
     if event.phase == "began" then
         -- Set focus on crate, stop its movement and stop gravity from affecting it.
         event.target.touched = true
@@ -118,7 +71,8 @@ end
 crate:addEventListener( "touch", drag )
 </textarea>
         </div>
-        <div class="column">
+        
+        <div class="column-right">
             <div id="frame" class="iframe-container">
                 <iframe src="app/index.html"></iframe>
             </div>
@@ -134,9 +88,13 @@ crate:addEventListener( "touch", drag )
             function getCode() {
                 var code = editor.getValue();
                 return code;
-            }
-            
+            }    
         </script>
+    </div>
+    
+    <div style="clear:both;"></div>
+    <div id="footer">
+        <p><a href="https://www.erantanen.com/">© 2019-2020 Eetu Rantanen</a></p>
     </div>
 </body>
 </html>
