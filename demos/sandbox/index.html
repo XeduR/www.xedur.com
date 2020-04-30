@@ -5,7 +5,6 @@
     <link href="./codemirror/lib/codemirror.css" rel="stylesheet"/>
     <script src="./codemirror/lua.js"></script>
     <link href="./codemirror/dracula.css" rel="stylesheet"/>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
 
     <style>
@@ -56,19 +55,6 @@
             margin-left: auto;
             margin-right: auto;
         }
-
-        .button {
-            background-color: black;
-            color: white;
-            width: 200px;
-            height: 40px;
-            border: none;
-            text-align: left;
-            text-decoration: none;
-            display: block;
-            font-size: 16px;
-            margin: 0 auto;
-        }
     </style>
 </head>
 
@@ -81,17 +67,50 @@
                 Note: This is intended for desktop browsers only. If you are using a mobile browser, the application may not run at all, or the end result may look weird.
             </p>
             <textarea id="editor">
+-- Change the background to blue.
+display.setDefault( "background", 0, 0.3, 0.8 )
+
+-- Require and start the physics engine.
 physics = require("physics")
 physics.start()
 
-ball = display.newCircle( display.contentCenterX, display.contentCenterY-100, 64 )
-ball:setFillColor( 0.8, 0, 0 )
-physics.addBody( ball, "dynamic", {radius=64} )
+-- Create a rock, the ground and the crate, and give them all physics bodies.
+rock = display.newImage( "images/rock.png", 510, 570 )
+physics.addBody( rock, "static", { density=1, friction=0.9, bounce=0.1, shape={ -20,0, -3,-11, 3,-10, 20,0 } } )
 
-platform = display.newRect( display.contentCenterX, display.contentCenterY+120, 400, 30 )
-platform:setFillColor( 0, 0.8, 0.2 )
-platform.rotation = -35
-physics.addBody( platform, "static" )
+ground = display.newImage( "images/ground.png", 480, 608 )
+physics.addBody( ground, "static", { density=1, friction=0.9, bounce=0.2 } )
+
+crate = display.newImage( "images/crate.png", 480, 100 )
+physics.addBody( crate, "dynamic", { density=0.8, friction=0.9, bounce=0.2 } )
+
+-- Add two lines of text.
+text1 = display.newText( "Drag the crate with your mouse", 640, 30, native.systemFontBold, 40 )
+text2 = display.newText( "Or if you have other cool ideas, then try adding them!", 600, 64, native.systemFontBold, 20 )
+
+-- And finally create a drag function for when the crate is touched.
+function drag( event )
+    if event.phase == "began" then
+        event.target.touched = true
+        display.getCurrentStage():setFocus( event.target )
+        event.target:setLinearVelocity( 0, 0 )
+        event.target.gravityScale = 0
+        event.target.xStart = event.target.x
+        event.target.yStart = event.target.y
+    elseif event.phase == "moved" then
+        if event.target.touched then
+            event.target.x = event.target.xStart + event.xDelta
+            event.target.y = event.target.yStart + event.yDelta
+        end
+    else
+        if event.target.touched then
+            display.getCurrentStage():setFocus( nil )
+            event.target:setLinearVelocity( 0, -9.81 )
+            event.target.gravityScale = 1
+        end
+    end
+end
+crate:addEventListener( "touch", drag )
 </textarea>
         </div>
         <div class="column">
