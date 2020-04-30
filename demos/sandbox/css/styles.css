@@ -37,20 +37,19 @@ a:hover {
 
 .column-left {
     float: left;
-    width: 45%;
+    width: 44%;
+    padding-right: 10px;
 }
 
 .column-right {
     float: left;
-    width: 55%;
+    width: 54%;
     max-width: 960px;
 }
 
 .iframe-container {
     padding-top: 66.66%;
     position: relative;
-    margin-left: 10px;
-    margin-right: 10px;
 }
 
 .iframe-container iframe {
