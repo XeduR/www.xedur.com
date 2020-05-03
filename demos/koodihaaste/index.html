@@ -103,7 +103,7 @@
             })
             .then(data => {
                 routes = data;
-				busStops = prepareRoutes( routes );
+				// busStops = prepareRoutes( routes );
                 for ( let i = 0; i < routes.pysakit.length; i++ ) {
                     createButtons( i, "start" );
                 }
