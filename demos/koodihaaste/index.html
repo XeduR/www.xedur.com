@@ -6,7 +6,7 @@
 	<meta name="keywords" content="XeduR, Koodihaaste, Solidabis, Reittiopas">
 	<meta name="author" content="Eetu Rantanen">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico"/>
+	<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Work+Sans">
 	<link rel="stylesheet" href="./css/styles.css">
     <script src="js/routePlanner.js"></script>
@@ -24,32 +24,86 @@
                 ettei selaimesi tai sen jokin lisäosa estä JavaScriptiä.
             </h4>
         </noscript>
-
+		
+		<div class="center">
         <h3>Lähtöpysäkki</h3>
-        <p id="start"></p>
-
+	        <p id="start"></p>
+		</div>
+		<div class="center">
         <h3>Määränpää</h3>
-        <p id="end"></p>
-
-        <!-- Käytä värejä koodihaasteen sivuilta.
-        1) sininen header,
-        2) harmaa tausta,
-        3) linjoilla omat värit,
-        4) pysäkit kaikki samanvärisiä. -->
+	        <p id="end"></p>
+		</div>
+		
+		<div class="canvas-element">
+			<canvas id="reitti" width="480" height="120" style="border:0px">
+				Your browser does not support the canvas element.
+			</canvas>
+		</div>
 
         <script>
-            var busStops, routes, prevButtonA, prevButtonB;
+            var busStops, routes, connections, prevButtonA, prevButtonB;
 
+			// Kun lähtöpysäkki ja määränpää ovat valittuna, niin tarkista ovatko 
+			// ne eri pysäkit ja piirrä sen mukainen ilmoitus tai kartta.
             function checkRoute( a, b ) {
+				var canvas = document.getElementById("reitti");
+				var ctx = canvas.getContext("2d");
+				ctx.canvas.width  = window.innerWidth;
+				var xStart = 20;
+				var xEnd = 300;
+				var segmentLength = 22;
+			
+				
                 if (a == b) {
-                    console.log( "Start and end are the same." )
+					ctx.font = "bold 24px Work Sans";
+					ctx.fillStyle = "black";
+					let txt = "Lähtöpiste ja määränpää eivät voi olla sama."
+					ctx.fillText( txt, xStart, 54 );
+					
+					let offset = ctx.measureText(txt).width;
+					canvas.style = "position:absolute; left: 50%; transform: translateX(-" + offset*0.5 + "px);";
                 } else {
-                    console.log( "checkRoute:", a, b );
-                    getRoute();
+                    var shortestRoute = getRoute( busStops, a, b );
+				    // console.log( shortestRoute );
+					
+					var maxDuration = shortestRoute.duration[shortestRoute.duration.length-1];
+					var xPrev = xStart;
+					ctx.fillRect( xStart-2, 58, maxDuration*segmentLength+4, 16);
+					
+				    for (let i = 1; i < shortestRoute.stops.length; i++) {
+						let x = xStart + shortestRoute.duration[i]*segmentLength;
+						let line = shortestRoute.stops[i] + shortestRoute.stops[i-1];
+						
+						if (connections["keltainen"][line]) {
+							ctx.fillStyle = "#f9cc88";
+						} else if (connections["punainen"][line]) {
+							ctx.fillStyle = "#c7273f";
+						} else if (connections["vihreä"][line]) {
+							ctx.fillStyle = "#89b785";
+						} else if (connections["sininen"][line]) {
+							ctx.fillStyle = "#00a3da";
+						}
+						
+						ctx.fillRect( xPrev, 60, x-xPrev, 12);
+						xPrev = x;
+					}
+					
+				    for (let i = 0; i < shortestRoute.stops.length; i++) {
+						let x = xStart + shortestRoute.duration[i]*segmentLength;
+						ctx.fillStyle = "black";
+						ctx.font = "bold 24px Work Sans";
+						ctx.fillText( shortestRoute.stops[i], x-6, 54 );
+						ctx.fillStyle = "#101010";
+						ctx.font = "bold 16px Work Sans"; 
+						ctx.fillText( shortestRoute.duration[i], x-6, 90 );
+					}
+					let offset = maxDuration*segmentLength+4;
+					canvas.style = "position:absolute; left: 50%; transform: translateX(-" + offset*0.5 + "px);";
                 }
             }
 
-
+			// Tarkkaile nappien painalluksia ja vaihda niiden väriä sen mukaisesti,
+			// sekä puhdiasta Canvas aina painallusten välissä.
             function buttonListener( pressed ) {
                 var sameButton;
 
@@ -74,6 +128,9 @@
                         sameButton = true;
                     }
                 }
+				var canvas = document.getElementById("reitti");
+				var ctx = canvas.getContext("2d");
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
 
                 if (!sameButton) {
                     pressed.style.backgroundColor = "#1abf34";
@@ -83,7 +140,7 @@
                 }
             }
 
-
+			// Luo napit pysäkeille.
             function createButtons( i, loc ) {
                 var div = document.getElementById( loc );
                 var btn = document.createElement("button");
@@ -96,19 +153,21 @@
                 div.appendChild( btn );
             }
 
-
             fetch('./reittiopas.json')
             .then(response => {
                 return response.json()
             })
             .then(data => {
+				// Reittioppaan data on ladattu, niin luodaan napit pysäkeiden
+				// valintaa varten ja valmistellaan reittioppaan data.
                 routes = data;
-                for ( let i = 0; i < routes.pysakit.length; i++ ) {
-                    createButtons( i, "start" );
-                }
-                for ( let i = 0; i < routes.pysakit.length; i++ ) {
-                    createButtons( i, "end" );
-                }
+				for ( let i = 0; i < routes.pysakit.length; i++ ) {
+					createButtons( i, "start" );
+				}
+				for ( let i = 0; i < routes.pysakit.length; i++ ) {
+					createButtons( i, "end" );
+				}
+				connections = getConnections( routes );
 				busStops = prepareRoutes( routes );
             })
             .catch(err => {
