@@ -8,8 +8,8 @@ function prepareRoutes( routes ) {
     for (let i in routes.linjastot) {
         connections[i] = {};
         for (let j = 0; j < routes.linjastot.length-1; j++) {
-            connections[i][routes.linjastot[i][j] .. routes.linjastot[i][j+1]] = true;
-            connections[i][routes.linjastot[i][j+1] .. routes.linjastot[i][j]] = true;
+            connections[i][routes.linjastot[i][j] + routes.linjastot[i][j+1]] = true;
+            connections[i][routes.linjastot[i][j+1] + routes.linjastot[i][j]] = true;
         }
     }
     
