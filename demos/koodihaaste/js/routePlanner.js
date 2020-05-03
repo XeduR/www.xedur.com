@@ -4,34 +4,34 @@ function prepareRoutes( routes ) {
         busStops[routes.pysakit[i]] = {};
     }
     
-    let connections = {};
-    for (let i in routes.linjastot) {
-        connections[i] = {};
-        for (let j = 0; j < routes.linjastot.length-1; j++) {
-            connections[i][routes.linjastot[i][j] + routes.linjastot[i][j+1]] = true;
-            connections[i][routes.linjastot[i][j+1] + routes.linjastot[i][j]] = true;
-        }
-    }
-    
-    for (let i = 0; i < routes.tiet.length; i++) {
-        let duration = routes.tiet[i].kesto;
-        let from = routes.tiet[i].mista;
-        let to = routes.tiet[i].mihin;
-    
-        let segment = from + to;
-        let isValid = false;
-        for (let j in connections) {
-            if (typeof j[segment] !== 'undefined') {
-                isValid = true;
-                break;
-            }
-        }
-        
-        if (isValid) {
-            busStops[from][to] = duration;
-            busStops[to][from] = duration;
-        }
-    }
+    // let connections = {};
+    // for (let i in routes.linjastot) {
+    //     connections[i] = {};
+    //     for (let j = 0; j < routes.linjastot.length-1; j++) {
+    //         connections[i][routes.linjastot[i][j] + routes.linjastot[i][j+1]] = true;
+    //         connections[i][routes.linjastot[i][j+1] + routes.linjastot[i][j]] = true;
+    //     }
+    // }
+    // 
+    // for (let i = 0; i < routes.tiet.length; i++) {
+    //     let duration = routes.tiet[i].kesto;
+    //     let from = routes.tiet[i].mista;
+    //     let to = routes.tiet[i].mihin;
+    // 
+    //     let segment = from + to;
+    //     let isValid = false;
+    //     for (let j in connections) {
+    //         if (typeof j[segment] !== 'undefined') {
+    //             isValid = true;
+    //             break;
+    //         }
+    //     }
+    // 
+    //     if (isValid) {
+    //         busStops[from][to] = duration;
+    //         busStops[to][from] = duration;
+    //     }
+    // }
     
     return busStops;
 }
