@@ -38,7 +38,7 @@
         4) pysäkit kaikki samanvärisiä. -->
 
         <script>
-            var routes, prevButtonA, prevButtonB;
+            var busStops, routes, prevButtonA, prevButtonB;
 
             function checkRoute( a, b ) {
                 if (a == b) {
@@ -103,10 +103,11 @@
             })
             .then(data => {
                 routes = data;
-                for ( var i = 0; i < routes.pysakit.length; i++ ) {
+				busStops = prepareRoutes( routes );
+                for ( let i = 0; i < routes.pysakit.length; i++ ) {
                     createButtons( i, "start" );
                 }
-                for ( var i = 0; i < routes.pysakit.length; i++ ) {
+                for ( let i = 0; i < routes.pysakit.length; i++ ) {
                     createButtons( i, "end" );
                 }
             })
