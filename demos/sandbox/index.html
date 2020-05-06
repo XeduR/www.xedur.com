@@ -26,6 +26,7 @@ display.setDefault( "background", 0, 0.3, 0.8 )
 -- Require and start the physics engine.
 local physics = require("physics")
 physics.start()
+physics.setGravity( 0, 9.81 )
 
 -- Create a rock, the ground and the crate, and give them all physics bodies.
 local rock = display.newImage( "images/rock.png", 510, 570 )
@@ -35,40 +36,38 @@ local ground = display.newImage( "images/ground.png", 480, 608 )
 physics.addBody( ground, "static", { density=1, friction=0.9, bounce=0.2 } )
 
 local crate = display.newImage( "images/crate.png", 480, 100 )
-physics.addBody( crate, "dynamic", { density=0.8, friction=0.9, bounce=0.2 } )
+physics.addBody( crate, "dynamic", { density=1, friction=0.9, bounce=0.2 } )
 -- crate:setFillColor( 1, 0, 0 ) -- Uncomment this line to apply red tint to the crate.
 
 -- Add two lines of text.
 local text1 = display.newText( "Drag the crate with your mouse", 640, 30, native.systemFontBold, 40 )
 local text2 = display.newText( "Or if you have other cool ideas, then try adding them!", 600, 64, native.systemFontBold, 20 )
 
--- And finally create a drag function for when the crate is touched.
-local function drag( event )
-    if event.phase == "began" then
-        -- Set focus on crate, stop its movement and stop gravity from affecting it.
-        event.target.touched = true
-        display.getCurrentStage():setFocus( event.target )
-        event.target:setLinearVelocity( 0, 0 )
-        event.target.gravityScale = 0
-        event.target.xStart = event.target.x
-        event.target.yStart = event.target.y
-    elseif event.phase == "moved" then
-        -- Update the crate's position.
-        if event.target.touched then
-            event.target.x = event.target.xStart + event.xDelta
-            event.target.y = event.target.yStart + event.yDelta
-        end
-    else
-        -- Reapply gravity and undo touch focus.
-        if event.target.touched then
-            event.target.touched = false
-            display.getCurrentStage():setFocus( nil )
-            event.target:setLinearVelocity( 0, 9.81 )
-            event.target.gravityScale = 1
-        end
-    end
+local function dragCrate( event, params )
+	local body = event.target
+	local phase = event.phase
+	local stage = display.getCurrentStage()
+
+	if "began" == phase then
+		stage:setFocus( body )
+		body.isFocus = true
+		body.tempJoint = physics.newJoint( "touch", body, event.x, event.y )
+	
+	elseif body.isFocus then
+		if "moved" == phase then
+			body.tempJoint:setTarget( event.x, event.y )
+
+		elseif "ended" == phase or "cancelled" == phase then
+			stage:setFocus( nil )
+			body.isFocus = false	
+			body.tempJoint:removeSelf()
+      		
+		end
+	end
+
+	return true
 end
-crate:addEventListener( "touch", drag )
+crate:addEventListener( "touch", dragCrate )
 </textarea>
         </div>
         
