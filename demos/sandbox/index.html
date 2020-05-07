@@ -5,95 +5,95 @@
     <link href="./codemirror/lib/codemirror.css" rel="stylesheet"/>
     <script src="./codemirror/lua.js"></script>
     <link href="./codemirror/dracula.css" rel="stylesheet"/>
+    <script src="./js/detectMobile.js"></script>
     <link rel="stylesheet" type="text/css" href="css/styles.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
-    <title>XeduR - Solar2D Sandbox</title>
+    <title>XeduR's Solar2D Playground</title
 </head>
 
 <body>
-    <div id="wrapper">
-        <h1>WIP - Solar2D Sandbox</h1>
-        <p class="disclaimer">
-            Write your code here and press RUN CODE button on the right when you are ready.<br><br>
-            Note: You can't use network calls, also <u>this sandbox is not intended for mobile browsers</u> and it may not run on them.
-        </p>
-        
-        <div class="column-left">
-            <textarea id="editor">
--- Change the background to blue.
-display.setDefault( "background", 0, 0.3, 0.8 )
-
--- Require and start the physics engine.
-local physics = require("physics")
-physics.start()
-physics.setGravity( 0, 9.81 )
-
--- Create a rock, the ground and the crate, and give them all physics bodies.
-local rock = display.newImage( "images/rock.png", 510, 570 )
-physics.addBody( rock, "static", { density=1, friction=0.9, bounce=0.1, shape={ -20,0, -3,-11, 3,-10, 20,0 } } )
-
-local ground = display.newImage( "images/ground.png", 480, 608 )
-physics.addBody( ground, "static", { density=1, friction=0.9, bounce=0.2 } )
-
-local crate = display.newImage( "images/crate.png", 480, 100 )
-physics.addBody( crate, "dynamic", { density=1, friction=0.9, bounce=0.2 } )
--- crate:setFillColor( 1, 0, 0 ) -- Uncomment this line to apply red tint to the crate.
-
--- Add two lines of text.
-local text1 = display.newText( "Drag the crate with your mouse", 640, 30, native.systemFontBold, 40 )
-local text2 = display.newText( "Or if you have other cool ideas, then try adding them!", 600, 64, native.systemFontBold, 20 )
-
-local function dragCrate( event, params )
-	local body = event.target
-	local phase = event.phase
-	local stage = display.getCurrentStage()
-
-	if "began" == phase then
-		stage:setFocus( body )
-		body.isFocus = true
-		body.tempJoint = physics.newJoint( "touch", body, event.x, event.y )
-	
-	elseif body.isFocus then
-		if "moved" == phase then
-			body.tempJoint:setTarget( event.x, event.y )
-
-		elseif "ended" == phase or "cancelled" == phase then
-			stage:setFocus( nil )
-			body.isFocus = false	
-			body.tempJoint:removeSelf()
-      		
-		end
-	end
-
-	return true
-end
-crate:addEventListener( "touch", dragCrate )
-</textarea>
-        </div>
-        
-        <div class="column-right">
-            <div id="frame" class="iframe-container">
-                <iframe src="app/index.html"></iframe>
-            </div>
-        </div>
-    
-        <script>
-            var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
-                mode: "lua",
-                theme: "dracula",
-                lineNumbers: true
-            });
+    <div class="container">
+        <main class="content">
+            <div id="wrapper">
+                <div class="header">
+                    <img src="./img/logo.png">
+                </div>
+        		<noscript><h4>JavaScript disabled. You must enable JavaScript to use the Playground.</h4></noscript>
+                <div class="mobile">
+                    <p id="mobile-disclaimer"></p>
+                </div>
+                
+                <div class="column-left">
+                    <textarea id="editor"></textarea>
+                </div>
+                
+                <div class="column-right">
+                    <div id="frame" class="iframe-container">
+                        <iframe src="app/index.html"></iframe>
+                    </div>
+                </div>
             
-            function getCode() {
-                var code = editor.getValue();
-                return code;
-            }    
-        </script>
-    </div>
-    
-    <div style="clear:both;"></div>
-    <div id="footer">
-        <p><a href="https://www.erantanen.com/">© 2019-2020 Eetu Rantanen</a></p>
+                <script>
+                    if (window.mobileCheck()) {
+                        document.getElementById("mobile-disclaimer").innerHTML = "You seem to be on a mobile device. This website is not designed for mobile devices and it may not run correctly or at all on your device.";
+                        document.getElementById("mobile-disclaimer").style.padding = "20px";
+                        document.getElementById("mobile-disclaimer").style.margin = "0px";
+                    }
+                
+                    var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+                        mode: "lua",
+                        theme: "dracula",
+                        lineNumbers: true
+                    });
+                    
+                    function getCode() {
+                        var code = editor.getValue();
+                        return code;
+                    }
+                    editor.setValue("");
+                    editor.clearHistory();
+
+                    $.ajax({
+                        url: "./demos/demos.json",
+                        type: "HEAD",
+                        error: function() {
+                            document.getElementById("mobile-disclaimer").innerHTML = "There was a problem with loading the sample projects. Try again later.";
+                            document.getElementById("mobile-disclaimer").style.padding = "20px";
+                            document.getElementById("mobile-disclaimer").style.margin = "0px";
+                        },
+                        success: function() {
+                            $.getJSON( "./demos/demos.json", function(json) {            
+                                editor.replaceRange( json[1].code, {line: 1} );       
+                                
+                                 // TODO: need to create and/or add button event listeners here for switching to other sample projects.
+                            });
+                        }
+                    });
+                    
+                    var maxSize = false;
+                    function resizeEditor(){
+                        var width = document.documentElement.clientWidth;
+                        if (!maxSize || width < 1920) {
+                            if (width >= 1920) {
+                                maxSize = true;
+                            } else {
+                                maxSize = false;
+                            }
+                            width = width*0.5*0.6666;
+                            editor.setSize(null, Math.min(width,960));
+                        }
+                    }
+
+                    window.addEventListener("resize", resizeEditor);
+                    resizeEditor();
+                </script>
+            </div>
+            
+            <div style="clear:both;"></div>
+        </main>
+            
+        <footer><p><a href="https://www.erantanen.com/">© 2020 Eetu Rantanen</a></p></footer>
     </div>
 </body>
 </html>
