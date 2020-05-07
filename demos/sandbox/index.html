@@ -64,8 +64,7 @@
                         },
                         success: function() {
                             $.getJSON( "./demos/demos.json", function(json) {
-                                console.log( json );        
-                                editor.replaceRange( json[1].code, {line: 1} );       
+                                editor.replaceRange( json[0].code, {line: 1} );       
                                 
                                  // TODO: need to create and/or add button event listeners here for switching to other sample projects.
                             });
