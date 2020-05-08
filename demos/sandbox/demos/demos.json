@@ -9,8 +9,8 @@
     },
     
     {
-        "title": "empty 1",
-        "code": ""
+        "title": "Physics Typer",
+        "code": "-- Change the background to grey\ndisplay.setDefault( \"background\", 0.1 )\n\nlocal x, y = display.contentCenterX, display.contentCenterY -- source of the letters\nlocal rnd = math.random\n\n-- Help text\ndisplay.newText( {text = \"Start typing...\", x = x, y = y/4, fontSize = 32 } )\n\n-- Require and start the physics engine\nlocal physics = require(\"physics\")\nphysics.start()\nphysics.setGravity( 0, 64 ) -- set gravity\n\nlocal ground = display.newRect(x,display.contentHeight, display.contentWidth * 2, 16)\nground.alpha = 0.25\nphysics.addBody(ground, \"static\")\n\n-- Text options\nlocal options = { x = x, y = y, fontSize = 128, font = native.systemFontBold }\n\n-- Called when a key event has been received.\nlocal function key( event )\n  if event.phase == \"up\" then\n    -- create the key you pressed\n    options.text = event.keyName:len() == 1 and event.keyName or \"?\" -- one letter keys only\n    local letter = display.newText( options )\n    -- render the text to a display object\n    local object = display.capture(letter)\n    -- add a premade shader\n    object.fill.effect = \"filter.colorChannelOffset\"\n    object.fill.effect.xTexels = 4\n    object.fill.effect.yTexels = 4\n    object:translate(x,y) -- move from 0,0\n    -- remove the letter\n    display.remove(letter)\n    -- let\'s give it a quick physics body\n    physics.addBody(object, { radius = 32, bounce = 0.5, friction = 0 } )\n    object.linearDamping = 1\n    object.angularDamping= 1\n    -- gie it a push\n    object:applyLinearImpulse(rnd()-rnd(),-rnd()-rnd(),rnd(),rnd())\n    object.angularVelocity = object.angularVelocity * 0.025 -- cap spin speed\n  end\nend\n\n-- Add the key event\nRuntime:addEventListener( \"key\", key )"
     },
     
     {

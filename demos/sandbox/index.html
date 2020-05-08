@@ -114,6 +114,8 @@
                     
                     function tempFunction(target){
                         if (typeof samples === 'object' && typeof samples[target] === 'object') {
+                            editor.setValue("");
+                            editor.clearHistory();
                             editor.replaceRange( samples[target].code, {line: 1} );
                         }
                     }
