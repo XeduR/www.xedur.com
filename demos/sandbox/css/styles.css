@@ -1,31 +1,15 @@
+#wrapper {
+    max-width: 1920px;
+    width: 100%;
+    display: block;
+    margin: 0 auto;
+}
+
 body { 
     background: #0E0E0E;
     font-family: 'Roboto', sans-serif;
     padding: 0;
     margin: 0;
-}
-
-h4 {
-	color: #ffffff;
-	background: #be0019;
-	font-size: 22px;
-	padding: 20px 20px;
-	margin: 0;
-	text-align: center;
-}
-
-.header {
-    color: #FCBA04;
-    background: #080808;
-    text-align: center;
-    padding: 10px 0px;
-    margin: 0;
-}
-
-.container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
 }
 
 main {
@@ -42,24 +26,76 @@ footer {
   margin: 0px;
 }
 
-/* .footer {
-    width: 100%;
-    height: 50px;
-    display: block;
+h4 {
+	color: #ffffff;
+	background: #be0019;
+	font-size: 22px;
+	padding: 20px 20px;
+	margin: 0;
+	text-align: center;
+}
+
+.header {
+    position: relative;
     color: #FCBA04;
     background: #080808;
     text-align: center;
-    padding: 4px 0px;
-    bottom: 0px;
-    left: 0px;
-    margin: 0px;
-} */
+    padding: 10px 0px;
+    margin: 0;
+}
+
+@media screen and (max-width: 530px) {
+    .header {
+        height: 200px;
+        background: red;
+    }
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333;
+}
+
+li {
+  float: right;
+}
+
+li a {
+  display: inline-block;
+  /* color: white; */
+  /* text-align: center; */
+  padding: 10px 16px;
+  /* text-decoration: none; */
+}
+
+li a:hover:not(.active) {
+  background-color: #111;
+}
+
+.active {
+  background-color: #4CAF50;
+}
+
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.hidden {
+    margin: 0;
+    padding: 0;
+}
 
 .mobile {
     display: block;
     color: #FCBA04;
-    background: #141518;
     text-align: center;
+    padding: 0;
     margin: 0;
 }
 
@@ -70,39 +106,6 @@ a, a:visited {
 
 a:hover {
     font-weight: bold;
-}
-
-.disclaimer {
-    background: white;
-    padding: 20px;
-    text-align: left;
-    font-weight: bold;
-}
-
-#wrapper {
-    max-width: 1920px;
-    width: 100%;
-    display: block;
-    margin: 0 auto;
-}
-
-.grid-container {
-    display: grid;
-}
-
-.grid-container--fit {
-    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-}
-
-.grid-element {
-  background-color: deepPink;
-  padding: 20px;
-  color: #fff;
-  border: 1px solid #fff;
-}
-
-.CodeMirror {
-    height: 480px;
 }
 
 .column-left {

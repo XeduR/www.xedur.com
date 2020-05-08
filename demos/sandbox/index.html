@@ -9,19 +9,40 @@
     <link rel="stylesheet" type="text/css" href="css/styles.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
-    <title>XeduR's Solar2D Playground</title
+    <title>XeduR's Solar2D Playground - WIP</title
 </head>
 
 <body>
     <div class="container">
         <main class="content">
             <div id="wrapper">
-                <div class="header">
+                <!-- <div class="header">
                     <img src="./img/logo.png">
                 </div>
+                        
+                <div id="header">
+                	<header role="banner">
+                        <img src="./img/logo.png">
+                		<nav id="navigation" role="navigation">
+                		<ul>
+                			<li><a href="#" title="Samples">Samples</a></li>
+                            <li><a href="#" title="Biographies">Info</a></li>
+                            <li><a href="#" title="Services">Get Solar2D</a></li>
+                		</ul>
+                		</nav>
+                    </header>
+                </div> -->
+                        
+                <ul class="header">
+                    <img style="float:left;padding-left:10px;" src="./img/logo.png">
+                    <li onclick="tempFunction(2)"><a href="#">Physics Type</a></li>
+                    <li onclick="tempFunction(1)"><a href="#">Crate</a></li>
+                    <li onclick="tempFunction(0)"><a href="#">Empty</a></li>
+                </ul>
+                
         		<noscript><h4>JavaScript disabled. You must enable JavaScript to use the Playground.</h4></noscript>
                 <div class="mobile">
-                    <p id="mobile-disclaimer"></p>
+                    <p class="hidden" id="mobile-disclaimer"></p>
                 </div>
                 
                 <div class="column-left">
@@ -35,6 +56,8 @@
                 </div>
             
                 <script>
+                    var samples;
+                    
                     if (window.mobileCheck()) {
                         document.getElementById("mobile-disclaimer").innerHTML = "You seem to be on a mobile device. This website is not designed for mobile devices and it may not run correctly or at all on your device.";
                         document.getElementById("mobile-disclaimer").style.padding = "20px";
@@ -64,7 +87,8 @@
                         },
                         success: function() {
                             $.getJSON( "./demos/demos.json", function(json) {
-                                editor.replaceRange( json[0].code, {line: 1} );       
+                                samples = json;
+                                editor.replaceRange( json[1].code, {line: 1} );       
                                 
                                  // TODO: need to create and/or add button event listeners here for switching to other sample projects.
                             });
@@ -87,13 +111,19 @@
 
                     window.addEventListener("resize", resizeEditor);
                     resizeEditor();
+                    
+                    function tempFunction(target){
+                        if (typeof samples === 'object' && typeof samples[target] === 'object') {
+                            editor.replaceRange( samples[target].code, {line: 1} );
+                        }
+                    }
                 </script>
             </div>
             
             <div style="clear:both;"></div>
         </main>
             
-        <footer><p><a href="https://www.erantanen.com/">© 2020 Eetu Rantanen</a></p></footer>
+        <footer><p><a href="https://www.erantanen.com/">Solar2D Playground (Work in Progress) © 2020 Eetu Rantanen</a></p></footer>
     </div>
 </body>
 </html>
