@@ -87,14 +87,17 @@
                         success: function() {
                             $.getJSON( "./demos/demos.json", function(json) {
                                 sampleProject = json;
-                                editor.replaceRange( json[1].code, {line: 1} );       
+                                // editor.replaceRange( json[1].code, {line: 1} );
                                 
                                 var buttons = "";
                                 for (var i = 0; i < sampleProject.length; i++) {
-                                    buttons += '<button class="button-code" onclick="loadCode('+i+')">'+sampleProject[i].title+'</button>'
+                                    buttons += '<button id="project-'+i+'" class="button-code" onclick="loadCode('+i+')">'+sampleProject[i].title+'</button>'
                                 }
                                 document.getElementById("sample-buttons").innerHTML = buttons;
                             });
+                            // Open the code panel and crate project by default.
+                            document.getElementById("code").click();
+                            document.getElementById("project-1").click();
                         }
                     });
 
