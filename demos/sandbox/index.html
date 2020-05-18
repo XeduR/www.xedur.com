@@ -94,10 +94,10 @@
                                     buttons += '<button id="project-'+i+'" class="button-code" onclick="loadCode('+i+')">'+sampleProject[i].title+'</button>'
                                 }
                                 document.getElementById("sample-buttons").innerHTML = buttons;
+                                // Open the code panel and crate project by default.
+                                document.getElementById("code").click();
+                                document.getElementById("project-1").click();
                             });
-                            // Open the code panel and crate project by default.
-                            document.getElementById("code").click();
-                            document.getElementById("project-1").click();
                         }
                     });
 
