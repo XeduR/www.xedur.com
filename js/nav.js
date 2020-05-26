@@ -1,4 +1,4 @@
-$(document).ready(function(){
+$(window).on("load", function(){
     $("a").on('click', function(event) {
         if (this.hash !== "") {
             event.preventDefault();

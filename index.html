@@ -32,7 +32,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 	<script src="/js/nav.js"></script>
     <script>
-        $(document).ready(function(){
+        $(window).on("load", function(){
             $('#header').load("/html/header.html");
             $('#button-top').load("/html/button.html");
             $('#button-bottom').load("/html/button.html");
@@ -48,6 +48,10 @@
     <div class="content after-header">
         
         <div class="segment center" id="me">
+            <div class="demo-panel">
+                <p style="text-align: center;">The site is still under construction. There are a few bugs, broken links and placeholder images.<br>These issues should be resolved during Wednesday 27 May. Thank you for your patience.</p> 
+            </div> 
+            
             <h1>Hello!</h1>
             <p>
                 My name is <span style="color:#FCBA04;">Eetu Rantanen</span>, but here on the interwebz I often go by <span style="color:#FCBA04;">XeduR</span>.<br><br>
@@ -65,9 +69,7 @@
                 then <a href="https://ko-fi.com/xedur">consider buying me a cup of coffee over at Ko-fi</a>.
             </p>
 
-            <div id="button-top"></div>
-            
-            <p>I'm using placeholder images on the site for the time being... I'll take care of those in a day or two.</p>    
+            <div id="button-top"></div>   
             
             <div id="line"></div>
             <h3>Contact</h3>
