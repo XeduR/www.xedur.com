@@ -1,136 +1,490 @@
-<!DOCTYPE HTML>
-<html lang="en-US">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="description" content="HTML5 demo projects">
-		<meta name="keywords" content="XeduR, Spyric, Solar2D, Solar, 2D, HTML5, Lua, gamedev, game, game development">
-		<meta name="author" content="Eetu Rantanen">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
-		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Work+Sans">
-		<link rel="stylesheet" href="/css/styles.css">
-		<title>XeduR - Portfolio</title>
+<!DOCTYPE html>    
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="Eetu Rantanen, XeduR, Spyric, Solar2D, Lua, gamedev, game development, open source, code portfolio">
+    <meta name="description" content="My name is Eetu Rantanen, but here on the interwebz I often go by XeduR. This is my code portfolio site and it is full of all kinds of interesting projects.">
+    <meta name="author" content="Eetu Rantanen">
+    
+    <meta charset="UTF-8">
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="./js/nav.js"></script>
+    <script>
+        $(document).ready(function(){
+            $('#header').load("./html/header.html");
+            $('#button').load("./html/button.html");
+            $('#footer').load("./html/footer.html");
+        });
+    </script>
+    
+    <title>XeduR - Code Portfolio</title>
+</head>
+<body>
+    <nav>
+        <ul id="desktop-nav" class="menu">
+            <li class="logo"><a href="#"><img src="img/XeduR - Code Portfolio.png" alt="Xedur - Code Portfolio"></a></li>
+            <li class="item"><a href="#me">Me</a></li>
 
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-		<script>
-			$(document).ready(function(){
-				$('#header').load("/html/header.html");
-				$('#button').load("/html/button.html");
-				$('#footer').load("/html/footer.html");
-			});
-		</script>
-	</head>
+            <li class="item dropdown">
+                <a href="#plugins" class="dropbtn item">Solar2D</a>
+                <div class="dropdown-content">
+                    <a href="#plugins">Plugins</a>
+                    <a href="#unassorted">Unassorted</a>
+                    <a href="#learn">Learn Solar2D</a>
+                </div>
+            </li>
+            
+            <li class="item"><a href="#games">Games</a></li>
+            <li class="item last"><a href="#other">Other</a></li>
+        </ul>
+        
+        <ul id="mobile-nav" class="menu">
+            <li class="logo"><a href="#"><img src="img/XeduR - Code Portfolio.png" alt="Xedur - Code Portfolio"></a></li>
+            <li class="item"><a href="#me">Me</a></li>
+            
+            <li class="item"><a href="#plugins">Solar2D</a></li>
+            <li class="item mobile m-first"><a href="#plugins">Plugins</a></li>
+            <li class="item mobile"><a href="#unassorted">Unassorted</a></li>
+            <li class="item mobile m-last"><a href="#learn">Learn Solar2D</a></li>
+            
+            <li class="item"><a href="#games">Games</a></li>
+            <li class="item"><a href="#other">Other</a></li>
+            <li class="item mobile-nav-end"></li>
+            <li class="toggle"><p class="mobile-menu">☰</p></li>
+        </ul>
+    </nav>
+    <div id="header"></div>
 
-	<body>
-		<div id="page">
-			<div id="wrapper">
-				<div id="header"></div>
+    <div class="content after-header">
+        
+        <div class="segment center" id="me">
+            <h1>Hello and welcome to my code portfolio!</h1>
+            <p>
+                My name is <span style="color:#FCBA04;">Eetu Rantanen</span>, but here on the interwebz I often go by <span style="color:#FCBA04;">XeduR</span>.<br><br>
 
-				<div id="block">
-					<div id="line"></div>
-					<h2>Hello!<br></h2>
-					<div id="lineSmall"></div>
+                I am a software developer from Finland with a passion for games. In addition to game development, I also dabble in general
+                app development, full-stack web development, graphic design, creative writing and all sorts of problem solving.<br><br>
 
-					<p class="body">
-						<b>This entire site is still very much under construction, so don't be surprised if something looks weird or doesn't work perfectly.
-						I should have the time to finally finish everything after this weekend's Ludum Dare 46. Or so I'm hoping.</b><br><br>
+                On this site, you'll find interactive online demos for many of the projects that I've created over the years.
+                The source code for most of these projects is also publicly available via <a href="https://github.com/XeduR">my GitHub profile</a> under the MIT License.
+                Similarly, you can find the source code for most of my Solar2D plugins at <a href="https://github.com/spyricGames">Spyric's GitHub profile</a>.
+                <br><br>
+                
+                While you don't need to credit me in any way for using my projects, I am always happy to hear when my projects are helping others. Everything that you find here
+                has been created by me in my <span style="text-decoration: underline;">free time</span>, so if you like what I'm doing and wish to support me in creating more,
+                then <a href="https://ko-fi.com/xedur">consider buying me a cup of coffee over at Ko-fi</a>.
+            </p>
 
-						Most of the projects on this site have been created using the Corona game engine (no relation to Covid-19).
-						The engine is being rebranded to Solar2D in the coming weeks and I'll be changing mentions of Corona to Solar2D after the weekend.<br><br>
-
-						But, now that all that's said:<br><br>
-
-						My name is Eetu Rantanen, but here on the interwebz I often go by XeduR. Welcome to my barely functional site!<br><br>
-						I am the founder and lead developer at Spyric, a small mobile game studio in Finland.
-						In addition to game development, I am into graphic design and fiction writing.
-						I also occasionally develop websites or other small web services for my clients.<br><br>
-						Here on this site, you'll find HTML5 demos for some of the projects that I've created over the years.
-						Most of these projects have public repositories available on GitHub under the MIT License.<br><br>
-						If you want to get in touch with me, you can do so <a class="body" href="mailto: eetu.rantanen@spyric.com">via email</a> or you can find me on the <a class="body" href="https://forums.coronalabs.com/">Corona forums</a>.
-					</p>
-					<div id="line"></div>
-				</div>
-
-				<div id="button"></div>
-
-				<noscript><h4>JavaScript disabled. You must enable JavaScript to run the demo projects.</h4></noscript>
+            <div id="button"></div>
+            
+            <p>I'm using placeholder images on the site for the time being... I'll take care of those in a day or two.</p>    
+            
+            <div id="line"></div>
+            <h3>Contact</h3>
+            <p>
+                If you wish to learn more about me or my services, or perhaps even hire me, then you should visit my other site: <a href="https://www.erantanen.com/">www.erantanen.com</a>.<br><br>
+                If you want to otherwise get in touch with me, you can always reach me via my email: <a href="mailto: eetu@erantanen.com">eetu@erantanen.com</a>.
+            </p>
+        </div>
 
 
+        <div class="segment center" id="plugins">
+            <h2>Plugins for Solar2D</h2>
 
-				<div id="block">
-					<div id="line"></div>
-						<h2>Plugins by Spyric</h2>
-						<div id="lineSmall"></div>
-						<p>These plugins are actively being maintained and developed.</p>
-					<div id="line"></div>
-					<ul>
-						<a class="list" href="/demos/spyricPerformance">
-							<li>
-								<b>Performance</b>
-								<p>Description</p>
-							</li>
-						</a>
-						<a class="list" href="/demos/spyricProgressRing">
-							<li>
-								<b>Progress Ring</b>
-								<p>Description</p>
-							</li>
-						</a>
-					</ul>
-					<div id="line"></div>
-				</div>
+            <p class="body">
+                I created these <a href="https://solar2d.com/">Solar2D</a> plugins for my company, <a href="https://www.spyric.com/">Spyric</a>, for the sole purpose of making game development faster and easier, or just because I thought they'd be cool or because they'd add something I needed that was missing from Solar2D. Documentations for these plugins is available at <a href="https://www.spyric.com/docs/">Spyric Docs</a>.
+            
+                <br><br><span style="text-decoration: underline;">I am currently in the process of uploading my existing projects to GitHub, and that may take a few weeks, so expect a few new projects to appear every day or so.</span>
+            </p>
+            <div id="line"></div>
+            <div class="grid">
+                <!-- <div class="project-container">
+                    <a href="https://xedur.com/">
+                        <img src="img/project1.jpg">
+                        <div class="text-block">
+                            <h2>Shadows</h2>
+                            <p>
+                                Spyric Shadows is the one and <u>only</u> plugin for Solar2D that makes it possible to create all sorts of shadows in your games.
+                            </p>
+                        </div>
+                    </a>
+                </div> -->
 
-				<br>
+                <!-- <div class="project-container">
+                    <a href="https://xedur.com/">
+                        <img src="img/project2.jpg">
+                        <div class="text-block">
+                            <h2>Weaver</h2>
+                            <p>
+                                Spyric Weaver loads and interprets stories/files created in Twine 2 or Yarn, and runs them in Solar2D.
+                            </p>
+                        </div>
+                    </a>
+                </div> -->
 
-				<div id="block">
-					<div id="line"></div>
-						<h2>Unassorted modules, functions and other projects</h2>
-						<div id="lineSmall"></div>
-						<p>These projects range from proofs of concepts to fully functioning games that I've created for one reason or another over the years. These projects are not being actively maintained or updated, unless there are breaking changes or bugs.</p>
-					<div id="line"></div>
-					<ul>
-						<a class="list" href="/demos/theDark">
-							<li>
-								<b>The Dark</b>
-								<p>Created for Ludum Dare 46 COMPO using Solar2D.</p>
-							</li>
-						</a>
-						<a class="list" href="/demos/Speed Test">
-							<li>
-								<b>Speed Test</b>
-								<p>Written in under 150 lines of code using Solar2D.</p>
-							</li>
-						</a>
-						<a class="list" href="/demos/Runners">
-							<li>
-								<b>Runners</b>
-								<p>Written in under 100 lines of code using Solar2D.</p>
-							</li>
-						</a>
-						<a class="list" href="/demos/Dodger">
-							<li>
-								<b>Dodger</b>
-								<p>Written in under 50 lines of code using Solar2D.</p>
-							</li>
-						</a>
-						<a class="list" href="/demos/autotile">
-							<li>
-								<b>autotile</b>
-								<p>Description</p>
-							</li>
-						</a>
-						<a class="list" href="/demos/verifyDomain">
-							<li>
-								<b>verifyDomain</b>
-								<p>Description</p>
-							</li>
-						</a>
-					</ul>
-					<div id="line"></div>
-				</div>
+                <!-- <div class="project-container">
+                    <a href="https://xedur.com/">
+                        <img src="img/project3.jpg">
+                        <div class="text-block">
+                            <h2>BMFont</h2>
+                            <p>
+                                Based on PonyFont, Spyric BMFont makes it easy to use and stylize bitmap fonts in your projects.
+                            </p>
+                        </div>
+                    </a>
+                </div> -->
 
-				<div id="footer"></div>
-			</div>
-		</div>
-	</body>
+                <div class="project-container">
+                    <a href="https://xedur.com/">
+                        <img src="img/project4.jpg">
+                        <div class="text-block">
+                            <h2>Performance</h2>
+                            <p>
+                                Spyric Performance adds a customisable performance meter to app to make performance tracking easy.
+                            </p>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- <div class="project-container">
+                    <a href="https://xedur.com/">
+                        <img src="img/project1.jpg">
+                        <div class="text-block">
+                            <h2>Progress Ring</h2>
+                            <p>
+                                Spyric Progress Ring allows you to create fully stylised, animated and fully controllable progress rings to your projects.
+                            </p>
+                        </div>
+                    </a>
+                </div> -->
+
+                <!-- <div class="project-container">
+                    <a href="https://xedur.com/">
+                        <img src="img/project2.jpg">
+                        <div class="text-block">
+                            <h2>Print to Display</h2>
+                            <p>
+                                Spyric Print to Display adds a console to your app, making it easy to view prints even while testing on devices.
+                            </p>
+                        </div>
+                    </a>
+                </div> -->
+
+                <!-- <div class="project-container">
+                    <a href="https://xedur.com/">
+                        <img src="img/project3.jpg">
+                        <div class="text-block">
+                            <h2>Window</h2>
+                            <p>
+                                Spyric Window allows you to create windows or buttons of any size to your app using only a single small image as a source. 
+                            </p>
+                        </div>
+                    </a>
+                </div> -->
+
+                <!-- <div class="project-container">
+                    <a href="https://xedur.com/">
+                        <img src="img/project4.jpg">
+                        <div class="text-block">
+                            <h2>Morph</h2>
+                            <p>
+                                Spyric Morph allows you to distort, scale and/or flip display objects and their attached physics bodies with ease.
+                            </p>
+                        </div>
+                    </a>
+                </div> -->
+
+                <!-- <div class="project-container">
+                    <a href="https://xedur.com/">
+                        <img src="img/project1.jpg">
+                        <div class="text-block">
+                            <h2>Font Loader</h2>
+                            <p>
+                                Spyric Font Loader will preload all of your custom fonts so that your app will run faster when it needs to use the fonts again.
+                            </p>
+                        </div>
+                    </a>
+                </div> -->
+
+                <!-- <div class="project-container">
+                    <a href="https://xedur.com/">
+                        <img src="img/project2.jpg">
+                        <div class="text-block">
+                            <h2>Resolution</h2>
+                            <p>
+                                Spyric Resolution makes it possible to dynamically change the resolution of your desktop games.
+                            </p>
+                        </div>
+                    </a>
+                </div> -->
+
+                <!-- <div class="project-container">
+                    <a href="https://xedur.com/">
+                        <img src="img/project3.jpg">
+                        <div class="text-block">
+                            <h2>Collisions</h2>
+                            <p>
+                                Spyric Collisions removes the calculations and guesswork from creating and managing collision filters.
+                            </p>
+                        </div>
+                    </a>
+                </div> -->
+            </div>
+        </div>
+
+        <div class="segment center" id="unassorted">
+            <h2>Unassorted Solar2D functions and libraries</h2>
+
+            <p class="body">
+                These projects range from individual tables or concepts to more complex functions and systems. Essentially, these projects
+                come in all shapes and sizes, but I either didn't consider them big enough or distinct enough to turn them into plugins.
+            </p>
+            <div id="line"></div>
+            <div class="grid">
+
+                <div class="project-container">
+                    <a href="https://xedur.com/">
+                        <img src="img/project1.jpg">
+                        <div class="text-block">
+                            <h2>screen.lua</h2>
+                            <p>
+                                screen.lua is a table consisting of dynamically calculated screen dimensions, making creating dynamic UIs and games/apps easier.
+                            </p>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="project-container">
+                    <a href="https://xedur.com/">
+                        <img src="img/project2.jpg">
+                        <div class="text-block">
+                            <h2>verifyDomain</h2>
+                            <p>
+                                verifyDomain is a set of functions that you can use to verify that your HTML5 app is running on approved domains.
+                            </p>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="project-container">
+                    <a href="https://xedur.com/">
+                        <img src="img/project3.jpg">
+                        <div class="text-block">
+                            <h2>Autotile</h2>
+                            <p>
+                                With Autotile, you can just touch a cell on a grid and it will figure out what tile should go there and update the connected tiles too.
+                            </p>
+                        </div>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+        <div class="divider center"></div>
+
+        <div class="segment learn center" id="learn">
+            <h2>Learn Solar2D</h2>
+            <p>
+                During summer or early Fall 2020, I will be creating an online course aimed at beginners who wish to learn game development using Solar2D, a free and completely open source game engine.<br><br>
+                The course will consist of creating several small incrementally more difficult games while going through each and every step of the process as we go along.<br><br>
+
+                <a href="https://www.learnsolar2d.com/">Stay tuned!</a>
+            </p>
+        </div>
+        
+        <div class="divider center"></div>
+
+        <div class="segment center" id="games">
+            <h2>Games</h2>
+
+            <p class="body">
+                These are some of the non-commercial games that I've created over the years in my free time.
+                These games do not include any of the games I've created for my clients or other commercial projects.
+            </p>
+            <div id="line"></div>
+            <div class="grid">
+
+                <div class="project-container">
+                    <a href="https://xedur.com/">
+                        <img src="img/project1.jpg">
+                        <div class="text-block">
+                            <h2>The Dark</h2>
+                            <p>
+                                Keep yourself and your campfire alive through a freezing winter night. Created for Ludum Dare 46 COMPO.
+                            </p>
+
+                            <p class="tech">
+                                <strong>Tech</strong>: Solar2D, Lua
+                            </p>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="project-container">
+                    <a href="https://xedur.com/">
+                        <img src="img/project2.jpg">
+                        <div class="text-block">
+                            <h2>Get a Job, Baby!</h2>
+                            <p>
+                                You were just born but it's already time to pull your weight, so get a job, baby! Created for Ludum Dare 45 JAM.
+                            </p>
+
+                            <p class="tech">
+                                <strong>Tech</strong>: Solar2D, Lua
+                            </p>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="project-container">
+                    <a href="https://xedur.com/">
+                        <img src="img/project3.jpg">
+                        <div class="text-block">
+                            <h2>Speed Test</h2>
+                            <p>
+                                A game written in under 150 lines of code where the goal is to follow the sequence of lights for as long as you can while the game speeds up.
+                            </p>
+
+                            <p class="tech">
+                                <strong>Tech</strong>: Solar2D, Lua
+                            </p>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="project-container">
+                    <a href="https://xedur.com/">
+                        <img src="img/project4.jpg">
+                        <div class="text-block">
+                            <h2>Runners</h2>
+                            <p>
+                                A game written in under 100 lines of code where the goal is to keep the runners from escaping.
+                            </p>
+
+                            <p class="tech">
+                                <strong>Tech</strong>: Solar2D, Lua
+                            </p>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="project-container">
+                    <a href="https://xedur.com/">
+                        <img src="img/project1.jpg">
+                        <div class="text-block">
+                            <h2>Bomb Tap</h2>
+                            <p>
+                                A game written in under 50 lines of code where the goal is to keep the bomb from touching anything.
+                            </p>
+
+                            <p class="tech">
+                                <strong>Tech</strong>: Solar2D, Lua
+                            </p>
+                        </div>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="segment center" id="other">
+            <h2>Other projects</h2>
+
+            <p class="body">
+                All of the projects in here are explicitly my personal code projects. If you wish to see some of the graphic design, websites or other work
+                that I've created for some of my clients over the years, then please visit my other site: <a href="https://www.erantanen.com/">www.erantanen.com</a>.
+                <br><br>
+                <strong>Note</strong>: All of these projects open in a new page.
+            </p>
+            <div id="line"></div>
+            <div class="grid">
+
+                <div class="project-container">
+                    <a href="https://github.com/XeduR/xedur.github.io" target="_blank">
+                        <img src="img/project2.jpg">
+                        <div class="text-block">
+                            <h2>XeduR.com</h2>
+                            <p>
+                                This website that you are on right now! You've seen how it works, but if you want to see the source too, then look no further.
+                            </p>
+
+                            <p class="tech">
+                                <strong>Tech</strong>: GitHub Pages, HTML, CSS, JavaScript
+                            </p>
+                        </div>
+                    </a>
+                </div>
+    
+                <div class="project-container">
+                    <a href="https://www.solar2dplayground.com/" target="_blank">
+                        <img src="img/project2.jpg">
+                        <div class="text-block">
+                            <h2>Solar2D Playground</h2>
+                            <p>
+                                Solar2D Playground is an interactive website that allows you to create and run Solar2D projects instantly online.
+                            </p>
+
+                            <p class="tech">
+                                <strong>Tech</strong>: Solar2D, Lua, HTML, CSS, JavaScript
+                            </p>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="project-container">
+                    <a href="https://www.xedur.com/demos/koodihaaste/" target="_blank">
+                        <img src="img/project1.jpg">
+                        <div class="text-block">
+                            <h2>Reittiopas</h2>
+                            <p>
+                                A simple bus route planning web app created as a part of Solidabis' 2020 code challenge (NB! the app is in Finnish).
+                            </p>
+
+                            <p class="tech">
+                                <strong>Tech</strong>: HTML, CSS, JavaScript
+                            </p>
+                        </div>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+        
+        <div class="segment  center">
+            <div id="button"></div>
+        </div>
+
+        <div class="segment  center">
+            <h3>Contact</h3>
+            <p>
+                If you wish to learn more about me or my services, or perhaps even hire me, then you should visit my other site: <a href="https://www.erantanen.com/">www.erantanen.com</a>.<br><br>
+                If you want to otherwise get in touch with me, you can always reach me via my email: <a href="mailto: eetu@erantanen.com">eetu@erantanen.com</a>.
+            </p>
+        </div>
+    </div>
+    <div id="footer"></div>
+</body>
 </html>
