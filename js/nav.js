@@ -1,4 +1,4 @@
-$(document).ready(function() {
+$(function() {
     $("a").on('click', function(event) {
         if (this.hash !== "") {
             event.preventDefault();
@@ -12,21 +12,13 @@ $(document).ready(function() {
     });
 });
 
-function toggleMobileNav() {
-    if ($(".item").hasClass("active")) {
-        $(".item").removeClass("active");
-    } else {
-        $(".item").addClass("active");
-    }
-}
-
-$(document).ready(function() {
+$(function() {
     $(".toggle").on("click", function() {
         toggleMobileNav();
     });
 });
 
-$(document).ready(function() {
+$(function() {
     $(".item").on("click", function() {
         if (window.innerWidth < 420) {
             toggleMobileNav();
