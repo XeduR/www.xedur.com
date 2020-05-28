@@ -359,6 +359,10 @@ ul {
     display: none;
 }
 
+.active {
+    display: block;
+}
+
 .toggle {
     cursor: pointer;
     font-size: 30px;

@@ -16,23 +16,23 @@ $(window).on("load", function(){
 });
 
 function toggleMobileNav() {
-    if ($("item").hasClass("active")) {
-        $("item").removeClass("active");
+    if ($(".item").hasClass("active")) {
+        $(".item").removeClass("active");
     } else {
-        $("item").addClass("active");
+        $(".item").addClass("active");
     }
 }
 
 $(function() {
     console.log( "toggle loaded" );
-    $("toggle").on("click", function() {
+    $(".toggle").on("click", function() {
         console.log( "toggle clicked" );
         toggleMobileNav();
     });
 });
 
 $(function() {
-    $("item").on("click", function() {
+    $(".item").on("click", function() {
         if (window.innerWidth < 420) {
             toggleMobileNav();
         }
