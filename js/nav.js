@@ -1,6 +1,6 @@
 $(function() {
     $("a").on('click', function(event) {
-        if (this.hash !== "") {
+        if (this.hash !== "" && window.location.href === "https://www.xedur.com/") {
             event.preventDefault();
             var hash = this.hash;
             $('html, body').animate({
