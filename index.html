@@ -32,7 +32,9 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
         $(window).on("load", function(){
-            $('#header').load("/html/header.html");
+            $('#header').load("/html/header.html", function() {
+                $.getScript( "/js/nav.js", function() {});
+            });
             $('#button-top').load("/html/button.html");
             $('#button-bottom').load("/html/button.html");
             $('#footer').load("/html/footer.html");
