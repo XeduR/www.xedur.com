@@ -33,7 +33,9 @@
 	<script src="/js/nav.js"></script>
     <script>
         $(window).on("load", function(){
-            $('#header').load("/html/header.html");
+	        $('#header').load("/html/header.html", function() {
+	            $.getScript( "/js/nav.js", function() {});
+	        });
             $('#button').load("/html/button.html");
             $('#footer').load("/html/footer.html");
         });
