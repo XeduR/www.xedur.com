@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width="20" height="20">
+	<style>
+		tspan { white-space:pre }
+		.shp0 { fill: #fcba04 } 
+	</style>
+	<path class="shp0" d="M2 0L18 0C19.11 0 20 0.89 20 2L20 2C20 3.11 19.11 4 18 4L2 4C0.89 4 0 3.11 0 2L0 2C0 0.89 0.89 0 2 0Z" />
+	<path class="shp0" d="M2 8L18 8C19.11 8 20 8.89 20 10L20 10C20 11.11 19.11 12 18 12L2 12C0.89 12 0 11.11 0 10L0 10C0 8.89 0.89 8 2 8Z" />
+	<path class="shp0" d="M2 16L18 16C19.11 16 20 16.89 20 18L20 18C20 19.11 19.11 20 18 20L2 20C0.89 20 0 19.11 0 18L0 18C0 16.89 0.89 16 2 16Z" />
+</svg>
