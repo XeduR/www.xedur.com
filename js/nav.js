@@ -1,4 +1,4 @@
-$(function() {
+$(document).ready(function() {
     $("a").on('click', function(event) {
         if (this.hash !== "") {
             event.preventDefault();
@@ -20,13 +20,13 @@ function toggleMobileNav() {
     }
 }
 
-$(function() {
+$(document).ready(function() {
     $(".toggle").on("click", function() {
         toggleMobileNav();
     });
 });
 
-$(function() {
+$(document).ready(function() {
     $(".item").on("click", function() {
         if (window.innerWidth < 420) {
             toggleMobileNav();
