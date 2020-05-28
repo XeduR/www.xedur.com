@@ -365,9 +365,8 @@ ul {
 
 .toggle {
     cursor: pointer;
+    font-size: 30px;
     margin-right: 20px;
-    font-size: 24px;
-    color: #fcba04;
 }
 
 .last {
@@ -378,10 +377,10 @@ ul {
     margin-left: 20px;
 }
 
-/* .mobile-menu {
+.mobile-menu {
     font-size: 24px;
     color: #fcba04;
-} */
+}
 
 .mobile-nav-end {
     background: black;
