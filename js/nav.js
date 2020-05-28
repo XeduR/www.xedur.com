@@ -24,7 +24,9 @@ function toggleMobileNav() {
 }
 
 $(function() {
+    console.log( "toggle loaded" );
     $(".toggle").on("click", function() {
+        console.log( "toggle clicked" );
         toggleMobileNav();
     });
 });
