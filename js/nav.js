@@ -1,11 +1,8 @@
-$(window).on("load", function(){
-    console.log( "nav loaded" );
+$(function() {
     $("a").on('click', function(event) {
-        console.log( "nav clicked" );
         if (this.hash !== "") {
             event.preventDefault();
             var hash = this.hash;
-            console.log( "nav hash: " + hash );
             $('html, body').animate({
                 scrollTop: $(hash).offset().top-100
             }, 300, function(){
@@ -24,9 +21,7 @@ function toggleMobileNav() {
 }
 
 $(function() {
-    console.log( "toggle loaded" );
     $(".toggle").on("click", function() {
-        console.log( "toggle clicked" );
         toggleMobileNav();
     });
 });
