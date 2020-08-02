@@ -44,7 +44,7 @@ a, a:visited {
 }
 
 a:hover {
-    font-weight: bold;
+    text-decoration: underline;
 }
 
 button {
