@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="JavaScript, js, Lua, random, pseudorandom, number generator, gamedev, game development, open source, XeduR, Eetu Rantanen">
+    <meta name="description" content="Interactive online demo that demonstrates pseudorandom number generation methods and their distribution (with source code).">
+    <meta name="author" content="Eetu Rantanen">
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="js/random.js"></script>
+    <script src="js/middleSquareRandom.js"></script>
+    
+    <script>
+        // Update the value of the middle-square method's input and draw new bitmap.
+        function loadSample(n) {
+            event.preventDefault();
+            seed = n;
+            document.getElementById("seed2").value = n;
+            start("middle-square")
+        }
+        
+        // Dynamically resize the canvas for small devices.
+        let ratio = 580/480;
+        function resizeCanvas()
+        {
+            var canvas = $('#canvas');
+            var width = $(window).width();
+            var height = width*ratio;
+            canvas.css("width", width);
+            canvas.css("height", height);
+        }
+        $(window).on("load", function(){
+            $(window).on('resize', function(){
+                resizeCanvas();
+            });
+        });
+    </script>
+    
+    <title>Pseudorandom Number Generator</title>
+</head>
+<body>
+    <a href="https://xedur.com">
+        <div class="back">
+            <div class="back-center">
+                <p style="margin-bottom:6px;">‹</p>
+            </div>
+        </div>
+    </a>
+    
+    <div id="wrapper">
+        <h1>Pseudorandom Number Generator</h1>
+        <div id="line"></div>
+        <p class="source">
+            Source code: <a href="https://github.com/XeduR/Solar2D-Projects/tree/master/Pseudorandom%20Number%20Generator" target="_blank">Lua</a>
+            or <a href="https://github.com/XeduR/xedur.github.io/tree/master/demos/Pseudorandom%20Number%20Generator" target="_blank">JavaScript</a>
+        </p>
+        
+        <div id="content">
+            <p class="description">
+                Set a seed and generate a sequence of pseudorandom numbers using the <a href="https://en.wikipedia.org/wiki/Middle-square_method" target="_blank">Linear congruential generator</a>.
+                <br><br>LCG is a simple, fast and reliable method for generating pseudorandom numbers. LCG is a great choice for generating pseudorandom numbers, however, it is not cryptographically secure.
+            </p>
+            
+            <input name="seed1" id="seed1" type="number" value="58125991275"> 
+            <button class="right" type="button" onclick="start('linear')">Generate</button>
+            
+            <div id="line2"></div>
+            
+            <p class="description">
+                For comparison, you can also generate a sequence of pseudorandom numbers using the <a href="https://en.wikipedia.org/wiki/Linear_congruential_generator" target="_blank">Middle-square generator</a>.
+                <br><br>MSM is a simpler, but far less reliable method as it is bound to begin repeating a sequence or a number indefinitely at some point, at which point there's no resemblance of randomness.
+                <br><br>Interesting seed values for MSM that demonstrate repeating patterns:
+                    <a href="#" onclick="loadSample(12345678933)">12345678933</a>, 
+                    <a href="#" onclick="loadSample(12345679001)">12345679001</a>, 
+                    <a href="#" onclick="loadSample(12745678161)">12745678161</a>, 
+                    <a href="#" onclick="loadSample(22745678162)">22745678162</a>.
+            </p>
+            <input name="seed2" id="seed2" type="number" value="12345678904"> 
+            <button class="right" type="button" onclick="start('middle-square')">Generate</button>
+        </div>
+            
+        <canvas id="canvas" width="480" height="580"></canvas>
+        <div style="clear: both;"> </div>
+        
+        <p class="footer">
+            <a href="https://www.erantanen.com/">© 2019-2020 Eetu Rantanen</a>
+        </p>
+    </div>
+    <script src="js/draw.js"></script>
+</body>
+</html>
