@@ -9,7 +9,7 @@ var seed = 12345;
 // Set a new initial random seed.
 function randomseed(n) {
     if (typeof(n) == "number") {
-        seed = Math.floor(n+0.5)
+        seed = Math.floor(n+0.5);
     }
 }
 
