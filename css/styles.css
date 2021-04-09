@@ -265,12 +265,12 @@ a:hover {
 .project-container h2 {
     color: #fcba04;
     font-size: 20px;
-    padding: 6px;
+    padding: 10px;
 }
 
 .project-container p {
     font-size: 16px;
-    padding: 0 6px 6px;
+    padding: 10px;
 }
 
 .project-container p.tech {
