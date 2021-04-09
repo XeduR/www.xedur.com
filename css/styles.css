@@ -254,6 +254,7 @@ a:hover {
     transform: scale(1);
     -webkit-transition: .2s ease-in-out;
     transition: .2s ease-in-out;
+    width: 100%;
 }
 
 .project-container:hover img {
@@ -262,6 +263,7 @@ a:hover {
 }
 
 .project-container h2 {
+    color: #fcba04;
     font-size: 20px;
     padding: 6px;
 }
