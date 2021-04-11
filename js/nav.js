@@ -8,7 +8,7 @@ $(function() {
             $('html, body').animate({
                 scrollTop: $target.offset().top
             }, 300, function(){
-                window.location.target = target;
+                window.location.hash = target;
             });
         }
     });
