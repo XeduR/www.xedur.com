@@ -4,7 +4,6 @@ $(function() {
             event.preventDefault();
             var target = this.hash,
             $target = $(target);
-            console.log( target );
             
             $('html, body').animate({
                 scrollTop: $target.offset().top
