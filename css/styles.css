@@ -73,6 +73,13 @@ h4 {
     float: left;
 }
 
+a.anchor {
+    display: block;
+    position: relative;
+    top: -100px;
+    visibility: hidden;
+}
+
 a:hover .icon {
     background: #282a36;
 }
