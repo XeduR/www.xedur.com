@@ -1,13 +1,12 @@
 $(function() {
     $("a").on('click', function(event) {
-        // TODO: If links are clicked from a subpage, then they don't have offset.
-        if (this.hash !== "" && window.location.href === "https://www.xedur.com/") {
+        if (this.hash !== "") {
             event.preventDefault();
-            var hash = this.hash;
+            var target = this.hash;
             $('html, body').animate({
-                scrollTop: $(hash).offset().top-100
+                scrollTop: $(target).offset().top;
             }, 300, function(){
-                window.location.hash = hash-100;
+                window.location.target = target;
             });
         }
     });
