@@ -18,7 +18,7 @@ Aloitin projektin olettua myöhempänä ajankohtana, jonka takia UI olisi kaivan
 
 ----
 
-Reittoppaan live versio löytyy osoitteesta: https://xedur.com/demos/koodihaaste/.<br>
+Reittoppaan live versio löytyy osoitteesta: https://www.xedur.com/demos/koodihaaste/.<br>
 
 
 Projekti toimii sellaisenaan selaimessa, mutta suosittelen käyttämään tietokoneen selainta, sillä mobiililaitteilla UI voi näyttää aika pieneltä.

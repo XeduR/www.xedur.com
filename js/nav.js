@@ -1,6 +1,7 @@
 $(function() {
     $("a").on('click', function(event) {
-        if (this.hash !== "") {
+        // Only use smooth scroll if the user on the main page and not some demo page, etc.
+        if (this.hash !== "" && window.location.href.search("demos") > -1) {
             event.preventDefault();
             var target = this.hash,
             $target = $(target);
