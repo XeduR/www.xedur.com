@@ -4,7 +4,7 @@ $(function() {
             event.preventDefault();
             var target = this.hash;
             $('html, body').animate({
-                scrollTop: $(target).offset().top;
+                scrollTop: $(target).offset().top
             }, 300, function(){
                 window.location.target = target;
             });
