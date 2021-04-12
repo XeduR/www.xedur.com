@@ -254,6 +254,8 @@ a:hover {
 
 .image-container {
     overflow: hidden;
+    display: flex;
+    min-height: 0px;
 }
 
 .project-container img {
