@@ -1,0 +1,28 @@
+settings =
+{
+	orientation =
+	{
+		default = "landscapeLeft",
+		supported = { "landscapeLeft", },
+	},
+
+	win32 =
+    {
+        singleInstance = false,
+    },
+
+    window =
+    {
+        defaultViewWidth = 320,
+        defaultViewHeight = 480,
+        resizable = false,
+        titleText = {
+            default = "Static Page Builder for www.xedur.com",
+		}
+    },
+
+	excludeFiles =
+	{
+		all = { "dst/*" },
+	},
+}
