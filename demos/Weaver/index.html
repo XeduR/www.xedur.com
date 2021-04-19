@@ -3,8 +3,7 @@
 <head>
 	<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="generator" content="Static Page Builder for www.xedur.com">
-	<meta name="author" content="Eetu Rantanen">
+    <meta name="author" content="Eetu Rantanen">
     
     <meta charset="UTF-8">
     <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
@@ -31,14 +30,24 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="/js/detectMobile.js"></script>
 	<script src="/js/loadDemo.js"></script>
+	<script src="/js/nav.js"></script>
+    <script>
+        $(window).on("load", function(){    
+	        $('#header').load("/html/header.html", function() {
+	            $.getScript( "/js/nav.js", function() {});
+	        });
+            $('#button').load("/html/button.html");
+            $('#footer').load("/html/footer.html");
+        });
+    </script>
 	
-    <meta name="keywords" content="Eetu Rantanen, XeduR, Spyric, Solar2D, Lua, gamedev, game development, open source, code portfolio">
-    <meta name="description" content='###INSERT_DEMO_DESCRIPTION_META###'>
-    <title>XeduR - ###INSERT_DEMO_TITLE_META###</title>
+    <meta name="keywords" content="Eetu Rantanen, XeduR, Spyric, Solar2D, Lua, gamedev, game development, open source, code portfolio, ludum dare">
+    <meta name="description" content='XeduR - "Dialogue" sample project by Eetu Rantanen.'>
+    <title>XeduR - Dialogue</title>
 </head>
 
 <body>
-    ###INSERT_HEADER###
+	<div id="header"></div>
 	
 	<div class="content after-header">
 		<div class="center">
@@ -50,13 +59,18 @@
 					</div>
 				</div>
 			</a>
-			###INSERT_DEMO_TITLE###
+			<h1 style="padding-top:13px;">
+				Dialogue
+			</h1>
+			
+			<div class="demo-panel">
+				<p>
+					TEMPORARY DEMO PAGE:<br>
+					"Dialogue" is a WIP idea for handling branching dialogue and story trees in Solar2D.
+				</p>
+			</div>
 
-			###INSERT_DEMO_DESCRIPTION###
-
-			###INSERT_DEMO_LINKS###
-
-		    ###INSERT_KOFI###
+			<div id="button"></div>
 
 			<noscript><h4>JavaScript disabled. You must enable JavaScript to run the demo projects.</h4></noscript>
 			<div id="disclaimer" class="mobile-disclaimer">
@@ -67,16 +81,14 @@
 			</script>
 			
 			<div class="demo-panel">
-				<div class="demo-wrapper">
-					<div id="frame" class="iframe-container">
-						<iframe id="app" src="about:blank"></iframe>
-						<button id="startButton" class="load" type="button">Run the app</button>
-					</div>
+				<div id="frame" class="iframe-container">
+					<iframe id="app" src="about:blank"></iframe>
+					<button id="startButton" class="load" type="button">Run the app</button>
 				</div>
 			</div>
 		</div>
     </div>
-    ###INSERT_FOOTER###
-	<script src="/js/nav.js"></script>
+	
+	<div id="footer"></div>
 </body>
 </html>
