@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="keywords" content="Eetu Rantanen, XeduR, Spyric, Solar2D, Lua, gamedev, game development, open source, code portfolio">
-    <meta name="description" content="My name is Eetu Rantanen, but here on the interwebz I often go by XeduR. This is my code portfolio site and it is full of all kinds of interesting projects.">
+    <meta name="keywords" content="Eetu Rantanen, XeduR, open source, art, generator, ko-fi">
+    <meta name="description" content="A cool little randomised Art Generator for my Ko-fi supporters.">
     <meta name="author" content="Eetu Rantanen">
     
     <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
@@ -75,22 +75,50 @@
         a:hover {
             font-weight: bold;
         }
+        .back {
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            margin-top: 0px;
+            padding-top: 0px;
+            margin-right: 20px;
+            font-size: 40px;
+            font-weight: bold;
+            background: #141518;
+            color: #red;
+            float: left;
+        }
+        .back-center {
+            margin: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -ms-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+            padding: 16px;
+        }
     </style>
     
     <title>XeduR - Art Generator</title>
 </head>
 <body>
+    <a href="https://www.xedur.com">
+        <div class="back">
+            <div class="back-center">
+                <p style="margin-bottom:6px;">‹</p>
+            </div>
+        </div>
+    </a>
+    
     <h1>Art Generator</h1>
     <canvas id="canvas" width="512" height="512"></canvas>
     <p>
-        I created this <a href="https://github.com/XeduR">MIT licensed Art Generator</a> to ensure that any Ko-fi payments that I receive
-        would be treated as taxable income and wouldn't therefore run afoul of Finnish laws.<br><br>
+        I created this <a href="https://github.com/XeduR/www.xedur.com/blob/master/art-generator.html">MIT licensed Art Generator</a>
+        to ensure that any Ko-fi payments that I receive would be treated as taxable income and wouldn't therefore run afoul of Finnish laws.<br><br>
         If you've <a href="https://ko-fi.com/xedur">bought me coffee via Ko-fi</a>, then you've received the URL with the access key to
         this Art Generator in the thank you message.
     </p>
     <button class="button" onclick="draw()">Draw</button>
-    
-    <!-- https://ko-fi.com/settings?tab=payment -->
     
     <script>
         let canvas = document.getElementById("canvas");
@@ -103,7 +131,7 @@
         let xLast = xEnd-borderWidth;
         let yLast = yEnd-borderWidth;
         let drawingComplete = true;
-        // Hacker proof verification for determining whether drawing works.
+        // Hacker proof verification for visitor's access key (URL).
         let gotKey = (window.location.href.indexOf("letsDraw") > 0);
         
         function draw() {
