@@ -1,0 +1,168 @@
+<!DOCTYPE html>    
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="Eetu Rantanen, XeduR, Spyric, Solar2D, Lua, gamedev, game development, open source, code portfolio">
+    <meta name="description" content="My name is Eetu Rantanen, but here on the interwebz I often go by XeduR. This is my code portfolio site and it is full of all kinds of interesting projects.">
+    <meta name="author" content="Eetu Rantanen">
+    
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    
+    <style>    
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: black;
+            color: white;
+        }
+        canvas {
+            max-width: 100%;
+            padding: 0;
+            margin: auto;
+            display: block;
+        }
+        h1 {
+            text-align: center;
+        }
+        p {
+            text-align: center;
+            max-width: 512px;
+            margin: auto;
+            display: block;
+            padding: 20px 0;
+        }
+        button {
+            font-family: 'Roboto', sans-serif;
+            text-align: center;
+            border: none;
+            color: white;
+            padding: 16px 32px;
+            text-decoration: none;
+            font-weight: bold;
+            display: block;
+            font-size: 16px;
+            margin: 0px auto 40px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+            background-color: white; 
+            color: black; 
+        }
+        button:hover {
+            background-color: #141518;
+            color: #FCBA04;
+        }        
+        a, a:visited, a:hover {
+            text-decoration: none;
+            color: #FCBA04;
+        }
+        a:hover {
+            font-weight: bold;
+        }
+    </style>
+    
+    <title>XeduR - Art Generator</title>
+</head>
+<body>
+    <h1>Art Generator</h1>
+    <canvas id="canvas" width="512" height="512"></canvas>
+    <p>
+        I created this <a href="https://github.com/XeduR">MIT licensed Art Generator</a> to ensure that any Ko-fi payments that I receive
+        would be treated as taxable income and wouldn't therefore run afoul of Finnish laws.<br><br>
+        If you've <a href="https://ko-fi.com/xedur">bought me coffee via Ko-fi</a>, then you've received the URL with the access key to
+        this Art Generator in the thank you message.
+    </p>
+    <button class="button" onclick="draw()">Draw</button>
+    
+    <!-- https://ko-fi.com/settings?tab=payment -->
+    
+    <script>
+        let canvas = document.getElementById("canvas");
+        let context = canvas.getContext("2d");
+        let borderWidth = 20;
+        let xStart = borderWidth;
+        let yStart = borderWidth;
+        let xEnd = canvas.width-borderWidth;
+        let yEnd = canvas.height-borderWidth;
+        let xLast = xEnd-borderWidth;
+        let yLast = yEnd-borderWidth;
+        let drawingComplete = true;
+        // Hacker proof verification for determining whether drawing works.
+        let gotKey = (window.location.href.indexOf("letsDraw") > 0);
+        
+        function draw() {
+            if (drawingComplete) {
+                drawingComplete = false;
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                context.fillStyle = "rgb(0,0,0)";
+                context.fillRect( xStart, yStart, xLast, yLast );
+                if (gotKey) {
+                    // Randomise the colour scheme and fill the canvas with lines.
+                    let r = 0, g = 1, b = 0.75*Math.random();
+                    let theme = Math.random();
+                    if (theme < 0.35) {
+                        r = 1, g = 0.75*Math.random(), b = 0;
+                    } else if (theme < 0.7) {
+                        r = 0, g = 0.75*Math.random(), b = 1;
+                    }
+                    let xRay = xStart + Math.floor(Math.random()*xLast);
+                    let yRay = yStart + Math.floor(Math.random()*yLast);
+                    
+                    for (let row = yStart; row < yEnd; row++) {
+                        for (let column = xStart; column < xEnd; column++) {
+                            context.beginPath();
+                            context.moveTo(column, row);
+                            context.lineTo(xStart + Math.floor(Math.random()*xLast) , yStart + Math.floor(Math.random()*yLast) );
+                            context.lineWidth =  Math.floor(Math.random()*3);
+                            context.stroke();
+                            context.strokeStyle = "rgb("+Math.floor(Math.random()*255*r)+","+Math.floor(Math.random()*255*g)+","+Math.floor(Math.random()*255*b)+")";
+                        }
+                    }
+                    // Add a ray effect.
+                    for (let ray = 0; ray < 100; ray++) {
+                        context.beginPath();
+                        context.moveTo(xRay, yRay);
+                        context.lineTo(xStart + Math.floor(Math.random()*xLast) , yStart + Math.floor(Math.random()*yLast) );
+                        context.lineWidth = Math.floor(Math.random()*3);
+                        context.stroke();
+                        context.strokeStyle = "rgb("+Math.floor(Math.random()*255*r)+","+Math.floor(Math.random()*255*g)+","+Math.floor(Math.random()*255*b)+")";
+                    }
+                    let signature = new Image();
+                    signature.src = 'img/signature.png';
+                    signature.onload = function(){
+                        context.drawImage(signature, xLast-borderWidth-signature.width*0.5-16, yLast-borderWidth-signature.height*0.5);
+                    }
+                } else {
+                    context.font = "26px Roboto";
+                    context.textAlign = "center";
+                    context.fillStyle = "#FCBA04";
+                    context.fillText("Use your custom URL to generate art.", canvas.width*0.5, canvas.height*0.5);
+                }
+                // Add white borders to the image.
+                context.lineWidth = borderWidth;
+                context.strokeStyle = "rgb(255,255,255)";
+                context.strokeRect(borderWidth*0.5, borderWidth*0.5, xEnd, yEnd);
+                drawingComplete = true;
+            };
+        };
+        draw();
+    </script>
+    
+</body>
+</html>
