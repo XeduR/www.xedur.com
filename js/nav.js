@@ -30,9 +30,9 @@ $(function() {
 });
 
 function toggleMobileNav() {
-    if ($(".item").hasClass("active")) {
-        $(".item").removeClass("active");
-    } else {
-        $(".item").addClass("active");
-    }
+    $(".bar1").toggleClass("bar1-active");
+    $(".bar2").toggleClass("bar2-active");
+    $(".bar3").toggleClass("bar3-active");
+    $(".item").toggleClass("active");
+    event.stopPropagation()
 }

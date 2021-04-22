@@ -464,6 +464,29 @@ li.dropdown {
     display: inline-block;
 }
 
+.bar1, .bar2, .bar3 {
+    pointer-events: none;
+    width: 35px;
+    height: 5px;
+    background-color: #FCBA04;
+    margin: 6px 0;
+    transition: 0.4s;
+}
+
+.bar1-active {
+    -webkit-transform: rotate(-45deg) translate(-9px, 6px);
+    transform: rotate(-45deg) translate(-9px, 6px);
+}
+
+.bar2-active {
+    opacity: 0;
+}
+
+.bar3-active {
+    -webkit-transform: rotate(45deg) translate(-8px, -8px);
+    transform: rotate(45deg) translate(-8px, -8px);
+}
+
 .dropdown-content {
     border-style: solid;
     border-width: 2px;
