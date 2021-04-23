@@ -18,6 +18,12 @@
 	<div id="wrapper">
         <div id="error"></div>
 
+		<p>
+			Koodihaastena oli reittioppaan luominen. Käyttäjä saa valita lähtö- ja päätepysäkin, ja reittioppaan tulee löytää nopein reitti.
+			Haasteessa oli määritelty 18 pysäkkiä ja 4 linjaa (keltainen, punainen, vihreä ja sininen), jotka kulkevat ennaltamäärättyä reittejä.
+			Ratkaisu käyttää Djikstran algoritmiä ja esittää nopeimman reitin yksinkertaisen HTML Canvas:in avulla.
+		</p>
+
         <noscript>
             <h4>
                 Reittioppaan käyttö vaatii JavaScriptin. Varmistathan,<br>
@@ -30,7 +36,7 @@
 	        <p id="start"></p>
 		</div>
 		<div class="center">
-        <h3>Määränpää</h3>
+        <h3>Päätepysäkki</h3>
 	        <p id="end"></p>
 		</div>
 		
@@ -43,7 +49,7 @@
         <script>
             var busStops, routes, connections, prevButtonA, prevButtonB;
 
-			// Kun lähtöpysäkki ja määränpää ovat valittuna, niin tarkista ovatko 
+			// Kun lähtö- ja päätepysäkki ovat valittuna, niin tarkista ovatko 
 			// ne eri pysäkit ja piirrä sen mukainen ilmoitus tai kartta.
             function checkRoute( a, b ) {
 				var canvas = document.getElementById("reitti");
@@ -52,12 +58,11 @@
 				var xStart = 20;
 				var xEnd = 300;
 				var segmentLength = 22;
-			
 				
                 if (a == b) {
 					ctx.font = "bold 24px Work Sans";
 					ctx.fillStyle = "black";
-					let txt = "Lähtöpiste ja määränpää eivät voi olla sama."
+					let txt = "Lähtö- ja päätepysäkki eivät voi olla sama."
 					ctx.fillText( txt, xStart, 54 );
 					
 					let offset = ctx.measureText(txt).width;
