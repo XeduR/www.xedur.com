@@ -56,9 +56,9 @@
 				var canvas = document.getElementById("reitti");
 				var ctx = canvas.getContext("2d");
 				var segmentLength = 22;
+				var padding = 4;
 				var xStart = 20;
 				var xEnd = 300;
-				var offset = 4;
 				
                 if (a == b) {
 					ctx.canvas.width = 512;
@@ -69,9 +69,9 @@
                 } else {
                     var shortestRoute = getRoute( busStops, a, b );
 					var maxDuration = shortestRoute.duration[shortestRoute.duration.length-1];
-					ctx.canvas.width = maxDuration*segmentLength+offset;
+					ctx.canvas.width = maxDuration*segmentLength+padding;
 					var xPrev = xStart;
-					ctx.fillRect( xStart-2, 58, maxDuration*segmentLength+offset, 16);
+					ctx.fillRect( xStart-2, 58, maxDuration*segmentLength+padding, 16);
 					
 				    for (let i = 1; i < shortestRoute.stops.length; i++) {
 						let x = xStart + shortestRoute.duration[i]*segmentLength;
@@ -100,8 +100,6 @@
 						ctx.font = "bold 16px Work Sans"; 
 						ctx.fillText( shortestRoute.duration[i], x-6, 90 );
 					}
-					let offset = maxDuration*segmentLength+offset;
-					canvas.style = "position:absolute; left: 50%; transform: translateX(-" + offset*0.5 + "px);";
                 }
             }
 
