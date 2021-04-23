@@ -69,7 +69,7 @@
                 } else {
                     var shortestRoute = getRoute( busStops, a, b );
 					var maxDuration = shortestRoute.duration[shortestRoute.duration.length-1];
-					ctx.canvas.width = maxDuration*segmentLength+padding;
+					ctx.canvas.width = maxDuration*segmentLength+xStart*2+padding;
 					var xPrev = xStart;
 					ctx.fillRect( xStart-2, 58, maxDuration*segmentLength+padding, 16);
 					
