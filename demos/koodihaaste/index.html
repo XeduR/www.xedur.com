@@ -20,7 +20,8 @@
 
 		<p>
 			Koodihaastena oli reittioppaan luominen. Käyttäjä saa valita lähtö- ja päätepysäkin, ja reittioppaan tulee löytää nopein reitti.
-			Haasteessa oli määritelty 18 pysäkkiä ja 4 linjaa (keltainen, punainen, vihreä ja sininen), jotka kulkevat ennaltamäärättyä reittejä.
+			Haasteessa oli määritelty 18 bussipysäkkiä ja 4 linjaa (keltainen, punainen, vihreä ja sininen), jotka kulkevat ennaltamäärättyä
+			reittejä, joka tarkoittaa että bussia voi joutua vaihtamaan kesken matkaa.<br><br>
 			Ratkaisu käyttää Djikstran algoritmiä ja esittää nopeimman reitin yksinkertaisen HTML Canvas:in avulla.
 		</p>
 
@@ -41,7 +42,7 @@
 		</div>
 		
 		<div class="canvas-element">
-			<canvas id="reitti" width="480" height="120" style="border:0px">
+			<canvas id="reitti" width="512" height="120" style="border:0px">
 				Your browser does not support the canvas element.
 			</canvas>
 		</div>
@@ -54,26 +55,23 @@
             function checkRoute( a, b ) {
 				var canvas = document.getElementById("reitti");
 				var ctx = canvas.getContext("2d");
-				ctx.canvas.width  = window.innerWidth;
+				var segmentLength = 22;
 				var xStart = 20;
 				var xEnd = 300;
-				var segmentLength = 22;
+				var offset = 4;
 				
                 if (a == b) {
-					ctx.font = "bold 24px Work Sans";
+					ctx.canvas.width = 512;
+					ctx.font = "bold 20px Work Sans";
 					ctx.fillStyle = "black";
-					let txt = "Lähtö- ja päätepysäkki eivät voi olla sama."
-					ctx.fillText( txt, xStart, 54 );
-					
-					let offset = ctx.measureText(txt).width;
-					canvas.style = "position:absolute; left: 50%; transform: translateX(-" + offset*0.5 + "px);";
+					ctx.textAlign = "center";
+					ctx.fillText( "Lähtö- ja päätepysäkki eivät voi olla sama.", ctx.canvas.width*0.5, ctx.canvas.height*0.5 );
                 } else {
                     var shortestRoute = getRoute( busStops, a, b );
-				    // console.log( shortestRoute );
-					
 					var maxDuration = shortestRoute.duration[shortestRoute.duration.length-1];
+					ctx.canvas.width = maxDuration*segmentLength+offset;
 					var xPrev = xStart;
-					ctx.fillRect( xStart-2, 58, maxDuration*segmentLength+4, 16);
+					ctx.fillRect( xStart-2, 58, maxDuration*segmentLength+offset, 16);
 					
 				    for (let i = 1; i < shortestRoute.stops.length; i++) {
 						let x = xStart + shortestRoute.duration[i]*segmentLength;
@@ -102,7 +100,7 @@
 						ctx.font = "bold 16px Work Sans"; 
 						ctx.fillText( shortestRoute.duration[i], x-6, 90 );
 					}
-					let offset = maxDuration*segmentLength+4;
+					let offset = maxDuration*segmentLength+offset;
 					canvas.style = "position:absolute; left: 50%; transform: translateX(-" + offset*0.5 + "px);";
                 }
             }
