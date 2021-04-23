@@ -112,6 +112,20 @@
         <canvas id="canvas" width="480" height="580"></canvas>
         <div style="clear: both;"> </div>
         
+        <script>
+            window.addEventListener("keyup", function(event) {
+                if (event.key == "Enter" || (event.keyCode !== undefined && event.keyCode == 13)) {
+                    event.preventDefault();
+                    let activeElement = document.activeElement.name;
+                    if (activeElement == "seed1") {
+                        start("linear");
+                    } else if (activeElement == "seed2") {
+                        start("middle-square");
+                    }
+                }
+            }, false );
+        </script>
+        
         <p class="footer">
             <a href="https://www.erantanen.com/">© 2019-2021 Eetu Rantanen</a>
         </p>
