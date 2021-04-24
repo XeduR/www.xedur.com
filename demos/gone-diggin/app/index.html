@@ -201,6 +201,16 @@ k.p.toString(16)+", data=0x"+p.toString(16)))}return m};t.L=function(a){this.j=a
         document.activeElement.blur();
         window.focus();
       }, true);
+      
+         // Prevent arrow keys from scrolling the website (since the app may use them as controls).
+         window.addEventListener("keydown", function(event) {
+             if (["ArrowLeft","ArrowUp","ArrowRight","ArrowDown"].indexOf(event.key) > -1 || (event.keyCode !== undefined && [37, 38, 39, 40].indexOf(event.keyCode))) {
+                 event.preventDefault();
+             }
+         }, false );
+      
     </script>
+    
+    
   </body>
 </html>
