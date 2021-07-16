@@ -34,12 +34,13 @@ body {
 }
 
 p {
+    font-size: 1em;
     line-height: 1.4;
     font-weight: 300;
 }
 
 h1 {
-    font-size: 32px;
+    font-size: 2em;
     padding-bottom: 20px;
 }
 
@@ -48,19 +49,19 @@ h1 {
 }
 
 h2 {
-    font-size: 32px;
+    font-size: 2em;
     padding-bottom: 20px;
 }
 
 h3 {
-    font-size: 24px;
+    font-size: 1.5em;
     padding-bottom: 20px;
 }
 
 h4 {
 	color: #ffffff;
 	background: #be0019;
-	font-size: 22px;
+    font-size: 1.5em;
 	padding: 20px 20px;
     margin-bottom: 20px;
 	text-align: center;
@@ -71,7 +72,7 @@ h4 {
     width: 64px;
     height: 64px;
     margin-right: 20px;
-    font-size: 40px;
+    font-size: 2.5em;
     font-weight: bold;
     background: #141518;
     color: #FCBA04;
@@ -128,7 +129,7 @@ button.load {
 	background: #FCBA04;
 	color: #141518;
     font-family: 'Roboto', sans-serif;
-	font-size: 18px;
+	font-size: 1em;
 	position: absolute;
     font-weight: bold;
 	height: 60px;
@@ -278,17 +279,17 @@ a:hover {
 
 .project-container h2 {
     color: #fcba04;
-    font-size: 20px;
+    font-size: 1.2em;
     padding: 10px;
 }
 
 .project-container p {
-    font-size: 16px;
+    font-size: 0.95em;
     padding: 10px;
 }
 
 .project-container p.tech {
-    font-size: 12px;
+    font-size: 0.75em;
 }
 
 .text-block {
@@ -360,7 +361,7 @@ ul {
 }
 
 .menu li {
-    font-size: 16px;
+    font-size: 1em;
     padding: 15px 5px;
     white-space: nowrap;
 }
@@ -371,10 +372,6 @@ ul {
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-}
-
-.toggle {
-    order: 1;
 }
 
 .item {
@@ -390,8 +387,9 @@ ul {
 
 .toggle {
     cursor: pointer;
-    font-size: 30px;
+    font-size: 1.75em;
     margin-right: 20px;
+    order: 1;
 }
 
 .last {
@@ -403,7 +401,7 @@ ul {
 }
 
 .mobile-menu {
-    font-size: 24px;
+    font-size: 1.5em;
     color: #fcba04;
 }
 
