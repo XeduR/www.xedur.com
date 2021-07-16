@@ -20,6 +20,7 @@ h1 {
 p {
     font-family: 'Roboto', sans-serif;
     text-align: justify;
+    font-weight: 300;
 }
 
 .source {
@@ -39,7 +40,6 @@ p {
 
 a, a:visited {
     text-decoration: none;
-    font-weight: normal;
     color: #fcba04;
 }
 

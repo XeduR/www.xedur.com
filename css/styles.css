@@ -73,7 +73,6 @@ h4 {
     height: 64px;
     margin-right: 20px;
     font-size: 2.5em;
-    font-weight: bold;
     background: #141518;
     color: #FCBA04;
     float: left;
@@ -167,7 +166,7 @@ a, a:visited {
 }
 
 a:hover {
-    font-weight: bold;
+    text-decoration: underline;
 }
 
 .segment {
@@ -254,7 +253,6 @@ a:hover {
 
 .project-container a, .project-container a:visited, .project-container a:hover {
     text-decoration: none;
-    font-weight: normal;
     color: white;
 }
 
