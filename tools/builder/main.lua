@@ -38,31 +38,11 @@ end
 local progress = display.newText( "Build starting...", display.contentCenterX, display.contentCenterY, native.systemFontBold, 32 )
 
 if demoContent then
-    -- Create a new build folder inside dst using reverse date format for easy file organising using date.
+    -- Create and select "dst" folder to build the website to.
     local rootPath = system.pathForFile( nil, system.ResourceDirectory )
-    local success = lfs.chdir( rootPath )
-    if success then
-        if not system.pathForFile( "dst", system.ResourceDirectory ) then
-            lfs.mkdir( "dst" )
-        end
-    else
-        progress.text = "Failed to create \"dst\" folder."
-        return
-    end
-    
-    local date = os.date( "*t" )
-    local buildDate = date.year .. "." .. (date.month < 10 and "0" .. date.month or date.month) .. (date.day < 10 and "0" .. date.day or date.day)
-    
-    local dstPath = system.pathForFile( "dst", system.ResourceDirectory )
-    local buildVersion = 1
-    for file in lfs.dir( dstPath ) do
-        if file ~= "." and file ~= ".." and file:find(buildDate) then
-            buildVersion = buildVersion+1
-        end
-    end
-    local buildID = "Build " .. buildDate .. " - Version " .. buildVersion
-    lfs.mkdir( "dst/" .. buildID )
-    local buildPath = lfs.currentdir() .. "/dst/".. buildID
+    lfs.chdir( rootPath )
+    lfs.mkdir( "dst" )
+    local buildPath = lfs.currentdir() .. "/dst"
     
     -- Load all source files for the common elements.
     local function getSource( filepath )
@@ -226,9 +206,14 @@ if demoContent then
             end
         end
     end
+    
     for _, demoData in pairs( demoContent ) do
         createDemoPage( demoData )
     end
+    -- Return to root directory in order to release the current folder from Solar2D's control,
+    -- so that the build folder can be moved or removed without the files being locked by OS.
+    lfs.chdir( rootPath )
+    
     progress.text = "Build done."
     progress:setFillColor( 0.2, 0.9, 0 )
 end
