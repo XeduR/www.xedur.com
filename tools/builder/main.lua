@@ -210,7 +210,7 @@ if demoContent then
     for _, demoData in pairs( demoContent ) do
         createDemoPage( demoData )
     end
-    -- Return to root directory in order to release the current folder from Solar2D's control,
+    -- Return to root directory in order to release the current folder from Solar2D's control
     -- so that the build folder can be moved or removed without the files being locked by OS.
     lfs.chdir( rootPath )
     

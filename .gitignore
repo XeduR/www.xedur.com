@@ -2,6 +2,7 @@
 .CoronaLiveBuild
 .vscode
 *.tiled-session
+tools/builder/dst
 # Hidden temporary files, e.g. MS Office.
 ~$*
 # OS files:
