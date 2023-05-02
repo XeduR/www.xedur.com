@@ -1,0 +1,114 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Eetu Rantanen">
+
+    <meta charset="UTF-8">
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/css/styles.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="/js/detectMobile.js"></script>
+	<script src="/js/loadDemo.js"></script>
+	<script src="/js/nav.js"></script>
+    <script>
+        $(window).on("load", function(){
+	        $('#header').load("/html/header.html", function() {
+	            $.getScript( "/js/nav.js", function() {});
+	        });
+            $('#button').load("/html/button.html");
+            $('#footer').load("/html/footer.html");
+        });
+    </script>
+
+    <meta name="keywords" content="Eetu Rantanen, XeduR, Spyric, Solar2D, Lua, gamedev, game development, open source, code portfolio, ludum dare">
+    <meta name="description" content='XeduR - "Grav-O-Delivery" a Ludum Dare 53 JAM game by Eetu Rantanen.'>
+    <title>XeduR - Grav-O-Delivery</title>
+</head>
+
+<body>
+	<div id="header"></div>
+
+	<div class="content after-header">
+		<div class="center">
+
+			<a href="https://www.xedur.com">
+				<div class="icon">
+					<div class="icon-center">
+						<p style="margin-bottom:6px;">‹</p>
+					</div>
+				</div>
+			</a>
+			<h1 style="padding-top:13px;">
+				Grav-O-Delivery
+			</h1>
+
+			<div class="demo-panel">
+				<p>
+					Grav-O-Delivery is a short and sweet game about delivering interplanetary parcels using the gravitational pull of planets.<br><br>
+
+					<b>How to play:</b>
+					- Play at your own pace.<br>
+					- Drag and hold a planet with your mouse to aim.<br>
+					- Release to fire the parcel.<br><br>
+
+					<b>TIPS:</b>
+					- The delivery routes are always the same, but their order changes.<br>
+					- If you want to quickly restart the game, press the reset button in the top right corner.<br>
+				</p>
+			</div>
+
+			<div class="demo-panel dark">
+				<ul>
+					<a class="list" href="https://github.com/XeduR/Solar2D-Projects/tree/master/Games/Grav-O-Delivery">
+						<li>
+							<span style="color:white;">Source available at:</span> https://github.com/XeduR/Solar2D-Projects/tree/master/Games/Grav-O-Delivery
+						</li>
+					</a>
+				</ul>
+			</div>
+
+			<div id="button"></div>
+
+			<noscript><h4>JavaScript disabled. You must enable JavaScript to run the demo projects.</h4></noscript>
+			<div id="disclaimer" class="mobile-disclaimer">
+				<p><b>You seem to be on a mobile device</b>.<br>This demo is not designed for mobile devices and it may not run correctly, or at all, on your device.</p>
+			</div>
+			<script>
+				if (window.mobileCheck()) { document.getElementById("disclaimer").style.display = "block"; }
+			</script>
+
+			<div class="demo-panel">
+				<div class="demo-wrapper">
+					<div id="frame" class="iframe-container">
+						<iframe id="app" src="about:blank"></iframe>
+						<button id="startButton" class="load" type="button">Run the app</button>
+					</div>
+				</div>
+			</div>
+		</div>
+    </div>
+
+	<div id="footer"></div>
+</body>
+</html>
