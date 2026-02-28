@@ -1,10 +1,12 @@
-$(window).on('load', function() {
-    $("button").click(function() {
-        const $iframe = $("#app");
-        const $but = $(this);
-        $iframe.on("load",function() {
-            $but.hide();
+window.addEventListener("load", function() {
+    document.querySelector("button").addEventListener("click", function() {
+        var iframe = document.getElementById("app");
+        var button = this;
+        var overlay = document.getElementById("loadOverlay");
+        iframe.addEventListener("load", function() {
+            button.style.display = "none";
+            if (overlay) overlay.style.display = "none";
         });
-        $iframe.attr( "src", "./app/index.html" );
+        iframe.src = "./app/index.html";
     });
 });

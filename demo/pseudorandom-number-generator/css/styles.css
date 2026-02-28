@@ -1,0 +1,75 @@
+/* Scoped styles for the Pseudorandom Number Generator standalone page */
+.rng-standalone h1 {
+    text-align: center;
+    color: white;
+    padding-top: 20px;
+}
+
+.rng-standalone p {
+    font-family: 'Roboto', sans-serif;
+    text-align: justify;
+    font-weight: 300;
+}
+
+.rng-standalone .source {
+    padding-bottom: 20px;
+    text-align: center;
+}
+
+.rng-standalone .description {
+    margin-bottom: 10px;
+}
+
+.rng-standalone button {
+    width: 80px;
+}
+
+.rng-standalone #wrapper {
+    max-width: 1000px;
+    width: 100%;
+    display: block;
+    margin: 0 auto;
+}
+
+.rng-standalone #content {
+    margin: 0 auto;
+    padding-left: 10px;
+    padding-right: 20px;
+    float: left;
+    width: 49%;
+}
+
+.rng-standalone #canvas {
+    float: right;
+    display: block;
+    margin: 0 auto;
+    max-width: 480px;
+    height: 580px;
+    max-height: 580px;
+}
+
+.rng-standalone #line {
+    background: #FCBA04;
+    height: 2px;
+    margin: 10px auto;
+    width: 50px;
+}
+
+.rng-standalone #line2 {
+    background: white;
+    height: 2px;
+    margin: 20px 0px;
+    width: 50px;
+}
+
+@media only screen and (max-width: 1020px) {
+    .rng-standalone #canvas {
+        float: none;
+    }
+    .rng-standalone #content {
+        width: 90%;
+        max-width: 600px;
+        margin-bottom: 20px;
+        float: none;
+    }
+}

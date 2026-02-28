@@ -1,0 +1,149 @@
+{
+    "sectionTitle": "Games",
+    "sectionDescription": "These are some of the non-commercial games that I've created over the years in my free time. These games do not include any of the games I've created for my clients or other commercial projects.",
+    "demos": [
+        {
+            "title": "Gone Diggin'",
+            "folder": "gone-diggin",
+            "descriptionShort": "A simple game about a dwarf that wants to dig for gold. Created for Ludum Dare 48 COMPO.",
+            "descriptionLong": "Gone Diggin' is a simple game about a simple dwarf that simply wants to dig for gold, but to get to that gold, he must go <b>deeper and deeper</b>.<br><br>This game was developed for Ludum Dare 48 COMPO, i.e. all code, images, audio, etc., apart from the custom font file, were created by me within 48 hours.<br><br><b>How to play:</b><br>- Simply move by using the arrow keys or WASD. Gather as much gold as you can before the time runs out.<br>- You gain additional time by gathering gold and the timer starts once you've collected 3 gold deposits.<br>- Press Q at any point to restart the game.",
+            "tech": "Solar2D, Lua",
+            "repository": "https://github.com/XeduR/Solar2D-Projects/tree/master/Games/Gone%20Diggin",
+            "seo": {
+                "ogTitle": "XeduR - Gone Diggin'",
+                "ogDescription": "A simple game about a dwarf that wants to dig for gold. Created for Ludum Dare 48 COMPO.",
+                "metaDescription": "Gone Diggin' is a game about a dwarf who wants to dig for gold, but to reach it he must go deeper and deeper. Created for Ludum Dare 48 COMPO."
+            }
+        },
+        {
+            "title": "Grav-O-Delivery",
+            "folder": "grav-o-delivery",
+            "descriptionShort": "A short and sweet game about delivering interplanetary parcels using gravitational pull. Created for Ludum Dare 53 JAM.",
+            "descriptionLong": "Grav-O-Delivery is a short and sweet game about delivering interplanetary parcels using the gravitational pull of planets.<br><br><b>How to play:</b><br>- Play at your own pace.<br>- Drag and hold a planet with your mouse to aim.<br>- Release to fire the parcel.<br><br><b>TIPS:</b><br>- The delivery routes are always the same, but their order changes.<br>- If you want to quickly restart the game, press the reset button in the top right corner.",
+            "tech": "Solar2D, Lua",
+            "repository": "https://github.com/XeduR/Solar2D-Projects/tree/master/Games/Grav-O-Delivery",
+            "seo": {
+                "ogTitle": "XeduR - Grav-O-Delivery",
+                "ogDescription": "A short and sweet game about delivering interplanetary parcels using gravitational pull. Created for Ludum Dare 53 JAM.",
+                "metaDescription": "A short and sweet game about delivering interplanetary parcels using gravitational pull. Created for Ludum Dare 53 JAM."
+            }
+        },
+        {
+            "title": "Break the Loop",
+            "folder": "break-the-loop",
+            "descriptionShort": "A code-themed puzzle game where you drag and drop code elements to break the loop. Created for Ludum Dare 47 JAM.",
+            "descriptionLong": "A simple game where your only goal is to <b>Break the Loop</b>. This was supposed to be a Ludum Dare 47 COMPO project, but other responsibilities got in the way and I needed an extra afternoon plus external audio, so JAM it is!<br><br><b>How to play:</b><br>Simply drag and drop the highlighted code elements on top of each other to edit the code.",
+            "tech": "Solar2D, Lua",
+            "repository": "https://github.com/XeduR/Solar2D-Projects/tree/master/Games/Break%20the%20Loop",
+            "seo": {
+                "ogTitle": "XeduR - Break the Loop",
+                "ogDescription": "A code-themed puzzle game where you drag and drop code elements to break the loop. Created for Ludum Dare 47 JAM.",
+                "metaDescription": "Break the Loop is a code-themed puzzle game where you drag and drop highlighted code elements to break the loop. Created for Ludum Dare 47 JAM."
+            }
+        },
+        {
+            "title": "xperiment",
+            "folder": "xperiment",
+            "descriptionShort": "A narrative-driven point-and-click game that explores what it means to make someone laugh. Created for Global Game Jam 2024.",
+            "descriptionLong": "xperiment is a narrative-driven point-and-click game developed during Global Game Jam 2024. The game jam's theme was <b>\"Make Me Laugh\"</b>. This game takes a somewhat literal, as well as somber approach to what it may mean to make someone laugh.<br><br>Follow a therapist's advice and say \"yes\" to things you'd normally say \"no\" to as you explore various locations and interact with the people around you.<br><br><b>Credits:</b><br>- Design & Story by Emma Julkunen & Eetu Rantanen<br>- Art by Emma Julkunen<br>- Programming by Eetu Rantanen<br><br>The game was developed by members of <a href=\"https://www.rosotuotanto.fi/\">Roso Games</a>. Executables for Windows and macOS are available at <a href=\"https://globalgamejam.org/games/2024/xperiment-1\">Global Game Jam</a>.",
+            "tech": "Solar2D, Lua",
+            "repository": "https://github.com/XeduR/Solar2D-Projects/tree/master/Games/xperiment",
+            "seo": {
+                "ogTitle": "XeduR - xperiment",
+                "ogDescription": "A narrative-driven point-and-click game that explores what it means to make someone laugh. Created for Global Game Jam 2024.",
+                "metaDescription": "xperiment is a narrative-driven point-and-click game developed during Global Game Jam 2024 with the theme Make Me Laugh."
+            }
+        },
+        {
+            "title": "Uranium-236",
+            "folder": "uranium-236",
+            "descriptionShort": "A nuclear reactor management game where you must keep an unstable reactor running. Created for Ludum Dare 49.",
+            "descriptionLong": "Uranium-236 is a nuclear reactor management game created for Ludum Dare 49. The theme was <b>\"Unstable\"</b>.<br><br>Your task is to manage a nuclear reactor core by deflecting neutrons with a touch-controlled force field. Keep the reactor temperature stable – if it overheats or cools down too much, it's game over!<br><br><b>How to play:</b><br>- Touch and drag to create a force field that deflects neutrons towards or away from the reactor core.<br>- Neutrons increase the core temperature, while antineutrons decrease it.<br>- The cannon fires faster over time, making the game progressively harder.<br>- Try to generate as much power as possible before the reactor becomes too unstable!",
+            "tech": "Solar2D, Lua",
+            "repository": "https://github.com/XeduR/Solar2D-Projects/tree/master/Games/Uranium-236",
+            "seo": {
+                "ogTitle": "XeduR - Uranium-236",
+                "ogDescription": "A nuclear reactor management game where you must keep an unstable reactor running. Created for Ludum Dare 49.",
+                "metaDescription": "Uranium-236 is a nuclear reactor management game where you must keep an unstable reactor running. Created for Ludum Dare 49."
+            }
+        },
+        {
+            "title": "Last Stand",
+            "folder": "last-stand",
+            "descriptionShort": "Dodge the undead and shoot them for as long as you can. Created for Ludum Dare 50 JAM.",
+            "descriptionLong": "<b>It's time to make your last stand!</b><br><br>The undead are coming at you and you need to <b>delay the inevitable</b> for as long as you can by dodging the enemies and shooting them dead... er. If you run out of bullets, just dash at them, but remember that dashing hurts you too, so stick to shooting!<br><br>This game was developed for Ludum Dare 50 JAM, i.e. all code, images, audio, etc., apart from the custom font file and the background audio, were created by me within roughly 13 hours.<br><br><b>Controls:</b><br><b>[MOUSE]</b>: aim & shoot!<br><b>[WASD or arrows]</b>: move!<br><b>[1,2,3]</b>: select a weapon!<br><b>[space]</b>: dash!",
+            "tech": "Solar2D, Lua",
+            "repository": "https://github.com/XeduR/Solar2D-Projects/tree/master/Games/Last%20Stand",
+            "seo": {
+                "ogTitle": "XeduR - Last Stand",
+                "ogDescription": "Dodge the undead and shoot them for as long as you can. Created for Ludum Dare 50 JAM.",
+                "metaDescription": "Last Stand is a top-down survival shooter where you delay the inevitable against waves of undead. Created for Ludum Dare 50 JAM."
+            }
+        },
+        {
+            "title": "The Dark",
+            "folder": "the-dark",
+            "descriptionShort": "Keep yourself and your campfire alive through a freezing winter night. Created for Ludum Dare 46 COMPO.",
+            "descriptionLong": "The Dark is my COMPO entry for Ludum Dare 46. The theme is <b>\"Keep it alive\"</b>. This entire game and all of its assets were created within 48 hours.<br><br><b>HOW TO PLAY:</b><br>- Use A/D or arrow keys to move left and right.<br>- Use S to toggle SFX on/off.<br>- Use SPACE to interact with objects.<br>- Use Q to restart.<br><br><b>This game requires a keyboard to be played, so it will most likely not work on your mobile device.</b>",
+            "tech": "Solar2D, Lua",
+            "repository": "https://github.com/XeduR/theDark",
+            "seo": {
+                "ogTitle": "XeduR - The Dark",
+                "ogDescription": "Keep yourself and your campfire alive through a freezing winter night. Created for Ludum Dare 46 COMPO.",
+                "metaDescription": "Keep yourself and your campfire alive through a freezing winter night. Created for Ludum Dare 46 COMPO."
+            }
+        },
+        {
+            "title": "Speed Test",
+            "folder": "speed-test",
+            "descriptionShort": "Follow and repeat a sequence of coloured lights as the game gets progressively faster. Written in under 150 lines of code as part of a personal challenge to write complete games in 50, 100, and 150 lines.",
+            "descriptionLong": "Speed Test is the 150-line entry in a personal challenge to write complete games in just 50, 100, and 150 lines of code. Your goal is to follow and repeat the sequence of coloured lights for as long as you can. The game gets progressively faster, testing both your memory and reflexes.<br><br><b>How to play:</b><br>- Watch the sequence of coloured lights carefully.<br>- Tap the buttons in the same order as the sequence.<br>- The sequence gets longer and faster with each round.",
+            "tech": "Solar2D, Lua",
+            "repository": "https://github.com/XeduR/Solar2D-Projects/tree/master/Games/Speed%20Test",
+            "seo": {
+                "ogTitle": "XeduR - Speed Test",
+                "ogDescription": "Follow and repeat a sequence of coloured lights as the game gets progressively faster. Written in under 150 lines of code as part of a personal challenge.",
+                "metaDescription": "Speed Test is a memory and reflex game written in under 150 lines of code as part of a personal challenge to write complete games in 50, 100, and 150 lines."
+            }
+        },
+        {
+            "title": "Runners",
+            "folder": "runners",
+            "descriptionShort": "Tap the runners before they escape off the screen as the game gets increasingly hectic. Written in under 100 lines of code as part of a personal challenge to write complete games in 50, 100, and 150 lines.",
+            "descriptionLong": "Runners is the 100-line entry in a personal challenge to write complete games in just 50, 100, and 150 lines of code. Your goal is to tap on the runners to stop them before they escape off the screen. The game gets progressively more hectic as more runners appear.<br><br><b>How to play:</b><br>- Tap on the runners to stop them from escaping.",
+            "tech": "Solar2D, Lua",
+            "repository": "https://github.com/XeduR/Solar2D-Projects/tree/master/Games/Runners",
+            "seo": {
+                "ogTitle": "XeduR - Runners",
+                "ogDescription": "Tap the runners before they escape off the screen as the game gets increasingly hectic. Written in under 100 lines of code as part of a personal challenge.",
+                "metaDescription": "Runners is a game written in under 100 lines of code as part of a personal challenge to write complete games in 50, 100, and 150 lines."
+            }
+        },
+        {
+            "title": "Bomb Tap",
+            "folder": "bomb-tap",
+            "descriptionShort": "Keep a bouncing bomb airborne by tapping before it touches the platforms. Written in under 50 lines of code as part of a personal challenge to write complete games in 50, 100, and 150 lines.",
+            "descriptionLong": "Bomb Tap is the 50-line entry in a personal challenge to write complete games in just 50, 100, and 150 lines of code. A bomb bounces around the screen and your goal is to keep it from touching the platforms by tapping to make it jump.<br><br><b>How to play:</b><br>- Tap anywhere to make the bomb jump.<br>- Keep the bomb from touching the platforms for as long as you can.",
+            "tech": "Solar2D, Lua",
+            "repository": "https://github.com/XeduR/Solar2D-Projects/tree/master/Games/Bomb%20Tap",
+            "seo": {
+                "ogTitle": "XeduR - Bomb Tap",
+                "ogDescription": "Keep a bouncing bomb airborne by tapping before it touches the platforms. Written in under 50 lines of code as part of a personal challenge.",
+                "metaDescription": "Bomb Tap is a game written in under 50 lines of code as part of a personal challenge to write complete games in 50, 100, and 150 lines."
+            }
+        },
+        {
+            "title": "Get A Job Baby!",
+            "folder": "get-a-job-baby",
+            "descriptionShort": "A game about being a newborn baby who has nothing and is put to work. Created for Ludum Dare 45 JAM.",
+            "descriptionLong": "<b>Get A Job Baby!</b> is a game about being a newborn baby who has nothing and is put to work. Your goal is to earn as much as you can in the next 12 months.<br><br>Originally intended as a COMPO project for Ludum Dare 45, but due to time constraints, it became a JAM entry.",
+            "tech": "Solar2D, Lua",
+            "repository": "https://github.com/XeduR/Solar2D-Projects/tree/master/Games/Get%20A%20Job%2C%20Baby!",
+            "seo": {
+                "ogTitle": "XeduR - Get A Job Baby!",
+                "ogDescription": "A game about being a newborn baby who has nothing and is put to work. Created for Ludum Dare 45 JAM.",
+                "metaDescription": "A game about being a newborn baby who has nothing and is put to work. Created for Ludum Dare 45 JAM."
+            }
+        }
+    ]
+}

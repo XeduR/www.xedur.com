@@ -1,0 +1,109 @@
+{
+    "sectionTitle": "Widgets, libraries and other unassorted things for Solar2D",
+    "sectionDescription": "These projects range from individual tables or concepts to more complex functions and systems. Essentially, these projects come in all shapes and sizes, but I either didn't consider them big enough or distinct enough to turn them into plugins.",
+    "demos": [
+        {
+            "title": "Autotile",
+            "folder": "autotile",
+            "descriptionShort": "Touch a cell on a grid and Autotile figures out which tile to place and updates all connected tiles automatically.",
+            "tech": "Solar2D, Lua",
+            "descriptionLong": "Autotile is a Lua module for <a class=\"list\" href=\"https://solar2d.com/\">Solar2D</a> that determines which tile should be placed at a selected location and automatically updates all surrounding tiles as necessary.",
+            "repository": "https://github.com/XeduR/Solar2D-Projects/tree/master/autotile",
+            "seo": {
+                "ogTitle": "XeduR - Autotile",
+                "ogDescription": "Touch a cell on a grid and Autotile figures out which tile to place and updates all connected tiles automatically.",
+                "metaDescription": "Autotile is a Lua module for Solar2D that determines which tile to place at a selected location and automatically updates all surrounding tiles."
+            }
+        },
+        {
+            "title": "Weaver",
+            "folder": "weaver",
+            "descriptionShort": "A narrative and dialogue engine for Solar2D with Twine 2 integration for creating branching stories and dialogue trees.",
+            "descriptionLong": "Spyric Story Weaver is a narrative and dialogue engine for <a class=\"list\" href=\"https://solar2d.com/\">Solar2D</a> with <a class=\"list\" href=\"https://twinery.org/\">Twine 2</a> integration. It consists of a custom Twine 2 story format that exports interactive narratives as JSON, and a Lua runtime that parses and executes the exported stories in Solar2D games.<br><br>Features include variables, conditional blocks, navigation links, style markup, and dynamic code execution within story passages.",
+            "tech": "Solar2D, Lua",
+            "seo": {
+                "ogTitle": "XeduR - Weaver",
+                "ogDescription": "A narrative and dialogue engine for Solar2D with Twine 2 integration for creating branching stories and dialogue trees.",
+                "metaDescription": "Spyric Story Weaver is a narrative and dialogue engine for Solar2D with Twine 2 integration for creating branching stories and dialogue trees."
+            }
+        },
+        {
+            "title": "Morph",
+            "folder": "morph",
+            "descriptionShort": "Morph allows for simple creation and scaling of display objects and their physics bodies in Solar2D.",
+            "tech": "Solar2D, Lua",
+            "descriptionLong": "Spyric Morph is a <a class=\"list\" href=\"https://solar2d.com/\">Solar2D</a> plugin that allows for simple creation and scaling/morphing of display objects and their physics bodies. This makes it easy to dynamically transform visual objects alongside their associated physics bodies in your games and apps.",
+            "repository": "https://github.com/SpyricGames/Solar2D-Plugins-Public/tree/main/Morph",
+            "seo": {
+                "ogTitle": "XeduR - Morph",
+                "ogDescription": "Morph allows for simple creation and scaling of display objects and their physics bodies in Solar2D.",
+                "metaDescription": "Spyric Morph allows for simple creation and scaling/morphing of display objects and their physics bodies in Solar2D."
+            }
+        },
+        {
+            "title": "Performance Meter",
+            "folder": "performance-meter",
+            "descriptionShort": "A customisable on-screen meter for tracking FPS, texture memory, and memory usage in your Solar2D app.",
+            "descriptionLong": "Performance Meter is a customisable on-screen widget for keeping track of FPS, texture memory, and memory usage in <a class=\"list\" href=\"https://solar2d.com/\">Solar2D</a> apps.",
+            "tech": "Solar2D, Lua",
+            "repository": "https://github.com/SpyricGames/performance",
+            "seo": {
+                "ogTitle": "XeduR - Performance Meter",
+                "ogDescription": "A customisable on-screen meter for tracking FPS, texture memory, and memory usage in your Solar2D app.",
+                "metaDescription": "Performance Meter is a customisable on-screen widget for tracking FPS, texture memory, and memory usage in Solar2D apps."
+            }
+        },
+        {
+            "title": "Print to Display",
+            "folder": "print-to-display",
+            "descriptionShort": "Print to Display adds a console to your app, making it easy to view prints even while testing on devices.",
+            "descriptionLong": "Print to Display is a simple to use <a class=\"list\" href=\"https://solar2d.com/\">Solar2D</a> plugin for displaying print() outputs on an in-app console as well as in the simulator console. This makes debugging on devices easier as no external tools are needed.",
+            "tech": "Solar2D, Lua",
+            "repository": "https://github.com/SpyricGames/Solar2D-Plugins-Public/tree/main/Print-To-Display",
+            "seo": {
+                "ogTitle": "XeduR - Print to Display",
+                "ogDescription": "Print to Display adds a console to your app, making it easy to view prints even while testing on devices.",
+                "metaDescription": "Print to Display adds a console to your app, making it easy to view prints even while testing on devices."
+            }
+        },
+        {
+            "title": "Progress Ring",
+            "folder": "progress-ring",
+            "descriptionShort": "A quick and easy plugin for creating progress rings (or circles) in Solar2D.",
+            "descriptionLong": "Progress Ring is a <a class=\"list\" href=\"https://solar2d.com/\">Solar2D</a> plugin that lets you easily create customisable vector-based progress rings (or circles). Simply set the progress value and the ring updates automatically.",
+            "tech": "Solar2D, Lua",
+            "seo": {
+                "ogTitle": "XeduR - Progress Ring",
+                "ogDescription": "A quick and easy plugin for creating progress rings (or circles) in Solar2D.",
+                "metaDescription": "A quick and easy plugin for creating progress rings (or circles) in Solar2D."
+            }
+        },
+        {
+            "title": "screen.lua",
+            "externalUrl": "https://github.com/SpyricGames/Solar2D-Plugins-Public/tree/main/Screen",
+            "image": "img/external/screen.jpg",
+            "descriptionShort": "A table of dynamically calculated screen values for creating resolution-independent UIs and layouts in Solar2D.",
+            "tech": "Solar2D, Lua"
+        },
+        {
+            "title": "advancedAudio.lua",
+            "externalUrl": "https://github.com/XeduR/Solar2D-Projects/tree/master/advancedAudio",
+            "image": "img/external/advancedAudio.png",
+            "descriptionShort": "An advanced audio management library for Solar2D with channel management, priority system, and audio type categorization.",
+            "tech": "Solar2D, Lua"
+        },
+        {
+            "title": "Verify Domain",
+            "folder": "verify-domain",
+            "descriptionShort": "A set of Lua functions for verifying that your Solar2D HTML5 app is running on approved domains, helping prevent unauthorized hosting.",
+            "descriptionLong": "Verify Domain provides a set of Lua functions for verifying that your <a class=\"list\" href=\"https://solar2d.com/\">Solar2D</a> HTML5 app is running on approved domains. This helps prevent unauthorized copies of your app from being hosted on unapproved websites.",
+            "tech": "Solar2D, Lua",
+            "repository": "https://github.com/XeduR/Solar2D-Projects/tree/master/verifyDomain",
+            "seo": {
+                "ogTitle": "XeduR - verifyDomain",
+                "ogDescription": "A set of Lua functions for verifying that your Solar2D HTML5 app is running on approved domains, helping prevent unauthorized hosting.",
+                "metaDescription": "Verify Domain provides Lua functions for verifying that your Solar2D HTML5 app is running on approved domains, helping prevent unauthorized hosting."
+            }
+        }
+    ]
+}

@@ -1,4 +1,4 @@
-<!DOCTYPE html>    
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,7 +6,7 @@
     <meta name="keywords" content="Eetu Rantanen, XeduR, Spyric, Solar2D, Lua, gamedev, game development, open source, code portfolio">
     <meta name="description" content="My name is Eetu Rantanen, but here on the interwebz I often go by XeduR. This is my code portfolio site and it is full of all kinds of interesting projects.">
     <meta name="author" content="Eetu Rantanen">
-    
+
     <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
     <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
     <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
@@ -24,13 +24,12 @@
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
     <meta name="theme-color" content="#ffffff">
-    
+
     <link href="./css/prism.css" rel="stylesheet" />
     <script src="./js/prism.js"></script>
-    
+
     <!-- <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="/css/styles.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
         $(window).on("load", function(){
             $('#header').load("/html/header.html", function() {
@@ -41,7 +40,7 @@
             $('#footer').load("/html/footer.html");
         });
     </script> -->
-    
+
     <style>
         html, body {
             color: white;
@@ -51,7 +50,7 @@
             height: 100%;
         }
     </style>
-    
+
     <title>XeduR - Code Portfolio</title>
 </head>
 <body class="line-numbers">
@@ -59,20 +58,87 @@
     <div id="header"></div>
 
     <div class="content after-header">
-        
+
         <h1>Test</h1>
-        <pre><code class="language-lua">
-            local code
-            local function test(e)
-                if e == "true" then
-                    code = not false
-                    return code
-                end
-            end
-            test(code)
-        </code></pre>
+
 
     </div>
     <div id="footer"></div>
 </body>
 </html>
+
+
+
+<!-- Example on how to use line highlighting -->
+<pre data-line="3, 8-13, 23" class="line-numbers"><code class="language-lua">
+local function touchDeck( event )
+	if event.phase == "began" then
+		if gameState == "gameover" then
+			gameState = "swap"
+
+			instructions.text = "Choose which cards you wish to swap."
+			deck.canTouchCard = true
+
+			-- Sekoitetaan pakka.
+			deck.shuffle()
+
+			-- Nostetaan 5 uutta korttia.
+			for i = 1, 5 do
+				-- Poistetaan vanhat kortit aina ennen
+				-- kuin pelaajalle jaetaan uudet.
+				display.remove( hand[i] )
+
+				hand[i] = deck.draw( i, gameDeck )
+			end
+
+		elseif gameState == "swap" then
+			gameState = "gameover"
+
+			instructions.text = "Tap the deck to draw new cards."
+			deck.canTouchCard = false
+
+			-- Käydään pelaajan kädessä olevat 5
+			-- korttia läpi ja tuhotaan valituttuna
+			-- olevat kortit ja nostetaan niiden
+			-- tilalle uudet kortit.
+			for i = 1, 5 do
+				-- deck.lua:ssa asetamme jokaiselle kortille
+				-- isSelected = true, jos ne ovat valittuna.
+				if hand[i].isSelected then
+					display.remove( hand[i] )
+
+					hand[i] = deck.draw( i, gameDeck )
+				end
+			end
+
+			-- Tarkistetaan pelaajan käsi.
+			checkHand.get( hand )
+
+		end
+	end
+
+	return true
+end
+</code></pre>
+
+
+
+<pre data-line="1, 3, 8-13" class="line-numbers"><code class="language-lua">
+if command == "img" or command == "del" then
+    -- Poistetaan vanha taustakuva.
+    display.remove( background )
+
+    if command == "img" then
+        -- Jos peli on luomassa toimistolle kuvaa, niin korvataan
+        -- se mahdollisesti serverin ajalla valittuun versioon.
+        local image = node[i][2]
+        -- "assets/images/levels/office_day.png" on oletuskuva
+        -- toimistolle, niin koitetaan korvata se.
+        if image == "assets/images/levels/office_day.png" then
+            image = officeImage
+        end
+
+        -- Luodaan uusi taustakuva.
+        background = display.newImage( sceneGroup, image, screen.centerX, screen.centerY - 60 )
+    end
+</code></pre>

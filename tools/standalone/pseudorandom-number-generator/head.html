@@ -1,0 +1,12 @@
+<link rel="stylesheet" type="text/css" href="css/styles.css">
+<script src="js/random.js"></script>
+<script src="js/middleSquareRandom.js"></script>
+<script>
+    // Update the value of the middle-square method's input and draw new bitmap.
+    function loadSample(event, n) {
+        event.preventDefault();
+        randomseedMS(n);
+        document.getElementById("seed2").value = n;
+        start("middle-square")
+    }
+</script>

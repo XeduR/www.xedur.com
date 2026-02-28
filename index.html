@@ -3,454 +3,463 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="keywords" content="Eetu Rantanen, XeduR, Spyric, Solar2D, Lua, gamedev, game development, open source, code portfolio">
-    <meta name="description" content="My name is Eetu Rantanen, but here on the interwebz I often go by XeduR. This is my code portfolio site and it is full of all kinds of interesting projects.">
+    <meta name="keywords" content="Eetu Rantanen, XeduR, Solar2D, Lua, gamedev, game development, open source, code portfolio">
+    <meta name="description" content="My name is Eetu Rantanen, but here on the interwebz I often go by XeduR. This is my code portfolio site and it's full of all sorts of interesting projects.">
+    <meta name="generator" content="Static Page Builder for www.xedur.com">
     <meta name="author" content="Eetu Rantanen">
 
-    <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
-    <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
-    <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" sizes="57x57" href="apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="manifest" href="manifest.json">
     <meta name="msapplication-TileColor" content="#ffffff">
-    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <meta name="msapplication-TileImage" content="ms-icon-144x144.png">
     <meta name="theme-color" content="#ffffff">
 
+    <!-- Open Graph meta tags -->
+    <meta property="og:site_name" content="XeduR">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.xedur.com/">
+    <meta property="og:title" content="XeduR - Code Portfolio">
+    <meta property="og:description" content="My name is Eetu Rantanen, but here on the interwebz I often go by XeduR. This is my code portfolio site and it's full of all sorts of interesting projects.">
+
+    <!-- Twitter/X Card meta tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="XeduR - Code Portfolio">
+    <meta name="twitter:description" content="My name is Eetu Rantanen, but here on the interwebz I often go by XeduR. This is my code portfolio site and it's full of all sorts of interesting projects.">
+
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="/css/styles.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script>
-        $(window).on("load", function(){
-            $('#header').load("/html/header.html", function() {
-                $.getScript( "/js/nav.js", function() {});
-            });
-            $('#button-top').load("/html/button.html");
-            $('#button-bottom').load("/html/button.html");
-            $('#footer').load("/html/footer.html");
-        });
-    </script>
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+
+    
 
     <title>XeduR - Code Portfolio</title>
+
 </head>
 <body>
-    <div id="header"></div>
+    <nav>
+    	<ul id="desktop-nav" class="menu">
+    		<li class="logo">
+    			<a href="index.html">
+    				<img src="img/xedur-code-portfolio.png" alt="Xedur - Code Portfolio">
+    			</a>
+    		</li>
+    		<li class="item"><a href="index.html#me">Me</a></li>
+    		<li class="item"><a href="index.html#games">Games</a></li>
+
+    		<li class="item"><a href="index.html#solar2d">Solar2D</a></li>
+
+    		<li class="item last"><a href="index.html#other">Other</a></li>
+    	</ul>
+
+    	<ul id="mobile-nav" class="menu">
+    		<li class="logo"><img src="img/xedur-code-portfolio.png" alt="Xedur - Code Portfolio"></li>
+    		<li class="item"><a href="index.html#me">Me</a></li>
+
+    		<li class="item"><a href="index.html#solar2d">Solar2D</a></li>
+
+    		<li class="item"><a href="index.html#games">Games</a></li>
+    		<li class="item"><a href="index.html#other">Other</a></li>
+    		<li class="item mobile-nav-end"></li>
+    		<li class="toggle">
+    			<a href="javascript:void(0);">
+    				<div class="bar1"></div>
+    				<div class="bar2"></div>
+    				<div class="bar3"></div>
+    			</a>
+    		</li>
+    	</ul>
+    </nav>
+
 
     <div class="content after-header">
 
         <div class="segment center">
             <a class="anchor" id="me"></a>
 
-            <h1 style="padding-top: 30px;">Hello!</h1>
+            <h1>Hello!</h1>
             <p>
-                My name is <span style="color:#FCBA04;">Eetu Rantanen</span>, but here on the interwebz I often go by <span style="color:#FCBA04;">XeduR</span>.<br><br>
+                My name is Eetu Rantanen, but online I often go by XeduR.<br><br>
 
-                I am a jack of all trades. I am an experienced game developer, a full stack web developer, a certified data scientist with a couple of years of work experience and
-                I'm a part-time mathematics and statistics lecturer at Estonian Business School in Helsinki. Oh, and I also dabble in graphic design, creative writing and all sorts of problem solving.<br><br>
+                I'm a game designer and full stack developer with over 10 years of professional experience designing and programming games,
+                applications and websites of all kinds. I also have extensive experience working with data, from end-to-end data pipelines to analytics.
+                Between 2018 and 2023, I was a visiting lecturer of business mathematics and statistics at Estonian Business School in Helsinki.<br><br>
 
-                On this site, you'll find interactive online demos for many of the passion projects that I've created over the years. As passion projects, most of them are related to games.
-                The source code for most of these projects is publicly available via <a href="https://github.com/XeduR">my GitHub profile</a> under the MIT License.
-                Similarly, you can find the source code for some of my Solar2D plugins at <a href="https://github.com/spyricGames">Spyric's GitHub profile</a>.
-                <br><br>
+                I'm a jack of all trades who gets excited about all types of game, software, and data projects. On this site, you'll find interactive
+                online demos for many of the passion projects I've created over the years. Most of them are game-related, and the source code for most
+                is publicly available on my <a href="https://github.com/XeduR">GitHub profile</a> under the MIT License.
+                None of my client work is showcased here.<br><br>
 
-                While you don't need to credit me in any way for using my projects, I am always happy to hear when my projects are of help to others.<br>
+                You don't need to credit me for using any of my projects, but I'm always happy to hear when they've been useful to someone.
             </p>
-
-            <div id="button-top"></div>
 
             <div id="line"></div>
             <h3>Contact</h3>
             <p>
-                If you wish to learn more about me or my services, or perhaps even hire me, then you should visit my other site: <a href="https://www.erantanen.com/">www.erantanen.com</a>.<br><br>
-                If you want to otherwise get in touch with me, you can always reach me via my email: <a href="mailto: eetu@erantanen.com">eetu@erantanen.com</a>.
+                If you'd like to learn more about me or my work, visit my other site: <a href="https://www.erantanen.com/">www.erantanen.com</a>. Note that the site is a bit outdated and will be updated around mid to late March 2026.<br><br>
+                You can also reach me directly via email: <a href="mailto:eetu@erantanen.com">eetu@erantanen.com</a>.
             </p>
         </div>
 
         <div class="segment center">
-            <a class="anchor" id="plugins"></a>
-            <h2>Plugins for Solar2D</h2>
+            <a class="anchor" id="games"></a>
+            <h2>Games<a class="heading-link" href="#games" aria-label="Copy link to section"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
 
             <p class="body">
-                I created these <a href="https://solar2d.com/">Solar2D</a> plugins for my company, <a href="https://www.spyric.com/">Spyric</a>, for the sole purpose of making game development faster and easier, or just because I thought they'd be cool or because they'd add something I needed that was missing from Solar2D. Documentations for these plugins is available at <a href="https://www.spyric.com/docs/">Spyric Docs</a>.
+                These are some of the non-commercial games that I've created over the years in my free time. These games do not include any of the games I've created for my clients or other commercial projects.
             </p>
             <div id="line"></div>
             <div class="grid">
-
-                <!-- <div class="project-container">
-                    <a href="https://www.xedur.com/">
-                        <h2>Shadows</h2>
-                        <div class="image-container">
-                            <img src="img/project1.jpg">
-                        </div>
-                        <p>Spyric Shadows is the one and <u>only</u> plugin for Solar2D that makes it possible to create all sorts of shadows in your games.</p>
-                    </a>
-                </div> -->
-
-                <!-- <div class="project-container">
-                    <a href="https://www.xedur.com/">
-                        <h2>Weaver</h2>
-                        <div class="image-container">
-                            <img src="img/project2.jpg">
-                        </div>
-                        <p>Spyric Weaver loads and interprets stories/files created in Twine 2 or Yarn, and runs them in Solar2D.</p>
-                    </a>
-                </div> -->
-
-                <!-- <div class="project-container">
-                    <a href="https://www.xedur.com/">
-                        <h2>BMFont</h2>
-                        <div class="image-container">
-                            <img src="img/project3.jpg">
-                        </div>
-                        <p>Based on PonyFont, Spyric BMFont makes it easy to use and stylize bitmap fonts in your projects.</p>
-                    </a>
-                </div> -->
-
                 <div class="project-container">
-                    <a href="https://www.xedur.com/demos/spyricPerformance/">
-                        <h2>Performance</h2>
+                    <a href="demo/gone-diggin/">
+                        <h2>Gone Diggin'</h2>
                         <div class="image-container">
-                            <img src="img/project1.jpg">
+                            <img src="demo/gone-diggin/gone-diggin-small.jpg">
                         </div>
-                        <p>Spyric Performance adds a customisable performance meter to your app, which makes tracking performance & resource usage easy.</p>
+                        <p>A simple game about a dwarf that wants to dig for gold. Created for Ludum Dare 48 COMPO.</p>
                     </a>
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
+
                 </div>
-
-                <!-- <div class="project-container">
-                    <a href="https://www.xedur.com/">
-                        <h2>Progress Ring</h2>
-                        <div class="image-container">
-                            <img src="img/project4.jpg">
-                        </div>
-                        <p>Spyric Progress Ring allows you to create fully stylised, animated and fully controllable progress rings to your projects.</p>
-                    </a>
-                </div> -->
-
                 <div class="project-container">
-                    <a href="https://www.xedur.com/demos/spyricPrintToDisplay">
-                        <h2>Print to Display</h2>
+                    <a href="demo/grav-o-delivery/">
+                        <h2>Grav-O-Delivery</h2>
                         <div class="image-container">
-                            <img src="img/project2.jpg">
+                            <img src="demo/grav-o-delivery/grav-o-delivery-small.jpg">
                         </div>
-                        <p>Spyric Print to Display adds a console to your app, making it easy to view prints even while testing on devices.</p>
+                        <p>A short and sweet game about delivering interplanetary parcels using gravitational pull. Created for Ludum Dare 53 JAM.</p>
                     </a>
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
+
                 </div>
-
-                <!-- <div class="project-container">
-                    <a href="https://www.xedur.com/">
-                        <h2>Window</h2>
+                <div class="project-container">
+                    <a href="demo/break-the-loop/">
+                        <h2>Break the Loop</h2>
                         <div class="image-container">
-                            <img src="img/project4.jpg">
+                            <img src="demo/break-the-loop/break-the-loop-small.jpg">
                         </div>
-                        <p>Spyric Window allows you to create windows or buttons of any size to your app using only a single small image as a source.</p>
+                        <p>A code-themed puzzle game where you drag and drop code elements to break the loop. Created for Ludum Dare 47 JAM.</p>
                     </a>
-                </div> -->
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
 
-                <!-- <div class="project-container">
-                    <a href="https://www.xedur.com/">
-                        <h2>Morph</h2>
+                </div>
+                <div class="project-container">
+                    <a href="demo/xperiment/">
+                        <h2>xperiment</h2>
                         <div class="image-container">
-                            <img src="img/project4.jpg">
+                            <img src="demo/xperiment/xperiment-small.jpg">
                         </div>
-                        <p>Spyric Morph allows you to distort, scale and/or flip display objects and their attached physics bodies with ease.</p>
+                        <p>A narrative-driven point-and-click game that explores what it means to make someone laugh. Created for Global Game Jam 2024.</p>
                     </a>
-                </div> -->
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
 
-                <!-- <div class="project-container">
-                    <a href="https://www.xedur.com/">
-                        <h2>Font Loader</h2>
+                </div>
+                <div class="project-container">
+                    <a href="demo/uranium-236/">
+                        <h2>Uranium-236</h2>
                         <div class="image-container">
-                            <img src="img/project4.jpg">
+                            <img src="demo/uranium-236/uranium-236-small.jpg">
                         </div>
-                        <p>Spyric Font Loader will preload all of your custom fonts so that your app will run faster when it needs to use the fonts again.</p>
+                        <p>A nuclear reactor management game where you must keep an unstable reactor running. Created for Ludum Dare 49.</p>
                     </a>
-                </div> -->
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
 
-                <!-- <div class="project-container">
-                    <a href="https://www.xedur.com/">
-                        <h2>Resolution</h2>
+                </div>
+                <div class="project-container">
+                    <a href="demo/last-stand/">
+                        <h2>Last Stand</h2>
                         <div class="image-container">
-                            <img src="img/project4.jpg">
+                            <img src="demo/last-stand/last-stand-small.jpg">
                         </div>
-                        <p>Spyric Resolution makes it possible to dynamically change the resolution of your desktop games.</p>
+                        <p>Dodge the undead and shoot them for as long as you can. Created for Ludum Dare 50 JAM.</p>
                     </a>
-                </div> -->
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
 
-                <!-- <div class="project-container">
-                    <a href="https://www.xedur.com/">
-                        <h2>Collisions</h2>
+                </div>
+                <div class="project-container">
+                    <a href="demo/the-dark/">
+                        <h2>The Dark</h2>
                         <div class="image-container">
-                            <img src="img/project4.jpg">
+                            <img src="demo/the-dark/the-dark-small.jpg">
                         </div>
-                        <p>Spyric Collisions removes the calculations and guesswork from creating and managing collision filters.</p>
+                        <p>Keep yourself and your campfire alive through a freezing winter night. Created for Ludum Dare 46 COMPO.</p>
                     </a>
-                </div> -->
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
 
+                </div>
+                <div class="project-container">
+                    <a href="demo/speed-test/">
+                        <h2>Speed Test</h2>
+                        <div class="image-container">
+                            <img src="demo/speed-test/speed-test-small.jpg">
+                        </div>
+                        <p>Follow and repeat a sequence of coloured lights as the game gets progressively faster. Written in under 150 lines of code as part of a personal challenge to write complete games in 50, 100, and 150 lines.</p>
+                    </a>
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
+
+                </div>
+                <div class="project-container">
+                    <a href="demo/runners/">
+                        <h2>Runners</h2>
+                        <div class="image-container">
+                            <img src="demo/runners/runners-small.jpg">
+                        </div>
+                        <p>Tap the runners before they escape off the screen as the game gets increasingly hectic. Written in under 100 lines of code as part of a personal challenge to write complete games in 50, 100, and 150 lines.</p>
+                    </a>
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
+
+                </div>
+                <div class="project-container">
+                    <a href="demo/bomb-tap/">
+                        <h2>Bomb Tap</h2>
+                        <div class="image-container">
+                            <img src="demo/bomb-tap/bomb-tap-small.jpg">
+                        </div>
+                        <p>Keep a bouncing bomb airborne by tapping before it touches the platforms. Written in under 50 lines of code as part of a personal challenge to write complete games in 50, 100, and 150 lines.</p>
+                    </a>
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
+
+                </div>
+                <div class="project-container">
+                    <a href="demo/get-a-job-baby/">
+                        <h2>Get A Job Baby!</h2>
+                        <div class="image-container">
+                            <img src="demo/get-a-job-baby/get-a-job-baby-small.jpg">
+                        </div>
+                        <p>A game about being a newborn baby who has nothing and is put to work. Created for Ludum Dare 45 JAM.</p>
+                    </a>
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
+
+                </div>
             </div>
         </div>
 
-        <div class="segment center">
-            <a class="anchor" id="unassorted"></a>
-            <h2>Unassorted Solar2D functions and libraries</h2>
-
-            <p class="body">
-                These projects range from individual tables or concepts to more complex functions and systems. Essentially, these projects
-                come in all shapes and sizes, but I either didn't consider them big enough or distinct enough to turn them into plugins.
-            </p>
-            <div id="line"></div>
-            <div class="grid">
-
-                <div class="project-container">
-                    <a href="https://github.com/XeduR/Solar2D-Projects/tree/master/screen" target="_blank">
-                        <h2>screen.lua</h2>
-                        <div class="image-container">
-                            <img src="img/project3.jpg">
-                        </div>
-                        <p>screen.lua is a table consisting of dynamically calculated screen dimensions, making creating dynamic UIs and games/apps easier (opens in a new page).</p>
-                    </a>
-                </div>
-
-                <div class="project-container">
-                    <a href="https://www.xedur.com/demos/verifyDomain">
-                        <h2>verifyDomain</h2>
-                        <div class="image-container">
-                            <img src="img/project4.jpg">
-                        </div>
-                        <p>verifyDomain is a set of functions that you can use to verify that your HTML5 app is running on approved domains.</p>
-                    </a>
-                </div>
-
-                <div class="project-container">
-                    <a href="https://www.xedur.com/demos/Autotile">
-                        <h2>Autotile</h2>
-                        <div class="image-container">
-                            <img src="img/project1.jpg">
-                        </div>
-                        <p>With Autotile, you can just touch a cell on a grid and it will figure out what tile should go there and update the connected tiles too.</p>
-                    </a>
-                </div>
-
-            </div>
-        </div>
         <div class="divider center"></div>
 
         <div class="segment learn center">
             <a class="anchor" id="learn"></a>
-            <h2>Learn Solar2D</h2>
+            <h2>Roso Games / Learn Solar2D<a class="heading-link" href="#learn" aria-label="Copy link to section"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
             <p>
-                During summer 2021, I will be creating an online course aimed at beginners who wish to learn game development using Solar2D, a free and completely open source game engine.<br><br>
-                The course will consist of creating several small incrementally more difficult games while going through each and every step of the process as we go along.<br><br>
-
-                <a href="https://www.learnsolar2d.com/">Stay tuned!</a>
+                I'm also involved with <a href="https://www.rosogames.fi" target="_blank">Roso Games</a>, which is a free, remote game development project where beginners learn to build and publish games together using <a href="https://solar2d.com" target="_blank">Solar2D</a> and Lua. It's run by the Finnish non-profit Kukunori ry and has already shipped several titles on <a href="https://rosogames.itch.io/" target="_blank">Itch.io</a>.<br><br>
+                The project is currently only available in Finnish, but we are working on expanding it globally and open sourcing the learning materials so that anyone can pick up game development, Lua programming, and the Solar2D engine.
             </p>
         </div>
 
         <div class="divider center"></div>
 
         <div class="segment center">
-            <a class="anchor" id="games"></a>
-            <h2>Games</h2>
+            <a class="anchor" id="solar2d"></a>
+            <h2>Widgets, libraries and other unassorted things for Solar2D<a class="heading-link" href="#solar2d" aria-label="Copy link to section"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
 
             <p class="body">
-                These are some of the non-commercial games that I've created over the years in my free time.
-                These games do not include any of the games I've created for my clients or other commercial projects.
+                These projects range from individual tables or concepts to more complex functions and systems. Essentially, these projects come in all shapes and sizes, but I either didn't consider them big enough or distinct enough to turn them into plugins.
             </p>
             <div id="line"></div>
             <div class="grid">
-
                 <div class="project-container">
-                    <a href="https://www.xedur.com/demos/grav-o-delivery/">
-                        <h2>Grav-O-Delivery</h2>
+                    <a href="demo/autotile/">
+                        <h2>Autotile</h2>
                         <div class="image-container">
-                            <img src="img/project1.jpg">
+                            <img src="demo/autotile/autotile-small.jpg">
                         </div>
-                        <p>Grav-O-Delivery is a short and sweet game about delivering interplanetary parcels using the gravitational pull of planets.</p>
-                        <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
+                        <p>Touch a cell on a grid and Autotile figures out which tile to place and updates all connected tiles automatically.</p>
                     </a>
-                </div>
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
 
+                </div>
                 <div class="project-container">
-                    <a href="https://www.xedur.com/demos/last-stand/">
-                        <h2>Last Stand</h2>
+                    <a href="demo/weaver/">
+                        <h2>Weaver</h2>
                         <div class="image-container">
-                            <img src="img/project4.jpg">
+                            <img src="demo/weaver/weaver-small.jpg">
                         </div>
-                        <p>Delay the inevitable and fight off the undead hordes! Developed for Ludum Dare 50 JAM</p>
-                        <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
+                        <p>A narrative and dialogue engine for Solar2D with Twine 2 integration for creating branching stories and dialogue trees.</p>
                     </a>
-                </div>
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
 
+                </div>
                 <div class="project-container">
-                    <a href="https://www.xedur.com/demos/gone-diggin/">
-                        <h2>Gone Diggin'</h2>
+                    <a href="demo/morph/">
+                        <h2>Morph</h2>
                         <div class="image-container">
-                            <img src="img/project4.jpg">
+                            <img src="demo/morph/morph-small.jpg">
                         </div>
-                        <p>A group of dwarves go diggin' for gold. Being currently developed for Ludum Dare 48 JAM.</p>
-                        <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
+                        <p>Morph allows for simple creation and scaling of display objects and their physics bodies in Solar2D.</p>
                     </a>
-                </div>
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
 
+                </div>
                 <div class="project-container">
-                    <a href="https://www.xedur.com/demos/break-the-loop/">
-                        <h2>Break the Loop</h2>
+                    <a href="demo/performance-meter/">
+                        <h2>Performance Meter</h2>
                         <div class="image-container">
-                            <img src="img/project4.jpg">
+                            <img src="demo/performance-meter/performance-meter-small.jpg">
                         </div>
-                        <p>A game about programming and debugging infinite loops. Created for Ludum Dare 47 JAM.</p>
-                        <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
+                        <p>A customisable on-screen meter for tracking FPS, texture memory, and memory usage in your Solar2D app.</p>
                     </a>
-                </div>
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
 
+                </div>
                 <div class="project-container">
-                    <a href="https://www.xedur.com/demos/theDark">
-                        <h2>The Dark</h2>
+                    <a href="demo/print-to-display/">
+                        <h2>Print to Display</h2>
                         <div class="image-container">
-                            <img src="img/project2.jpg">
+                            <img src="demo/print-to-display/print-to-display-small.jpg">
                         </div>
-                        <p>Keep yourself and your campfire alive through a freezing winter night. Created for Ludum Dare 46 COMPO.</p>
-                        <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
+                        <p>Print to Display adds a console to your app, making it easy to view prints even while testing on devices.</p>
                     </a>
-                </div>
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
 
+                </div>
                 <div class="project-container">
-                    <a href="https://www.xedur.com/demos/get-a-job-baby/">
-                        <h2>Get a Job, Baby!</h2>
+                    <a href="demo/progress-ring/">
+                        <h2>Progress Ring</h2>
                         <div class="image-container">
-                            <img src="img/project4.jpg">
+                            <img src="demo/progress-ring/progress-ring-small.jpg">
                         </div>
-                        <p>You were just born but it's already time to pull your weight, so get a job, baby! Created for Ludum Dare 45 JAM.</p>
-                        <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
+                        <p>A quick and easy plugin for creating progress rings (or circles) in Solar2D.</p>
                     </a>
-                </div>
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
 
+                </div>
                 <div class="project-container">
-                    <a href="https://www.xedur.com/demos/Speed%20Test/">
-                        <h2>Speed Test</h2>
+                    <a href="https://github.com/SpyricGames/Solar2D-Plugins-Public/tree/main/Screen" target="_blank">
+                        <h2>screen.lua</h2>
                         <div class="image-container">
-                            <img src="img/project3.jpg">
+                            <img src="img/external/screen.jpg">
                         </div>
-                        <p>A game written in under 150 lines of code where the goal is to follow the sequence of lights for as long as you can while the game speeds up.</p>
-                        <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
+                        <p>A table of dynamically calculated screen values for creating resolution-independent UIs and layouts in Solar2D.</p>
                     </a>
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
+                    <p class="external-notice">External: This link opens in a new tab.</p>
                 </div>
-
                 <div class="project-container">
-                    <a href="https://www.xedur.com/demos/Runners/">
-                        <h2>Runners</h2>
+                    <a href="https://github.com/XeduR/Solar2D-Projects/tree/master/advancedAudio" target="_blank">
+                        <h2>advancedAudio.lua</h2>
                         <div class="image-container">
-                            <img src="img/project4.jpg">
+                            <img src="img/external/advancedAudio.png">
                         </div>
-                        <p>A game written in under 100 lines of code where the goal is to keep the runners from escaping.</p>
-                        <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
+                        <p>An advanced audio management library for Solar2D with channel management, priority system, and audio type categorization.</p>
                     </a>
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
+                    <p class="external-notice">External: This link opens in a new tab.</p>
                 </div>
-
                 <div class="project-container">
-                     <a href="https://www.xedur.com/demos/Bomb%20Tap/">
-                        <h2>Bomb Tap</h2>
+                    <a href="demo/verify-domain/">
+                        <h2>Verify Domain</h2>
                         <div class="image-container">
-                            <img src="img/project1.jpg">
+                            <img src="demo/verify-domain/verify-domain-small.jpg">
                         </div>
-                        <p>A game written in under 50 lines of code where the goal is to keep the bomb from touching anything.</p>
-                        <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
+                        <p>A set of Lua functions for verifying that your Solar2D HTML5 app is running on approved domains, helping prevent unauthorized hosting.</p>
                     </a>
-                </div>
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
 
+                </div>
             </div>
         </div>
 
         <div class="segment center">
             <a class="anchor" id="other"></a>
-            <h2>Other projects</h2>
+            <h2>Other projects<a class="heading-link" href="#other" aria-label="Copy link to section"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h2>
 
             <p class="body">
-                All of the projects in here are explicitly my personal code projects. If you wish to see some of the graphic design, websites or other work
-                that I've created for some of my clients over the years, then please visit my other site: <a href="https://www.erantanen.com/">www.erantanen.com</a>.
-                <br><br>
-                <strong>Note</strong>: All of these projects open in a new page.
+                All of the projects in here are explicitly my personal code projects. If you wish to see some of the graphic design, websites or other work that I've created for some of my clients over the years, then please visit my other site: <a href="https://www.erantanen.com/">www.erantanen.com</a>.<br><br><strong>Note</strong>: All of these projects open in a new page.
             </p>
             <div id="line"></div>
             <div class="grid">
-
-                <div class="project-container">
-                    <a href="https://github.com/XeduR/xedur.github.io" target="_blank">
-                        <h2>XeduR.com</h2>
-                        <div class="image-container">
-                            <img src="img/project2.jpg">
-                        </div>
-                        <p>This website that you are on right now! You've seen how it works, but if you want to see the source too, then look no further.</p>
-                        <p class="tech"><b>Tech:</b> GitHub Pages, HTML5, CSS3, JavaScript</p>
-                    </a>
-                </div>
-
                 <div class="project-container">
                     <a href="https://www.solar2dplayground.com/" target="_blank">
                         <h2>Solar2D Playground</h2>
                         <div class="image-container">
-                            <img src="img/project3.jpg">
+                            <img src="img/external/solar2d-playground.jpg">
                         </div>
-                        <p>Solar2D Playground is an interactive website that allows you to create and run Solar2D projects instantly online.</p>
-                        <p class="tech"><b>Tech:</b> Solar2D, Lua, HTML5, CSS3, JavaScript</p>
+                        <p>An interactive website that lets you write, run, and share Solar2D projects directly in your browser.</p>
                     </a>
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua, JavaScript</p>
+                    <p class="external-notice">External: This link opens in a new tab.</p>
                 </div>
-
                 <div class="project-container">
-                    <a href="https://www.xedur.com/demos/Pseudorandom%20Number%20Generator/" target="_blank">
+                    <a href="https://xedur.github.io/solar2d-particle-editor" target="_blank">
+                        <h2>Solar2D Particle Editor</h2>
+                        <div class="image-container">
+                            <img src="img/external/solar2d-particle-editor.jpg">
+                        </div>
+                        <p>An interactive browser-based particle effect editor for Solar2D. Create, customize, and export particle emitters with real-time preview and built-in templates.</p>
+                    </a>
+                    <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
+                    <p class="external-notice">External: This link opens in a new tab.</p>
+                </div>
+                <div class="project-container">
+                    <a href="https://xedur.github.io/webgl2-lighting-playground/" target="_blank">
+                        <h2>WebGL2 Lighting Playground</h2>
+                        <div class="image-container">
+                            <img src="img/external/webgl2-lighting-playground.jpg">
+                        </div>
+                        <p>A browser-based 3D scene editor for experimenting with real-time lighting, shadows, and translucent color mixing - built entirely with vanilla JavaScript and WebGL2.</p>
+                    </a>
+                    <p class="tech"><b>Tech:</b> JavaScript, WebGL2</p>
+                    <p class="external-notice">External: This link opens in a new tab.</p>
+                </div>
+                <div class="project-container">
+                    <a href="https://error-tracker-demo.infinityfree.me/" target="_blank">
+                        <h2>Error Tracker</h2>
+                        <div class="image-container">
+                            <img src="img/external/error-tracker.jpg">
+                        </div>
+                        <p>A self-hosted error monitoring system for Solar2D games/apps. Receives error reports from devices, intelligently groups similar errors, and provides real-time dashboards and configurable email alerts.</p>
+                    </a>
+                    <p class="tech"><b>Tech:</b> PHP, MySQL, JavaScript, Chart.js</p>
+                    <p class="external-notice">External: This link opens in a new tab.</p>
+                </div>
+                <div class="project-container">
+                    <a href="demo/pseudorandom-number-generator/">
                         <h2>Pseudorandom Number Generator</h2>
                         <div class="image-container">
-                            <img src="img/project4.jpg">
+                            <img src="demo/pseudorandom-number-generator/pseudorandom-number-generator-small.jpg">
                         </div>
-                        <p>Interactive demo that demonstrates pseudorandom number generation, as well as source code for Lua and JS implementations for the LCG method.</p>
-                        <p class="tech"><b>Tech:</b> HTML5, CSS3, JavaScript, Lua</p>
+                        <p>An interactive demo of pseudorandom number generation using the Linear Congruential Generator (LCG) method, with source code in both Lua and JavaScript.</p>
                     </a>
-                </div>
+                    <p class="tech"><b>Tech:</b> JavaScript, Lua</p>
 
+                </div>
                 <div class="project-container">
-                    <a href="https://www.xedur.com/demos/Dialogue/" target="_blank">
-                        <h2>Dialogue</h2>
+                    <a href="https://github.com/XeduR/xedur.github.io" target="_blank">
+                        <h2>XeduR.com</h2>
                         <div class="image-container">
-                            <img src="img/project2.jpg">
+                            <img src="img/external/xedur.com.jpg">
                         </div>
-                        <p>"Dialogue" is a WIP idea for handling branching dialogue and story trees in Solar2D.</p>
-                        <p class="tech"><b>Tech:</b> Solar2D, Lua</p>
+                        <p>This website that you are on right now! You've seen how it works, but if you want to see the source too, then look no further.</p>
                     </a>
+                    <p class="tech"><b>Tech:</b> JavaScript, Python</p>
+                    <p class="external-notice">External: This link opens in a new tab.</p>
                 </div>
-
-                <div class="project-container">
-                    <a href="https://www.xedur.com/demos/koodihaaste2020/" target="_blank">
-                        <h2>Reittiopas</h2>
-                        <div class="image-container">
-                            <img src="img/project1.jpg">
-                        </div>
-                        <p>A simple bus route planning web app created as a part of Solidabis' 2020 code challenge (NB! the app is in Finnish).</p>
-                        <p class="tech"><b>Tech:</b> HTML5, CSS3, JavaScript</p>
-                    </a>
-                </div>
-
             </div>
         </div>
 
         <div class="segment center">
-            <div id="button-bottom"></div>
-        </div>
-
-        <div class="segment  center">
+            <div id="line"></div>
             <h3>Contact</h3>
             <p>
-                If you wish to learn more about me or my services, or perhaps even hire me, then you should visit my other site: <a href="https://www.erantanen.com/">www.erantanen.com</a>.<br><br>
-                If you want to otherwise get in touch with me, you can always reach me via my email: <a href="mailto: eetu@erantanen.com">eetu@erantanen.com</a>.
+                If you'd like to learn more about me or my work, visit my other site: <a href="https://www.erantanen.com/">www.erantanen.com</a>. Note that the site is a bit outdated and will be updated around mid to late March 2026.<br><br>
+                You can also reach me directly via email: <a href="mailto:eetu@erantanen.com">eetu@erantanen.com</a>.
             </p>
         </div>
     </div>
-    <div id="footer"></div>
+
+
+    <footer class="footer">
+        <p><a href="https://www.erantanen.com/">© 2019-2026 Eetu Rantanen</a></p>
+    </footer>
+    <script src="js/nav.js"></script>
 </body>
 </html>

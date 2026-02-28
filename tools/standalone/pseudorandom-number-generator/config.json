@@ -1,0 +1,9 @@
+{
+    "title": "Pseudorandom Number Generator",
+    "metaDescription": "Interactive online demo that demonstrates pseudorandom number generation methods and their distribution (with source code).",
+    "metaKeywords": "JavaScript, js, Lua, random, pseudorandom, number generator, gamedev, game development, open source, XeduR, Eetu Rantanen",
+    "seo": {
+        "ogTitle": "XeduR - Pseudorandom Number Generator",
+        "ogDescription": "Interactive online demo that demonstrates pseudorandom number generation methods and their distribution (with source code)."
+    }
+}

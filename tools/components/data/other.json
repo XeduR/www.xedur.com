@@ -1,0 +1,48 @@
+{
+    "sectionTitle": "Other projects",
+    "sectionDescription": "All of the projects in here are explicitly my personal code projects. If you wish to see some of the graphic design, websites or other work that I've created for some of my clients over the years, then please visit my other site: <a href=\"https://www.erantanen.com/\">www.erantanen.com</a>.<br><br><strong>Note</strong>: All of these projects open in a new page.",
+    "demos": [
+        {
+            "title": "Solar2D Playground",
+            "externalUrl": "https://www.solar2dplayground.com/",
+            "image": "img/external/solar2d-playground.jpg",
+            "descriptionShort": "An interactive website that lets you write, run, and share Solar2D projects directly in your browser.",
+            "tech": "Solar2D, Lua, JavaScript"
+        },
+        {
+            "title": "Solar2D Particle Editor",
+            "externalUrl": "https://xedur.github.io/solar2d-particle-editor",
+            "image": "img/external/solar2d-particle-editor.jpg",
+            "descriptionShort": "An interactive browser-based particle effect editor for Solar2D. Create, customize, and export particle emitters with real-time preview and built-in templates.",
+            "tech": "Solar2D, Lua"
+        },
+        {
+            "title": "WebGL2 Lighting Playground",
+            "externalUrl": "https://xedur.github.io/webgl2-lighting-playground/",
+            "image": "img/external/webgl2-lighting-playground.jpg",
+            "descriptionShort": "A browser-based 3D scene editor for experimenting with real-time lighting, shadows, and translucent color mixing - built entirely with vanilla JavaScript and WebGL2.",
+            "tech": "JavaScript, WebGL2"
+        },
+        {
+            "title": "Error Tracker",
+            "externalUrl": "https://error-tracker-demo.infinityfree.me/",
+            "image": "img/external/error-tracker.jpg",
+            "descriptionShort": "A self-hosted error monitoring system for Solar2D games/apps. Receives error reports from devices, intelligently groups similar errors, and provides real-time dashboards and configurable email alerts.",
+            "tech": "PHP, MySQL, JavaScript, Chart.js"
+        },
+        {
+            "title": "Pseudorandom Number Generator",
+            "type": "standalone",
+            "folder": "pseudorandom-number-generator",
+            "descriptionShort": "An interactive demo of pseudorandom number generation using the Linear Congruential Generator (LCG) method, with source code in both Lua and JavaScript.",
+            "tech": "JavaScript, Lua"
+        },
+        {
+            "title": "XeduR.com",
+            "externalUrl": "https://github.com/XeduR/xedur.github.io",
+            "image": "img/external/xedur.com.jpg",
+            "descriptionShort": "This website that you are on right now! You've seen how it works, but if you want to see the source too, then look no further.",
+            "tech": "JavaScript, Python"
+        }
+    ]
+}

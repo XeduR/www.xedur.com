@@ -1,0 +1,72 @@
+<div class="content after-header">
+    <div class="center rng-standalone">
+
+        <a href="{{basePath}}index.html">
+            <div class="icon">
+                <div class="icon-center">
+                    <p style="margin-bottom:6px;">&#8249;</p>
+                </div>
+            </div>
+        </a>
+        <h1 class="title-demo">Pseudorandom Number Generator<a class="heading-link" href="" aria-label="Copy link to page"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h1>
+
+        <div id="wrapper">
+            <div id="line"></div>
+            <p class="source">
+                Source code for the RNG function: <a href="https://github.com/XeduR/Solar2D-Projects/blob/master/Pseudorandom%20Number%20Generator/rng.lua" target="_blank">Lua</a>
+                or <a href="https://github.com/XeduR/xedur.github.io/blob/master/demos/Pseudorandom%20Number%20Generator/js/random.js" target="_blank">JavaScript</a>
+            </p>
+
+            <div id="content">
+
+                <p class="description">
+                    Set a seed and generate a sequence of pseudorandom numbers using the <a href="https://en.wikipedia.org/wiki/Linear_congruential_generator" target="_blank">Linear congruential generator</a>.
+                    <br><br>LCG is a simple, fast and reliable method for generating pseudorandom numbers. LCG is a great choice for generating pseudorandom numbers, however, it is not cryptographically secure.
+                </p>
+
+                <input name="seed1" id="seed1" type="number" value="58125991275">
+                <button class="right" type="button" onclick="start('linear')">Generate</button>
+
+                <div id="line2"></div>
+
+                <p class="description">
+                    For comparison, you can also generate a sequence of pseudorandom numbers using the <a href="https://en.wikipedia.org/wiki/Middle-square_method" target="_blank">Middle-square generator</a>.
+                    <br><br>MSM is a simpler, but far less reliable method as it is bound to begin repeating a sequence or a number indefinitely at some point, at which point there's no resemblance of randomness.
+                    <br><br>Interesting seed values for MSM that demonstrate repeating patterns:
+                        <a href="#" onclick="loadSample(event,12345678933)">12345678933</a>,
+                        <a href="#" onclick="loadSample(event,12345679001)">12345679001</a>,
+                        <a href="#" onclick="loadSample(event,12745678161)">12745678161</a>,
+                        <a href="#" onclick="loadSample(event,22745678162)">22745678162</a>.
+                </p>
+                <input name="seed2" id="seed2" type="number" value="12345678933">
+                <button class="right" type="button" onclick="start('middle-square')">Generate</button>
+
+                <div id="line2"></div>
+
+                <p class="description">
+                    <b>How to read the results:</b><br>
+                    The histogram at the top of the image shows the frequency distribution of the generated values. The more evenly distributed and the closer the min and max values are to each other, the better.<br><br>
+                    The random map below the histogram shows the patterns in the random generation. If you can see any visual patterns, i.e. repetition, then the random generation has failed.
+                </p>
+            </div>
+
+            <canvas id="canvas" width="480" height="580"></canvas>
+            <div style="clear: both;"> </div>
+
+            <script>
+                window.addEventListener("keyup", function(event) {
+                    if (event.key == "Enter" || (event.keyCode !== undefined && event.keyCode == 13)) {
+                        event.preventDefault();
+                        let activeElement = document.activeElement.name;
+                        if (activeElement == "seed1") {
+                            start("linear");
+                        } else if (activeElement == "seed2") {
+                            start("middle-square");
+                        }
+                    }
+                }, false );
+            </script>
+        </div>
+        <script src="js/draw.js"></script>
+    </div>
+</div>

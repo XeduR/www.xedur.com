@@ -1,0 +1,39 @@
+<script src="{{basePath}}js/detectMobile.js"></script>
+<script src="{{basePath}}js/loadDemo.js"></script>
+<div class="content after-header">
+    <div class="center">
+
+        <a href="{{basePath}}index.html">
+            <div class="icon">
+                <div class="icon-center">
+                    <p style="margin-bottom:6px;">&#8249;</p>
+                </div>
+            </div>
+        </a>
+        <h1 class="title-demo">{{demoTitle}}<a class="heading-link" href="" aria-label="Copy link to page"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h1>
+
+        <div class="demo-panel">
+            <p>{{demoDescriptionLong}}</p>
+        </div>
+
+        {{demoRepository}}
+
+        <noscript><h4>JavaScript disabled. You must enable JavaScript to run the demo projects.</h4></noscript>
+        <div id="disclaimer" class="mobile-disclaimer">
+            <p><b>You seem to be on a mobile device</b>.<br>This demo is not designed for mobile devices and it may not run correctly, or at all, on your device.</p>
+        </div>
+        <script>
+            if (window.mobileCheck()) { document.getElementById("disclaimer").style.display = "block"; }
+        </script>
+
+        <div class="demo-panel">
+            <div class="demo-wrapper">
+                <div id="frame" class="iframe-container" style="background: black url('{{demoImage}}') center/cover no-repeat;">
+                    <iframe id="app" src="about:blank"></iframe>
+                    <div id="loadOverlay" class="load-overlay"></div>
+                    <button id="startButton" class="load" type="button">Run the app</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

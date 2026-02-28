@@ -1,0 +1,64 @@
+<div class="content after-header page-404">
+    <h2>404 - PAGE NOT FOUND</h2>
+    <p>Whatever you are looking for, it's not here.</p>
+    <img class="img-404" src="{{basePath}}img/xedur.png" alt="404">
+</div>
+<script>
+(function() {
+    var validPaths = {{validPaths}};
+
+    function levenshtein(a, b) {
+        var m = a.length, n = b.length;
+        var dp = [];
+        for (var i = 0; i <= m; i++) {
+            dp[i] = [i];
+        }
+        for (var j = 1; j <= n; j++) {
+            dp[0][j] = j;
+        }
+        for (var i = 1; i <= m; i++) {
+            for (var j = 1; j <= n; j++) {
+                if (a[i - 1] === b[j - 1]) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                } else {
+                    dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+                }
+            }
+        }
+        return dp[m][n];
+    }
+
+    function normalize(path) {
+        return path.toLowerCase().replace(/\/index\.html$/, "/").replace(/\/$/, "") || "/";
+    }
+
+    var currentPath = normalize(window.location.pathname + window.location.hash);
+
+    var bestMatch = null;
+    var bestDistance = Infinity;
+
+    for (var i = 0; i < validPaths.length; i++) {
+        var d = levenshtein(currentPath, normalize(validPaths[i]));
+        if (d < bestDistance) {
+            bestDistance = d;
+            bestMatch = validPaths[i];
+        }
+    }
+
+    var threshold = Math.min(3, Math.ceil(currentPath.length * 0.3));
+    if (bestMatch && bestDistance > 0 && bestDistance <= threshold) {
+        var el = document.querySelector(".content.after-header");
+        if (el) {
+            el.innerHTML =
+                '<h2>Redirecting\u2026</h2>' +
+                '<p>Taking you to <strong>' +
+                bestMatch.replace(/</g, "&lt;").replace(/>/g, "&gt;") +
+                '</strong></p>';
+        }
+        history.replaceState(null, "", bestMatch);
+        setTimeout(function() {
+            window.location.replace(bestMatch);
+        }, 1500);
+    }
+})();
+</script>

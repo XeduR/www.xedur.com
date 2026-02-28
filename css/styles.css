@@ -12,6 +12,7 @@ html, body {
     font-family: 'Roboto', sans-serif;
     width: 100%;
     height: 100%;
+    overflow-y: scroll;
 }
 
 body {
@@ -44,8 +45,8 @@ h1 {
     padding-bottom: 20px;
 }
 
-.title-demo h1 {
-    padding-top:13px;
+h1.title-demo {
+    padding-top: 20px;
 }
 
 h2 {
@@ -56,6 +57,54 @@ h2 {
 h3 {
     font-size: 1.5em;
     padding-bottom: 20px;
+}
+
+.heading-link {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 8px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    cursor: pointer;
+    position: relative;
+}
+
+.heading-link svg {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    fill: none;
+    stroke: #fcba04;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+h1:hover .heading-link,
+h2:hover .heading-link,
+.heading-link:focus {
+    opacity: 1;
+}
+
+.heading-link:hover svg {
+    stroke: #ffffff;
+}
+
+.heading-link.copied::after {
+    content: "Copied!";
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 8px;
+    background: #fcba04;
+    color: #141518;
+    font-size: 0.5em;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    pointer-events: none;
 }
 
 h4 {
@@ -116,12 +165,40 @@ a:hover .icon {
 	position: absolute;
 }
 
+.demo-panel {
+    margin-left: 84px;
+}
+
+.demo-panel:has(.demo-wrapper) {
+    margin-left: 0;
+}
+
 .demo-wrapper {
     width: 100%;
     height: 100%;
     max-height: 640px;
     max-width: 960px;
-    margin: 0 auto;
+    margin: 20px auto 0;
+}
+
+.repo-panel {
+    padding: 20px;
+}
+
+.github-logo {
+    display: block;
+    max-width: 160px;
+    margin: 12px 0 0;
+}
+
+.load-overlay {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 128px;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.8);
 }
 
 button.load {
@@ -170,7 +247,6 @@ a:hover {
 }
 
 .segment {
-    margin: 20px;
     padding: 20px;
     margin: 0 auto;
 }
@@ -207,9 +283,9 @@ a:hover {
 }
 
 .divider {
-    width: 100%;
     background: #fcba04;
     height: 2px;
+    margin: 0 auto;
 }
 
 .learn {
@@ -237,7 +313,7 @@ a:hover {
 }
 
 .project-container {
-    box-shadow: 2px 4px 8px 0 rgba(0,0,0,0.5); %;
+    box-shadow: 2px 4px 8px 0 rgba(0,0,0,0.5);
     background: #080808;
     max-width: 480px;
     width: 100%;
@@ -290,6 +366,13 @@ a:hover {
     font-size: 0.75em;
 }
 
+.project-container p.external-notice {
+    font-size: 0.75em;
+    color: #fcba04;
+    border-top: 1px solid #222;
+    margin-top: 0;
+}
+
 .text-block {
     position: absolute;
     bottom: 0px;
@@ -313,7 +396,11 @@ body::-webkit-scrollbar-thumb {
 }
 
 .after-header {
-    padding-top: 80px;
+    padding-top: 60px;
+}
+
+.after-header > .segment {
+    padding-top: 20px;
 }
 
 @media screen and (max-width: 1200px) {
@@ -370,6 +457,8 @@ ul {
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
+    max-width: 1300px;
+    margin: 0 auto;
 }
 
 .item {
@@ -512,45 +601,23 @@ li.dropdown {
     display: block;
 }
 
-button.kofi {
-	border-radius: 12px;
-    border: none;
-	display: flex;
-	cursor: pointer;
-	width: 100%;
-	max-width: 360px;
-	max-height: 70px;
-	margin: 16px auto;
-	background: #29abe0;
+/* 404 page */
+.page-404 p {
+    text-align: center;
+    font-size: 18px;
 }
 
-button.kofi img {
-	width: 100%;
-	max-width: 360px;
-	margin: 0;
+.page-404 h2 {
+    padding-top: 60px;
+    text-align: center;
+    font-size: 24px;
 }
 
-button.kofi:hover {
-	animation: rotate 0.7s ease-in-out both;
+.img-404 {
+    display: block;
+    padding-top: 20px;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 512px;
 }
 
-button.kofi:hover span {
-	animation: shake 0.7s ease-in-out both;
-	animation-delay: 0.06s;
-}
-
-@keyframes rotate {
-	0% { transform: rotate(0deg) translate3d(0, 0, 0); }
-	25% { transform: rotate(4deg) translate3d(0, 0, 0); }
-	50% { transform: rotate(-4deg) translate3d(0, 0, 0); }
-	75% { transform: rotate(2deg) translate3d(0, 0, 0); }
-	100% { transform: rotate(0deg) translate3d(0, 0, 0); }
-}
-
-@keyframes shake {
-	0% { transform: translate3d(0, 0, 0) translateZ(0); }
-	25% { transform: translate3d(5px, 0, 0) translateZ(0); }
-	50% { transform: translate3d(-4px, 0, 0) translateZ(0); }
-	75% { transform: translate3d(3px, 0, 0) translateZ(0); }
-	100% { transform: translate3d(0, 0, 0) translateZ(0); }
-}

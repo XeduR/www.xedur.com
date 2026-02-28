@@ -1,0 +1,49 @@
+{
+    "_comment": "This file is a reference template. Do not use it as an actual data file.",
+
+    "sectionTitle": "(Required) The heading displayed above the project grid on the main page, e.g. 'Plugins for Solar2D'.",
+    "sectionDescription": "(Required) Paragraph text shown below the section heading on the main page. May contain HTML, e.g. <a> links.",
+    "demos": [
+
+        {
+            "_comment": "=== DEMO ENTRY (hosted on xedur.com) === If 'externalUrl' is omitted, the entry is treated as a full demo page. The builder will generate a demo page at demo/<folder>/index.html and an iframe app loader at demo/<folder>/app/index.html. The card thumbnail is auto-generated as demo/<folder>/<folder>-small.jpg (no 'image' field needed). The .bin filename is auto-detected from demo/<folder>/app/ (no 'binName' field needed).",
+
+            "title": "(Required) Display title. Shown on the frontpage card and as the <h1> heading on the demo page. Also used in the browser tab title as 'XeduR - <title>'.",
+            "folder": "(Required for demos) The folder name used for the demo URL, i.e. /demo/<folder>/. This must match the actual folder name inside the demo/ directory on the live site.",
+            "descriptionShort": "(Required) Short description displayed on the frontpage card below the image.",
+            "descriptionLong": "(Optional) Detailed description displayed on the individual demo page. May contain HTML, e.g. <a> links. If omitted, descriptionShort is used instead.",
+            "tech": "(Optional) Technology stack shown below the frontpage card, e.g. 'Solar2D, Lua'. If omitted, nothing is shown.",
+            "repository": "(Optional) URL to the project's GitHub repository. If provided, a 'Source available at' link is displayed in a dark panel on the demo page. If omitted, no link panel is shown.",
+            "seo": {
+                "_comment": "(Optional) SEO overrides for the demo page. If the entire 'seo' object is omitted, defaults are used: metaDescription falls back to descriptionShort, and no Open Graph tags are generated. Individual fields within seo can also be omitted.",
+                "metaDescription": "Override for the <meta name='description'> tag. Falls back to descriptionShort if omitted.",
+                "metaKeywords": "Override for the <meta name='keywords'> tag. Falls back to the site-wide default keywords if omitted.",
+                "ogTitle": "Open Graph title for social media previews. If omitted, no og:title tag is generated.",
+                "ogDescription": "Open Graph description for social media previews. If omitted, no og:description tag is generated.",
+                "ogImage": "Open Graph image URL for social media previews. If omitted, no og:image tag is generated.",
+                "ogImageAlt": "Alt text for the Open Graph image. If omitted, no og:image:alt tag is generated."
+            }
+        },
+
+        {
+            "_comment": "=== STANDALONE ENTRY === If 'type' is 'standalone', the entry is treated as a standalone project. The builder reads content.html, head.html, and config.json from tools/standalone/<folder>/ and generates a full page at demo/<folder>/index.html using the site's base template (navbar, footer, etc.). No iframe loader is generated. Fields like 'descriptionLong' are not used (the standalone content.html provides the full body). SEO data is read from the standalone config.json. The card thumbnail is auto-generated as demo/<folder>/<folder>-small.jpg (no 'image' field needed).",
+
+            "title": "(Required) Display title shown on the frontpage card.",
+            "type": "standalone",
+            "folder": "(Required) The folder name used for both the standalone source (tools/standalone/<folder>/) and the output URL (/demo/<folder>/).",
+            "descriptionShort": "(Required) Short description displayed on the frontpage card.",
+            "tech": "(Optional) Technology stack shown below the frontpage card."
+        },
+
+        {
+            "_comment": "=== EXTERNAL ENTRY === If 'externalUrl' is defined, the entry is treated as an external link. The frontpage card links to the external URL in a new tab. No demo page or iframe loader is generated. Fields like 'folder', 'descriptionLong', 'repository', and 'seo' are not needed and can be omitted entirely. Unlike demos, external entries DO need an 'image' field since there is no folder to auto-generate from.",
+
+            "title": "(Required) Display title shown on the frontpage card.",
+            "externalUrl": "(Required for external) The full URL the frontpage card links to, opened in a new tab.",
+            "image": "(Required) Path to the thumbnail image.",
+            "descriptionShort": "(Required) Short description displayed on the frontpage card.",
+            "tech": "(Optional) Technology stack shown below the frontpage card."
+        }
+
+    ]
+}
