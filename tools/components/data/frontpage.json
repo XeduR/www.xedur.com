@@ -1,8 +1,11 @@
 {
     "pageTitle": "XeduR - Code Portfolio",
-    "metaDescription": "My name is Eetu Rantanen, but here on the interwebz I often go by XeduR. This is my code portfolio site and it's full of all sorts of interesting projects.",
+    "metaDescription": "My name is Eetu Rantanen, but online I often go by XeduR. This is my portfolio site, featuring a variety of projects I've worked on over the years.",
+    "metaKeywords": "Eetu Rantanen, XeduR, Solar2D, Lua, gamedev, game development, open source, code portfolio",
     "seo": {
         "ogTitle": "XeduR - Code Portfolio",
-        "ogDescription": "My name is Eetu Rantanen, but here on the interwebz I often go by XeduR. This is my code portfolio site and it's full of all sorts of interesting projects."
+        "ogDescription": "My name is Eetu Rantanen, but online I often go by XeduR. This is my portfolio site, featuring a variety of projects I've worked on over the years.",
+        "ogImage": "https://www.xedur.com/img/external/xedur.com.jpg",
+        "ogImageAlt": "XeduR - Code Portfolio website"
     }
 }

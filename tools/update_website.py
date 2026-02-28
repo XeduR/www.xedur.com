@@ -324,6 +324,7 @@ def build_frontpage(base_template, navbar_html, footer_html,
     frontpage_data = load_json("frontpage.json")
     page_title = frontpage_data.get("pageTitle", "")
     meta_desc = frontpage_data.get("metaDescription", "")
+    meta_kw = frontpage_data.get("metaKeywords", DEFAULT_KEYWORDS)
     og_tags = generate_social_tags(
         frontpage_data.get("seo"), url=f"{SITE_BASE_URL}/"
     )
@@ -332,6 +333,7 @@ def build_frontpage(base_template, navbar_html, footer_html,
         body_content=content,
         page_title=page_title,
         meta_description=meta_desc,
+        meta_keywords=meta_kw,
         og_tags=og_tags,
     )
 

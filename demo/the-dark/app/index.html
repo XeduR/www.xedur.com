@@ -151,6 +151,7 @@ k.p.toString(16)+", data=0x"+p.toString(16)))}return m};t.L=function(a){this.j=a
 		} else {
 			console.error(text);
 			// alert removed: blocking alert() on errors causes WASM crashes and freezes the UI
+			// if( typeof(text) === "string" && text.toUpperCase().indexOf("ERROR") >= 0) alert(text);
 		}
 		},
 		canvas: (function() {
