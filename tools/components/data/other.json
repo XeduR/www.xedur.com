@@ -27,7 +27,7 @@
             "title": "Error Tracker",
             "externalUrl": "https://error-tracker-demo.infinityfree.me/",
             "image": "img/external/error-tracker.jpg",
-            "descriptionShort": "A self-hosted error monitoring system for Solar2D games/apps. Receives error reports from devices, intelligently groups similar errors, and provides real-time dashboards and configurable email alerts.",
+            "descriptionShort": "A self-hosted error monitoring system for games/apps. Receives error reports from devices, intelligently groups similar errors, and provides real-time dashboards and configurable email alerts.",
             "tech": "PHP, MySQL, JavaScript, Chart.js"
         },
         {
@@ -41,7 +41,7 @@
             "title": "XeduR.com",
             "externalUrl": "https://github.com/XeduR/xedur.github.io",
             "image": "img/external/xedur.com.jpg",
-            "descriptionShort": "This website that you are on right now! You've seen how it works, but if you want to see the source too, then look no further.",
+            "descriptionShort": "This website that you are on right now! You've seen how it works, but if you want to see the source and how it's built too, then look no further.",
             "tech": "JavaScript, Python"
         }
     ]
