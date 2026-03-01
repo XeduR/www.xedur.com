@@ -50,10 +50,39 @@ SITE_BASE_URL = "https://www.xedur.com"
 # Minification and formatting helpers
 
 def minify_html(text):
-    """Remove HTML comments and collapse all whitespace into a single line."""
+    """Remove HTML comments and collapse whitespace, preserving script/style blocks."""
     text = re.sub(r'<!--.*?-->', '', text, flags=re.DOTALL)
+
+    # Extract <script> and <style> blocks so HTML whitespace collapsing
+    # doesn't destroy JavaScript // comments or CSS syntax.
+    blocks = []
+
+    def _extract(match):
+        blocks.append(match.group(0))
+        return f'\x00BLOCK{len(blocks) - 1}\x00'
+
+    text = re.sub(r'<script[^>]*>.*?</script>', _extract, text,
+                  flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(r'<style[^>]*>.*?</style>', _extract, text,
+                  flags=re.DOTALL | re.IGNORECASE)
+
+    # Minify HTML (outside script/style blocks).
     text = re.sub(r'>\s+<', '><', text)
     text = re.sub(r'\s+', ' ', text)
+
+    # Minify and restore each extracted block.
+    for i, block in enumerate(blocks):
+        m = re.match(r'(<script[^>]*>)(.*?)(</script>)',
+                     block, flags=re.DOTALL | re.IGNORECASE)
+        if m:
+            block = m.group(1) + minify_js(m.group(2)) + m.group(3)
+        else:
+            m = re.match(r'(<style[^>]*>)(.*?)(</style>)',
+                         block, flags=re.DOTALL | re.IGNORECASE)
+            if m:
+                block = m.group(1) + minify_css(m.group(2)) + m.group(3)
+        text = text.replace(f'\x00BLOCK{i}\x00', block, 1)
+
     return text.strip()
 
 
@@ -64,6 +93,27 @@ def minify_css(text):
     text = re.sub(r'\s*([{}:;,>~+])\s*', r'\1', text)
     text = re.sub(r';\s*}', '}', text)
     return text.strip()
+
+
+def _strip_inline_comment(line):
+    """Remove a trailing // comment from a JS line, preserving // inside strings."""
+    in_single = False
+    in_double = False
+    i = 0
+    while i < len(line):
+        c = line[i]
+        if c == '\\' and (in_single or in_double):
+            i += 2
+            continue
+        if c == "'" and not in_double:
+            in_single = not in_single
+        elif c == '"' and not in_single:
+            in_double = not in_double
+        elif c == '/' and not in_single and not in_double:
+            if i + 1 < len(line) and line[i + 1] == '/':
+                return line[:i].rstrip()
+        i += 1
+    return line
 
 
 def minify_js(text):
@@ -78,7 +128,9 @@ def minify_js(text):
         if stripped.startswith('//'):
             continue
         if stripped:
-            lines.append(stripped)
+            stripped = _strip_inline_comment(stripped)
+            if stripped:
+                lines.append(stripped)
     text = '\n'.join(lines)
     text = re.sub(r'\s+', ' ', text)
     return text.strip()
