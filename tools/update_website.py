@@ -13,6 +13,7 @@ import os
 import re
 import sys
 import json
+import shutil
 from datetime import date
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -21,6 +22,8 @@ COMPONENTS_DIR = os.path.join(SCRIPT_DIR, "components")
 TEMPLATES_DIR = os.path.join(COMPONENTS_DIR, "templates")
 DATA_DIR = os.path.join(COMPONENTS_DIR, "data")
 STANDALONE_DIR = os.path.join(SCRIPT_DIR, "standalone")
+CSS_SRC_DIR = os.path.join(SCRIPT_DIR, "css")
+JS_SRC_DIR = os.path.join(SCRIPT_DIR, "js")
 OUTPUT_DIR = ROOT_DIR
 
 # Module-level flag set by main() based on the "min" argument.
@@ -50,6 +53,33 @@ def minify_html(text):
     """Remove HTML comments and collapse all whitespace into a single line."""
     text = re.sub(r'<!--.*?-->', '', text, flags=re.DOTALL)
     text = re.sub(r'>\s+<', '><', text)
+    text = re.sub(r'\s+', ' ', text)
+    return text.strip()
+
+
+def minify_css(text):
+    """Remove CSS comments and collapse whitespace for a smaller file."""
+    text = re.sub(r'/\*.*?\*/', '', text, flags=re.DOTALL)
+    text = re.sub(r'\s+', ' ', text)
+    text = re.sub(r'\s*([{}:;,>~+])\s*', r'\1', text)
+    text = re.sub(r';\s*}', '}', text)
+    return text.strip()
+
+
+def minify_js(text):
+    """Remove JS comments and collapse whitespace for a smaller file.
+
+    Uses a conservative approach suitable for the simple scripts on this site.
+    """
+    text = re.sub(r'/\*.*?\*/', '', text, flags=re.DOTALL)
+    lines = []
+    for line in text.split('\n'):
+        stripped = line.strip()
+        if stripped.startswith('//'):
+            continue
+        if stripped:
+            lines.append(stripped)
+    text = '\n'.join(lines)
     text = re.sub(r'\s+', ' ', text)
     return text.strip()
 
@@ -131,21 +161,30 @@ def generate_card(demo, card_template):
         target = ' target="_blank"'
         image = demo.get("image", "")
         external_html = '<p class="external-notice">External: This link opens in a new tab.</p>'
+        img_width = "1200"
+        img_height = "630"
     else:
         folder = demo.get("folder", "")
         href = f"demo/{folder}/"
         target = ""
         image = f"demo/{folder}/{folder}-small.jpg"
         external_html = ""
+        img_width = "600"
+        img_height = "315"
 
+    title = demo.get("title", "")
+    alt_text = f"Screenshot of {title}" if title else ""
     tech = demo.get("tech", "")
     tech_html = f'<p class="tech"><b>Tech:</b> {tech}</p>' if tech else ""
 
     card = card_template
     card = card.replace("{{cardHref}}", href)
     card = card.replace("{{cardTarget}}", target)
-    card = card.replace("{{cardTitle}}", demo.get("title", ""))
+    card = card.replace("{{cardTitle}}", title)
     card = card.replace("{{cardImage}}", image)
+    card = card.replace("{{cardAlt}}", alt_text)
+    card = card.replace("{{cardWidth}}", img_width)
+    card = card.replace("{{cardHeight}}", img_height)
     card = card.replace("{{cardDescription}}", demo.get("descriptionShort", ""))
     card = card.replace("{{cardTech}}", tech_html)
     card = card.replace("{{cardExternal}}", external_html)
@@ -701,6 +740,36 @@ def build_sitemap(site_paths):
 
 
 # ------------------------------------------------------------------------------------
+# Static assets (CSS / JS)
+
+def build_static_assets():
+    """Copy CSS and JS source files from tools/ into the site root.
+
+    When MINIFY is enabled the files are minified before writing.
+    Source files live in tools/css/ and tools/js/.
+    """
+    minifiers = {
+        ".css": minify_css,
+        ".js": minify_js,
+    }
+
+    for src_dir, out_subdir in [(CSS_SRC_DIR, "css"), (JS_SRC_DIR, "js")]:
+        if not os.path.isdir(src_dir):
+            continue
+        out_dir = os.path.join(OUTPUT_DIR, out_subdir)
+        for filename in sorted(os.listdir(src_dir)):
+            src_path = os.path.join(src_dir, filename)
+            if not os.path.isfile(src_path):
+                continue
+            with open(src_path, "r", encoding="utf-8") as f:
+                content = f.read()
+            ext = os.path.splitext(filename)[1].lower()
+            if MINIFY and ext in minifiers:
+                content = minifiers[ext](content)
+            write_file(os.path.join(out_dir, filename), content)
+
+
+# ------------------------------------------------------------------------------------
 # Main
 
 def main():
@@ -731,6 +800,9 @@ def main():
     # Collect site paths for sitemap and 404 fuzzy matching
     site_paths = collect_site_paths(category_data)
     fuzzy_paths = collect_site_paths(category_data, include_hashes=True)
+
+    # Copy (and optionally minify) CSS and JS assets
+    build_static_assets()
 
     # Build all pages
     build_frontpage(

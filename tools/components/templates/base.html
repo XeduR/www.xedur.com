@@ -28,7 +28,6 @@
 
     {{ogTags}}
 
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{{basePath}}css/styles.css">
 
     {{extraHead}}
@@ -39,9 +38,11 @@
 <body>
     {{navbar}}
 
+    <main>
     {{bodyContent}}
+    </main>
 
     {{footer}}
-    <script src="{{basePath}}js/nav.js"></script>
+    <script defer src="{{basePath}}js/nav.js"></script>
 </body>
 </html>

@@ -28,7 +28,6 @@
 
     
 
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="/css/styles.css">
 
     
@@ -62,16 +61,17 @@
     		<li class="item"><a href="/#other">Other</a></li>
     		<li class="item mobile-nav-end"></li>
     		<li class="toggle">
-    			<a href="javascript:void(0);">
+    			<button type="button" aria-label="Toggle navigation menu">
     				<div class="bar1"></div>
     				<div class="bar2"></div>
     				<div class="bar3"></div>
-    			</a>
+    			</button>
     		</li>
     	</ul>
     </nav>
 
 
+    <main>
     <div class="content after-header page-404">
         <h2>404 - PAGE NOT FOUND</h2>
         <p class="attempted-url">The page <strong id="attempted-path"></strong> does not exist.</p>
@@ -171,10 +171,11 @@
     })();
     </script>
 
+    </main>
 
     <footer class="footer">
         <p><a href="https://www.erantanen.com/">© 2019-2026 Eetu Rantanen</a></p>
     </footer>
-    <script src="/js/nav.js"></script>
+    <script defer src="/js/nav.js"></script>
 </body>
 </html>
