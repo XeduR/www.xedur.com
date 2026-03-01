@@ -1,5 +1,5 @@
 window.addEventListener("load", function() {
-    document.querySelector("button").addEventListener("click", function() {
+    document.getElementById("startButton").addEventListener("click", function() {
         var iframe = document.getElementById("app");
         var button = this;
         var overlay = document.getElementById("loadOverlay");
