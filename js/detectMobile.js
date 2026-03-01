@@ -1,6 +1,1 @@
-window.mobileCheck = function() {
-    return (
-        navigator.maxTouchPoints > 0 &&
-        window.matchMedia("(hover: none)").matches
-    );
-};
+window.mobileCheck = function() { return ( navigator.maxTouchPoints > 0 && window.matchMedia("(hover: none)").matches ); };
