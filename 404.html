@@ -81,15 +81,16 @@
                 <div class="countdown-bar" id="countdown-bar"></div>
             </div>
             <p class="countdown-text">Redirecting in <span id="countdown-number">5</span> seconds...</p>
+            <img class="img-404" src="/img/xedur.png" alt="404">
         </div>
         <div id="no-suggestion" style="display:none;">
-            <img class="img-404" src="/img/xedur.png" alt="404">
             <p class="home-link">Head back to the <a href="/">front page</a>.</p>
+            <img class="img-404" src="/img/xedur.png" alt="404">
         </div>
     </div>
     <script>
     (function() {
-        var validPaths = ["/", "/#me", "/#learn", "/#games", "/#solar2d", "/#other", "/demo/gone-diggin/", "/demo/grav-o-delivery/", "/demo/break-the-loop/", "/demo/xperiment/", "/demo/uranium-236/", "/demo/last-stand/", "/demo/the-dark/", "/demo/speed-test/", "/demo/runners/", "/demo/bomb-tap/", "/demo/get-a-job-baby/", "/demo/autotile/", "/demo/weaver/", "/demo/morph/", "/demo/performance-meter/", "/demo/print-to-display/", "/demo/progress-ring/", "/demo/verify-domain/", "/demo/pseudorandom-number-generator/"];
+        var validPaths = ["/", "/#me", "/#learn", "/#games", "/#solar2d", "/#other", "/demo/", "/demo/gone-diggin/", "/demo/grav-o-delivery/", "/demo/break-the-loop/", "/demo/xperiment/", "/demo/uranium-236/", "/demo/last-stand/", "/demo/the-dark/", "/demo/speed-test/", "/demo/runners/", "/demo/bomb-tap/", "/demo/get-a-job-baby/", "/demo/autotile/", "/demo/weaver/", "/demo/morph/", "/demo/performance-meter/", "/demo/print-to-display/", "/demo/progress-ring/", "/demo/verify-domain/", "/demo/pseudorandom-number-generator/"];
 
         function levenshtein(a, b) {
             var m = a.length, n = b.length;

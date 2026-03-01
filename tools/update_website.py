@@ -283,6 +283,7 @@ def collect_site_paths(category_data, include_hashes=False):
     if include_hashes:
         for section in ["me", "learn"] + CATEGORIES:
             paths.append(f"/#{section}")
+        paths.append("/demo/")
 
     for cat_name in CATEGORIES:
         if cat_name not in category_data:

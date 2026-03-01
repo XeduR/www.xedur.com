@@ -642,6 +642,7 @@ li.dropdown {
 }
 
 .page-404 .countdown-text {
+    margin-top: 16px;
     font-size: 16px;
     color: #999;
 }
