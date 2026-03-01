@@ -28,5 +28,9 @@ Desktop.ini
 # Hidden temporary files (e.g. MS Office)
 ~$*
 
+# Personal settings and build files
+node_modules/
+.claude/
+
 # Misc
 *.ini

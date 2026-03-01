@@ -437,6 +437,35 @@ def build_demo_pages(base_template, navbar_html, footer_html,
             write_file(os.path.join(demo_dir, "app", "index.html"), iframe_html)
 
 
+def build_demo_index(base_template, navbar_html, footer_html,
+                     demo_index_template, category_data):
+    """Build demo/index.html with a simple list of all available demos."""
+    items = []
+    for cat_name in CATEGORIES:
+        if cat_name not in category_data:
+            continue
+        for demo in category_data[cat_name].get("demos", []):
+            if is_external(demo):
+                continue
+            folder = demo.get("folder")
+            title = demo.get("title", folder)
+            if folder:
+                items.append(f'<li><a href="{folder}/">{title}</a></li>')
+
+    body = replace_indented(demo_index_template, "{{demoList}}", "\n".join(items))
+
+    page = wrap_in_base(
+        base_template, navbar_html, footer_html,
+        body_content=body,
+        page_title="XeduR - Demos",
+        meta_description="List of all demos on XeduR.com.",
+        base_path="../",
+        extra_head='<meta name="robots" content="noindex">',
+    )
+
+    write_file(os.path.join(OUTPUT_DIR, "demo", "index.html"), page)
+
+
 def build_standalone_pages(base_template, navbar_html, footer_html, category_data):
     """Build pages for standalone projects that use their own content templates.
 
@@ -689,6 +718,7 @@ def main():
     iframe_template = load_file("iframe.html")
     frontpage_content = load_file("frontpage.html")
     four04_template = load_file("404.html")
+    demo_index_template = load_file("demo-index.html")
 
     # Load category JSON data
     category_data = {}
@@ -713,6 +743,10 @@ def main():
     )
     build_standalone_pages(
         base_template, navbar_html, footer_html, category_data,
+    )
+    build_demo_index(
+        base_template, navbar_html, footer_html,
+        demo_index_template, category_data,
     )
     check_images(category_data)
     check_demo_assets(category_data)

@@ -74,8 +74,18 @@
 
     <div class="content after-header page-404">
         <h2>404 - PAGE NOT FOUND</h2>
-        <p>Whatever you are looking for, it's not here.</p>
-        <img class="img-404" src="/img/xedur.png" alt="404">
+        <p class="attempted-url">The page <strong id="attempted-path"></strong> does not exist.</p>
+        <div id="suggestion" style="display:none;">
+            <p class="suggestion-text">Perhaps you were looking for <a id="suggestion-link" href="#"><strong id="suggestion-path"></strong></a>?</p>
+            <div class="countdown-bar-container">
+                <div class="countdown-bar" id="countdown-bar"></div>
+            </div>
+            <p class="countdown-text">Redirecting in <span id="countdown-number">5</span> seconds...</p>
+        </div>
+        <div id="no-suggestion" style="display:none;">
+            <img class="img-404" src="/img/xedur.png" alt="404">
+            <p class="home-link">Head back to the <a href="/">front page</a>.</p>
+        </div>
     </div>
     <script>
     (function() {
@@ -106,33 +116,56 @@
             return path.toLowerCase().replace(/\/index\.html$/, "/").replace(/\/$/, "") || "/";
         }
 
-        var currentPath = normalize(window.location.pathname + window.location.hash);
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        }
+
+        var currentPath = window.location.pathname + window.location.hash;
+        var normalizedCurrent = normalize(currentPath);
+
+        document.getElementById("attempted-path").textContent = currentPath;
 
         var bestMatch = null;
         var bestDistance = Infinity;
 
         for (var i = 0; i < validPaths.length; i++) {
-            var d = levenshtein(currentPath, normalize(validPaths[i]));
+            var d = levenshtein(normalizedCurrent, normalize(validPaths[i]));
             if (d < bestDistance) {
                 bestDistance = d;
                 bestMatch = validPaths[i];
             }
         }
 
-        var threshold = Math.min(3, Math.ceil(currentPath.length * 0.3));
+        var threshold = Math.min(3, Math.ceil(normalizedCurrent.length * 0.3));
         if (bestMatch && bestDistance > 0 && bestDistance <= threshold) {
-            var el = document.querySelector(".content.after-header");
-            if (el) {
-                el.innerHTML =
-                    '<h2>Redirecting\u2026</h2>' +
-                    '<p>Taking you to <strong>' +
-                    bestMatch.replace(/</g, "&lt;").replace(/>/g, "&gt;") +
-                    '</strong></p>';
-            }
-            history.replaceState(null, "", bestMatch);
-            setTimeout(function() {
-                window.location.replace(bestMatch);
-            }, 1500);
+            var suggestionEl = document.getElementById("suggestion");
+            var linkEl = document.getElementById("suggestion-link");
+            var pathEl = document.getElementById("suggestion-path");
+            var barEl = document.getElementById("countdown-bar");
+            var numberEl = document.getElementById("countdown-number");
+
+            pathEl.textContent = bestMatch;
+            linkEl.href = bestMatch;
+            suggestionEl.style.display = "block";
+
+            var total = 5;
+            var remaining = total;
+
+            barEl.style.width = "100%";
+
+            var interval = setInterval(function() {
+                remaining--;
+                numberEl.textContent = remaining;
+                barEl.style.width = ((remaining / total) * 100) + "%";
+
+                if (remaining <= 0) {
+                    clearInterval(interval);
+                    history.replaceState(null, "", bestMatch);
+                    window.location.replace(bestMatch);
+                }
+            }, 1000);
+        } else {
+            document.getElementById("no-suggestion").style.display = "block";
         }
     })();
     </script>
