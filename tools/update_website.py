@@ -355,6 +355,7 @@ def build_404(base_template, navbar_html, footer_html, four04_template,
             "This is the 404 page for XeduR.com. "
             "If you are seeing this, then you are lost."
         ),
+        base_path="/",
     )
 
     write_file(os.path.join(OUTPUT_DIR, "404.html"), page)
