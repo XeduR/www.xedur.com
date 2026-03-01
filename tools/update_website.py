@@ -132,7 +132,10 @@ def minify_js(text):
             if stripped:
                 lines.append(stripped)
     text = '\n'.join(lines)
-    text = re.sub(r'\s+', ' ', text)
+    # Collapse horizontal whitespace only. Newlines must be preserved
+    # because JavaScript relies on them for automatic semicolon insertion
+    # and this "homebaked no dependency minifier" isn't a proper minifier.
+    text = re.sub(r'[^\S\n]+', ' ', text)
     return text.strip()
 
 
@@ -324,7 +327,7 @@ def wrap_in_base(base_template, navbar_html, footer_html, body_content,
     html = replace_indented(html, "{{navbar}}", navbar_html)
     html = replace_indented(html, "{{bodyContent}}", body_content)
     html = replace_indented(html, "{{footer}}", footer_html)
-    # Path prefix (inline, applied last — must be after all other replacements
+    # Path prefix (inline, applied last, must be after all other replacements
     # since injected content like extra_head may contain {{basePath}} references)
     html = html.replace("{{basePath}}", base_path)
     return html
