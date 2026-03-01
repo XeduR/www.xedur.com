@@ -798,30 +798,23 @@ def build_sitemap(site_paths):
 # Static assets (CSS / JS)
 
 def build_static_assets():
-    """Copy CSS and JS source files from tools/ into the site root.
+    """Copy JS source files from tools/ into the site root.
 
+    CSS is inlined into the HTML templates, so only JS files are copied.
     When MINIFY is enabled the files are minified before writing.
-    Source files live in tools/css/ and tools/js/.
     """
-    minifiers = {
-        ".css": minify_css,
-        ".js": minify_js,
-    }
-
-    for src_dir, out_subdir in [(CSS_SRC_DIR, "css"), (JS_SRC_DIR, "js")]:
-        if not os.path.isdir(src_dir):
+    if not os.path.isdir(JS_SRC_DIR):
+        return
+    out_dir = os.path.join(OUTPUT_DIR, "js")
+    for filename in sorted(os.listdir(JS_SRC_DIR)):
+        src_path = os.path.join(JS_SRC_DIR, filename)
+        if not os.path.isfile(src_path):
             continue
-        out_dir = os.path.join(OUTPUT_DIR, out_subdir)
-        for filename in sorted(os.listdir(src_dir)):
-            src_path = os.path.join(src_dir, filename)
-            if not os.path.isfile(src_path):
-                continue
-            with open(src_path, "r", encoding="utf-8") as f:
-                content = f.read()
-            ext = os.path.splitext(filename)[1].lower()
-            if MINIFY and ext in minifiers:
-                content = minifiers[ext](content)
-            write_file(os.path.join(out_dir, filename), content)
+        with open(src_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        if MINIFY:
+            content = minify_js(content)
+        write_file(os.path.join(out_dir, filename), content)
 
 
 # ------------------------------------------------------------------------------------
@@ -834,8 +827,21 @@ def main():
     mode = "minified" if MINIFY else "standard"
     print(f"Building site ({mode})...")
 
-    # Load all source files
+    # Load all source files and inline CSS into the base template so pages
+    # don't need an external stylesheet (eliminates a render-blocking request).
     base_template = load_file("base.html")
+
+    css_path = os.path.join(CSS_SRC_DIR, "styles.css")
+    with open(css_path, "r", encoding="utf-8") as f:
+        css_content = f.read()
+    if MINIFY:
+        css_content = minify_css(css_content)
+    # Font URLs in the CSS are relative to css/styles.css (../fonts/).
+    # When inlined into HTML, they must be relative to the page itself.
+    css_content = css_content.replace("../fonts/", "{{basePath}}fonts/")
+    base_template = replace_indented(
+        base_template, "{{inlineStyles}}", f"<style>{css_content}</style>"
+    )
     navbar_html = load_file("navbar.html")
     footer_html = load_file("footer.html")
     contact_html = load_file("contact.html")
