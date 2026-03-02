@@ -147,7 +147,7 @@ h4 {
     float: left;
 }
 
-a.anchor {
+.anchor {
     display: block;
     position: relative;
     top: -100px;
@@ -390,7 +390,7 @@ p a:hover {
     transform: scale(1.1);
 }
 
-.project-container h2 {
+.project-container h3 {
     color: #fcba04;
     font-size: 1.2em;
     padding: 10px;

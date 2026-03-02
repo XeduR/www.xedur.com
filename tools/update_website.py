@@ -314,7 +314,7 @@ def generate_social_tags(seo, url=""):
 
 def wrap_in_base(base_template, navbar_html, footer_html, body_content,
                  page_title, meta_description="", meta_keywords=DEFAULT_KEYWORDS,
-                 og_tags="", base_path="", extra_head=""):
+                 og_tags="", base_path="", extra_head="", canonical_url=""):
     """Wrap body content in the base HTML template."""
     html = base_template
     # Inline tags (single-line values)
@@ -323,6 +323,8 @@ def wrap_in_base(base_template, navbar_html, footer_html, body_content,
     html = html.replace("{{pageTitle}}", page_title)
     # Block tags (multi-line content that needs indentation)
     html = replace_indented(html, "{{ogTags}}", og_tags)
+    canonical_tag = f'<link rel="canonical" href="{canonical_url}">' if canonical_url else ""
+    html = replace_indented(html, "{{canonicalURL}}", canonical_tag)
     html = replace_indented(html, "{{extraHead}}", extra_head)
     html = replace_indented(html, "{{navbar}}", navbar_html)
     html = replace_indented(html, "{{bodyContent}}", body_content)
@@ -430,6 +432,7 @@ def build_frontpage(base_template, navbar_html, footer_html,
         meta_description=meta_desc,
         meta_keywords=meta_kw,
         og_tags=og_tags,
+        canonical_url=f"{SITE_BASE_URL}/",
     )
 
     write_file(os.path.join(OUTPUT_DIR, "index.html"), page)
@@ -507,6 +510,7 @@ def build_demo_pages(base_template, navbar_html, footer_html,
                 meta_description=meta_desc,
                 og_tags=og_tags,
                 base_path="../../",
+                canonical_url=demo_url,
             )
 
             # Write demo page under demo/ subfolder
@@ -623,6 +627,7 @@ def build_standalone_pages(base_template, navbar_html, footer_html, category_dat
                 og_tags=og_tags,
                 base_path="../../",
                 extra_head=extra_head,
+                canonical_url=demo_url,
             )
 
             demo_dir = os.path.join(OUTPUT_DIR, "demo", folder)
