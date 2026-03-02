@@ -13,7 +13,6 @@ import os
 import re
 import sys
 import json
-import shutil
 from datetime import date
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
