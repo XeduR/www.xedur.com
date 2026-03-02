@@ -1,9 +1,19 @@
 #!/usr/bin/env python3
 """
 Solar2D HTML5 Build - Post-Build Patcher (WASM builds)
-1. Removes the blur callback registration to prevent HTML5 builds from freezing when user clicks outside of the app.
-2. Removes the alert() from printErr to prevent blocking popups on non-fatal WASM errors.
-3. Deletes index-debug.html and index-nosplash.html (unused in production).
+
+.bin patches:
+  1. Removes the blur callback registration to prevent HTML5 builds from freezing when user clicks outside of the app.
+
+index.html patches:
+  2. Comments out the alert() in printErr to prevent blocking popups on non-fatal WASM errors.
+  3. Adds cross-browser vendor prefixes and styling fixes to the progress bar CSS.
+  4. Replaces statusElement.innerHTML with textContent to prevent XSS.
+  5. Prevents arrow keys from scrolling the page.
+  6. Adds pointer capture and edge projection for mouse/cursor drag handling outside the canvas.
+
+Cleanup:
+  7. Deletes index-debug.html and index-nosplash.html (unused in production).
 """
 
 import zipfile
@@ -107,34 +117,255 @@ def process_bin_file(bin_path):
             print("Cleaned up temporary files")
 
 
-def patch_index_html(bin_dir):
+def patch_printErr_alert(content):
     """
-    Patch bin/index.html to remove alert() from printErr.
+    Comment out the alert() call in printErr.
     The Solar2D-generated printErr calls alert() for any error containing 'ERROR',
     which blocks the UI thread and can cause cascading WASM crashes.
+    """
+    pattern = r'''if\(\s*typeof\(text\)\s*===\s*"string"\s*&&\s*text\.toUpperCase\(\)\.indexOf\("ERROR"\)\s*>=\s*0\)\s*alert\(text\);'''
+    modified = re.sub(pattern, r'// Commented out: blocking alert() on errors causes WASM crashes and freezes the UI\n            // \g<0>', content)
+    return modified, modified != content
+
+
+def patch_progress_css(content):
+    """
+    Add cross-browser vendor prefixes and styling fixes to the progress bar.
+    - Adds -webkit-appearance and -moz-appearance prefixes
+    - Replaces border-radius with border: none
+    - Improves box-shadow depth
+    """
+    modified = content
+
+    # Add vendor prefixes for appearance (match indentation of surrounding CSS)
+    modified = re.sub(
+        r'(\n)([ \t]*)(appearance:\s*none;)',
+        r'\1\2-webkit-appearance: none;\1\2-moz-appearance: none;\1\2appearance: none;',
+        modified,
+        count=1
+    )
+
+    # Replace border-radius with border: none
+    modified = modified.replace('border-radius: 3px;', 'border: none;', 1)
+
+    # Improve box-shadow depth
+    modified = modified.replace('0 2px 3px rgba', '0 4px 4px rgba', 1)
+
+    return modified, modified != content
+
+
+def patch_textContent(content):
+    """Replace statusElement.innerHTML with textContent to prevent XSS."""
+    modified = content.replace('statusElement.innerHTML', 'statusElement.textContent', 1)
+    return modified, modified != content
+
+
+# The enhanced script block that replaces Solar2D's default event listeners.
+# Adds arrow key scroll prevention and pointer capture with edge projection.
+ENHANCED_SCRIPT_BLOCK = '''\t<script>
+\t\t// Solar2D's default listeners.
+\t\twindow.addEventListener('load',function(){window.focus()});
+\t\twindow.addEventListener('mousedown', function () {
+\t\t\tdocument.activeElement.blur();
+\t\t\twindow.focus();
+\t\t}, true);
+
+\t\t// Prevent arrow keys from scrolling the page.
+\t\twindow.addEventListener("keydown", function(event) {
+\t\t\tif (["ArrowLeft","ArrowUp","ArrowRight","ArrowDown"].indexOf(event.key) > -1 || (event.keyCode !== undefined && [37, 38, 39, 40].indexOf(event.keyCode) > -1)) {
+\t\t\t\tevent.preventDefault();
+\t\t\t}
+\t\t}, false);
+
+\t\t// Pointer capture: track drags outside the canvas by projecting
+\t\t// the drag vector onto the nearest canvas edge (preserves angle).
+\t\tvar canvas = document.getElementById('canvas');
+\t\tvar emscriptenMousemove = null;
+\t\tvar dragging = false;
+\t\tvar outsideCanvas = false;
+\t\tvar startX = 0, startY = 0;
+\t\tvar lastX = 0, lastY = 0;
+
+\t\t// Project line from start to cursor onto the nearest canvas edge.
+\t\tfunction edgeProject(sx, sy, ex, ey, r) {
+\t\t\tvar dx = ex - sx, dy = ey - sy;
+\t\t\tvar t, tMin = 1, c;
+\t\t\tif (dx > 0) {
+\t\t\t\tt = (r.right - 1 - sx) / dx;
+\t\t\t\tif (t > 0 && t < tMin) { c = sy + t * dy; if (c >= r.top && c < r.bottom) tMin = t; }
+\t\t\t} else if (dx < 0) {
+\t\t\t\tt = (r.left - sx) / dx;
+\t\t\t\tif (t > 0 && t < tMin) { c = sy + t * dy; if (c >= r.top && c < r.bottom) tMin = t; }
+\t\t\t}
+\t\t\tif (dy > 0) {
+\t\t\t\tt = (r.bottom - 1 - sy) / dy;
+\t\t\t\tif (t > 0 && t < tMin) { c = sx + t * dx; if (c >= r.left && c < r.right) tMin = t; }
+\t\t\t} else if (dy < 0) {
+\t\t\t\tt = (r.top - sy) / dy;
+\t\t\t\tif (t > 0 && t < tMin) { c = sx + t * dx; if (c >= r.left && c < r.right) tMin = t; }
+\t\t\t}
+\t\t\treturn {
+\t\t\t\tx: Math.max(r.left, Math.min(r.right - 1, sx + tMin * dx)),
+\t\t\t\ty: Math.max(r.top, Math.min(r.bottom - 1, sy + tMin * dy))
+\t\t\t};
+\t\t}
+
+\t\t// Intercept Emscripten's mousemove handler on the canvas and
+\t\t// block it during outside-canvas drags (only projected coords pass).
+\t\tvar _origAdd = EventTarget.prototype.addEventListener;
+\t\tcanvas.addEventListener = function(type, fn, opt) {
+\t\t\tif (type === 'mousemove' && !emscriptenMousemove) {
+\t\t\t\temscriptenMousemove = fn;
+\t\t\t\t_origAdd.call(canvas, type, function(e) {
+\t\t\t\t\tif (dragging && outsideCanvas) return;
+\t\t\t\t\temscriptenMousemove.call(canvas, e);
+\t\t\t\t}, opt);
+\t\t\t} else {
+\t\t\t\t_origAdd.call(this, type, fn, opt);
+\t\t\t}
+\t\t};
+\t\tcanvas.addEventListener('pointerdown', function(e) {
+\t\t\tdragging = true;
+\t\t\toutsideCanvas = false;
+\t\t\tstartX = e.clientX;
+\t\t\tstartY = e.clientY;
+\t\t\tlastX = e.clientX;
+\t\t\tlastY = e.clientY;
+\t\t\ttry { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+\t\t}, true);
+\t\tdocument.addEventListener('pointerup', function() {
+\t\t\tdragging = false;
+\t\t\toutsideCanvas = false;
+\t\t});
+\t\tdocument.addEventListener('pointercancel', function() {
+\t\t\tdragging = false;
+\t\t\toutsideCanvas = false;
+\t\t});
+
+\t\t// When dragging outside the canvas, project onto the nearest
+\t\t// edge (Solar2D's HTML5 layer ignores out-of-bounds values).
+\t\tcanvas.addEventListener('pointermove', function(e) {
+\t\t\tif (!dragging) return;
+\t\t\tvar rect = canvas.getBoundingClientRect();
+\t\t\tvar isOutside = e.clientX < rect.left || e.clientX >= rect.right ||
+\t\t\t\t\t\t\te.clientY < rect.top || e.clientY >= rect.bottom;
+\t\t\toutsideCanvas = isOutside;
+\t\t\tif (isOutside) {
+\t\t\t\tlastX += e.movementX;
+\t\t\t\tlastY += e.movementY;
+\t\t\t\tif (emscriptenMousemove) {
+\t\t\t\t\tvar p = edgeProject(startX, startY, lastX, lastY, rect);
+\t\t\t\t\temscriptenMousemove.call(canvas, new MouseEvent('mousemove', {
+\t\t\t\t\t\tclientX: p.x,
+\t\t\t\t\t\tclientY: p.y,
+\t\t\t\t\t\tscreenX: e.screenX,
+\t\t\t\t\t\tscreenY: e.screenY,
+\t\t\t\t\t\tmovementX: e.movementX,
+\t\t\t\t\t\tmovementY: e.movementY,
+\t\t\t\t\t\tbutton: e.button,
+\t\t\t\t\t\tbuttons: e.buttons,
+\t\t\t\t\t\tctrlKey: e.ctrlKey,
+\t\t\t\t\t\tshiftKey: e.shiftKey,
+\t\t\t\t\t\taltKey: e.altKey,
+\t\t\t\t\t\tmetaKey: e.metaKey
+\t\t\t\t\t}));
+\t\t\t\t}
+\t\t\t} else {
+\t\t\t\tlastX = e.clientX;
+\t\t\t\tlastY = e.clientY;
+\t\t\t}
+\t\t}, true);
+
+\t\t// Forward parent-document moves into the iframe with projected coords.
+\t\tvar iframe;
+\t\ttry { iframe = window.frameElement; } catch (e) {}
+\t\tif (iframe) {
+\t\t\twindow.parent.document.addEventListener('mousemove', function(e) {
+\t\t\t\tif (dragging && emscriptenMousemove) {
+\t\t\t\t\tvar iRect = iframe.getBoundingClientRect();
+\t\t\t\t\tvar cRect = canvas.getBoundingClientRect();
+\t\t\t\t\tvar mx = e.clientX - iRect.left;
+\t\t\t\t\tvar my = e.clientY - iRect.top;
+\t\t\t\t\tif (mx < cRect.left || mx >= cRect.right || my < cRect.top || my >= cRect.bottom) {
+\t\t\t\t\t\toutsideCanvas = true;
+\t\t\t\t\t\tvar p = edgeProject(startX, startY, mx, my, cRect);
+\t\t\t\t\t\temscriptenMousemove.call(canvas, new MouseEvent('mousemove', {
+\t\t\t\t\t\t\tclientX: p.x,
+\t\t\t\t\t\t\tclientY: p.y,
+\t\t\t\t\t\t\tscreenX: e.screenX,
+\t\t\t\t\t\t\tscreenY: e.screenY,
+\t\t\t\t\t\t\tmovementX: e.movementX,
+\t\t\t\t\t\t\tmovementY: e.movementY,
+\t\t\t\t\t\t\tbutton: e.button,
+\t\t\t\t\t\t\tbuttons: e.buttons,
+\t\t\t\t\t\t\tctrlKey: e.ctrlKey,
+\t\t\t\t\t\t\tshiftKey: e.shiftKey,
+\t\t\t\t\t\t\taltKey: e.altKey,
+\t\t\t\t\t\t\tmetaKey: e.metaKey
+\t\t\t\t\t\t}));
+\t\t\t\t\t}
+\t\t\t\t}
+\t\t\t});
+\t\t\twindow.parent.document.addEventListener('mouseup', function() {
+\t\t\t\tdragging = false;
+\t\t\t\toutsideCanvas = false;
+\t\t\t});
+\t\t}
+\t</script>'''
+
+
+def patch_inject_scripts(content):
+    """
+    Replace the default event listener script block with an enhanced version
+    that includes arrow key scroll prevention and pointer capture with edge projection.
+    """
+    # Match the last <script> block containing the default window event listeners
+    pattern = r'<script>\s*window\.addEventListener\(\'load\'.*?</script>'
+    modified = re.sub(pattern, ENHANCED_SCRIPT_BLOCK, content, count=1, flags=re.DOTALL)
+    return modified, modified != content
+
+
+def patch_index_html(bin_dir):
+    """
+    Apply all patches to bin/index.html:
+    - Remove alert() from printErr
+    - Fix lang attribute
+    - Fix progress bar CSS
+    - Use textContent instead of innerHTML
+    - Inject arrow key prevention + pointer capture
     """
     index_path = bin_dir / "index.html"
 
     if not index_path.exists():
-        print(f"Warning: {index_path} not found, skipping printErr patch")
+        print(f"Warning: {index_path} not found, skipping index.html patches")
         return False
 
     with open(index_path, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    # Remove the alert() call from printErr, keeping the console.error
-    pattern = r'''if\(\s*typeof\(text\)\s*===\s*"string"\s*&&\s*text\.toUpperCase\(\)\.indexOf\("ERROR"\)\s*>=\s*0\)\s*alert\(text\);'''
+    patches = [
+        ("Remove printErr alert", patch_printErr_alert),
+        ("Fix progress bar CSS", patch_progress_css),
+        ("Use textContent over innerHTML", patch_textContent),
+        ("Add arrow key prevention + pointer capture", patch_inject_scripts),
+    ]
 
-    modified = re.sub(pattern, '// alert removed: blocking alert() on errors causes WASM crashes and freezes the UI', content)
+    any_applied = False
+    for name, fn in patches:
+        content, applied = fn(content)
+        status = "applied" if applied else "skipped (already patched or pattern not found)"
+        print(f"  {name}: {status}")
+        if applied:
+            any_applied = True
 
-    if modified != content:
+    if any_applied:
         with open(index_path, 'w', encoding='utf-8') as f:
-            f.write(modified)
-        print("Removed alert() from printErr in index.html")
-        return True
+            f.write(content)
+        print("index.html patched successfully")
     else:
-        print("Note: printErr alert pattern not found in index.html (may already be patched)")
-        return False
+        print("Note: No patches were applied (file may already be patched)")
+
+    return any_applied
 
 
 def delete_unused_html(bin_dir):
@@ -244,7 +475,7 @@ def auto_detect_bin():
 def main():
     print("=" * line_length)
     print("Solar2D HTML5 - Post-Build Patcher (WASM)")
-    print("Patches blur callback + printErr alert + cleanup")
+    print("Patches .bin + index.html + cleanup")
     print("=" * line_length)
     print()
 
@@ -295,13 +526,16 @@ def main():
     print("=" * line_length)
 
     if bin_success and html_success:
-        print("SUCCESS! Your HTML5 build has been modified.")
-        print("- Blur callback removed (no freeze on click outside)")
-        print("- printErr alert removed (no blocking popups on errors)")
+        print("SUCCESS! Your HTML5 build has been patched.")
+        print("- Blur callback removed from .bin (no freeze on click outside)")
+        print("- index.html patches applied (see details above)")
         print("- Unused HTML files cleaned up")
     elif bin_success:
         print("Blur callback removed successfully.")
-        print("Note: index.html printErr patch was skipped (see above).")
+        print("Note: index.html patches were skipped (see above).")
+    elif html_success:
+        print("index.html patches applied successfully.")
+        print("Note: .bin processing had issues (see above).")
     else:
         print("Process completed with warnings or errors.")
         print("Please check the messages above.")

@@ -244,17 +244,154 @@ k.p.toString(16)+", data=0x"+p.toString(16)))}return m};t.L=function(a){this.j=a
 		xml.send(null);
 	</script>
 	<script>
+		// Solar2D's default listeners.
 		window.addEventListener('load',function(){window.focus()});
 		window.addEventListener('mousedown', function () {
 			document.activeElement.blur();
 			window.focus();
 		}, true);
-		// Prevent arrow keys from scrolling the website (since the app may use them as controls).
+
+		// Prevent arrow keys from scrolling the page.
 		window.addEventListener("keydown", function(event) {
 			if (["ArrowLeft","ArrowUp","ArrowRight","ArrowDown"].indexOf(event.key) > -1 || (event.keyCode !== undefined && [37, 38, 39, 40].indexOf(event.keyCode) > -1)) {
 				event.preventDefault();
 			}
 		}, false);
+
+		// Pointer capture: track drags outside the canvas by projecting
+		// the drag vector onto the nearest canvas edge (preserves angle).
+		var canvas = document.getElementById('canvas');
+		var emscriptenMousemove = null;
+		var dragging = false;
+		var outsideCanvas = false;
+		var startX = 0, startY = 0;
+		var lastX = 0, lastY = 0;
+
+		// Project line from start to cursor onto the nearest canvas edge.
+		function edgeProject(sx, sy, ex, ey, r) {
+			var dx = ex - sx, dy = ey - sy;
+			var t, tMin = 1, c;
+			if (dx > 0) {
+				t = (r.right - 1 - sx) / dx;
+				if (t > 0 && t < tMin) { c = sy + t * dy; if (c >= r.top && c < r.bottom) tMin = t; }
+			} else if (dx < 0) {
+				t = (r.left - sx) / dx;
+				if (t > 0 && t < tMin) { c = sy + t * dy; if (c >= r.top && c < r.bottom) tMin = t; }
+			}
+			if (dy > 0) {
+				t = (r.bottom - 1 - sy) / dy;
+				if (t > 0 && t < tMin) { c = sx + t * dx; if (c >= r.left && c < r.right) tMin = t; }
+			} else if (dy < 0) {
+				t = (r.top - sy) / dy;
+				if (t > 0 && t < tMin) { c = sx + t * dx; if (c >= r.left && c < r.right) tMin = t; }
+			}
+			return {
+				x: Math.max(r.left, Math.min(r.right - 1, sx + tMin * dx)),
+				y: Math.max(r.top, Math.min(r.bottom - 1, sy + tMin * dy))
+			};
+		}
+
+		// Intercept Emscripten's mousemove handler on the canvas and
+		// block it during outside-canvas drags (only projected coords pass).
+		var _origAdd = EventTarget.prototype.addEventListener;
+		canvas.addEventListener = function(type, fn, opt) {
+			if (type === 'mousemove' && !emscriptenMousemove) {
+				emscriptenMousemove = fn;
+				_origAdd.call(canvas, type, function(e) {
+					if (dragging && outsideCanvas) return;
+					emscriptenMousemove.call(canvas, e);
+				}, opt);
+			} else {
+				_origAdd.call(canvas, type, fn, opt);
+			}
+		};
+		canvas.addEventListener('pointerdown', function(e) {
+			dragging = true;
+			outsideCanvas = false;
+			startX = e.clientX;
+			startY = e.clientY;
+			lastX = e.clientX;
+			lastY = e.clientY;
+			try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+		}, true);
+		document.addEventListener('pointerup', function() {
+			dragging = false;
+			outsideCanvas = false;
+		});
+		document.addEventListener('pointercancel', function() {
+			dragging = false;
+			outsideCanvas = false;
+		});
+
+		// When dragging outside the canvas, project onto the nearest
+		// edge (Solar2D's HTML5 layer ignores out-of-bounds values).
+		canvas.addEventListener('pointermove', function(e) {
+			if (!dragging) return;
+			var rect = canvas.getBoundingClientRect();
+			var isOutside = e.clientX < rect.left || e.clientX >= rect.right ||
+							e.clientY < rect.top || e.clientY >= rect.bottom;
+			outsideCanvas = isOutside;
+			if (isOutside) {
+				lastX += e.movementX;
+				lastY += e.movementY;
+				if (emscriptenMousemove) {
+					var p = edgeProject(startX, startY, lastX, lastY, rect);
+					emscriptenMousemove.call(canvas, new MouseEvent('mousemove', {
+						clientX: p.x,
+						clientY: p.y,
+						screenX: e.screenX,
+						screenY: e.screenY,
+						movementX: e.movementX,
+						movementY: e.movementY,
+						button: e.button,
+						buttons: e.buttons,
+						ctrlKey: e.ctrlKey,
+						shiftKey: e.shiftKey,
+						altKey: e.altKey,
+						metaKey: e.metaKey
+					}));
+				}
+			} else {
+				lastX = e.clientX;
+				lastY = e.clientY;
+			}
+		}, true);
+
+		// Forward parent-document moves into the iframe with projected coords.
+		var iframe;
+		try { iframe = window.frameElement; } catch (e) {}
+		if (iframe) {
+			window.parent.document.addEventListener('mousemove', function(e) {
+				if (dragging && emscriptenMousemove) {
+					var iRect = iframe.getBoundingClientRect();
+					var cRect = canvas.getBoundingClientRect();
+					var mx = e.clientX - iRect.left;
+					var my = e.clientY - iRect.top;
+					if (mx < cRect.left || mx >= cRect.right || my < cRect.top || my >= cRect.bottom) {
+						outsideCanvas = true;
+						var p = edgeProject(startX, startY, mx, my, cRect);
+						emscriptenMousemove.call(canvas, new MouseEvent('mousemove', {
+							clientX: p.x,
+							clientY: p.y,
+							screenX: e.screenX,
+							screenY: e.screenY,
+							movementX: e.movementX,
+							movementY: e.movementY,
+							button: e.button,
+							buttons: e.buttons,
+							ctrlKey: e.ctrlKey,
+							shiftKey: e.shiftKey,
+							altKey: e.altKey,
+							metaKey: e.metaKey
+						}));
+					}
+				}
+			});
+			window.parent.document.addEventListener('mouseup', function() {
+				dragging = false;
+				outsideCanvas = false;
+			});
+		}
 	</script>
 </body>
 </html>
