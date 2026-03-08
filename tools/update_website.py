@@ -499,6 +499,7 @@ def build_demo_pages(base_template, navbar_html, footer_html,
             if seo:
                 meta_desc = seo.get("metaDescription") or desc_short
             demo_seo["ogImage"] = f"{SITE_BASE_URL}/demo/{folder}/{folder}-large.jpg"
+            demo_seo.setdefault("ogImageAlt", f"Screenshot of {title}")
             og_tags = generate_social_tags(demo_seo, url=demo_url)
 
             # Wrap in base template
@@ -613,6 +614,7 @@ def build_standalone_pages(base_template, navbar_html, footer_html, category_dat
             demo_url = f"{SITE_BASE_URL}/demo/{folder}/"
             standalone_seo = dict(config.get("seo", {}))
             standalone_seo["ogImage"] = f"{SITE_BASE_URL}/demo/{folder}/{folder}-large.jpg"
+            standalone_seo.setdefault("ogImageAlt", f"Screenshot of {title}")
             og_tags = generate_social_tags(standalone_seo, url=demo_url)
 
             # The output lives at demo/<folder>/index.html, which is 2 levels
