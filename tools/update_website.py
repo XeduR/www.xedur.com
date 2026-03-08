@@ -431,6 +431,7 @@ def build_frontpage(base_template, navbar_html, footer_html,
         meta_description=meta_desc,
         meta_keywords=meta_kw,
         og_tags=og_tags,
+        base_path="./",
         canonical_url=f"{SITE_BASE_URL}/",
     )
 
