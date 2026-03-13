@@ -45,6 +45,22 @@ DEFAULT_KEYWORDS = (
 
 SITE_BASE_URL = "https://www.xedur.com"
 
+# Inline SVG icons injected next to external and mailto links.
+LINK_ICON_SVG = (
+    '<svg class="link-icon" viewBox="0 0 24 24">'
+    '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>'
+    '<polyline points="15 3 21 3 21 9"/>'
+    '<line x1="10" y1="14" x2="21" y2="3"/>'
+    '</svg>'
+)
+
+EMAIL_ICON_SVG = (
+    '<svg class="email-icon" viewBox="0 0 24 24">'
+    '<rect width="20" height="16" x="2" y="4" rx="2"/>'
+    '<path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>'
+    '</svg>'
+)
+
 # ------------------------------------------------------------------------------------
 # Minification and formatting helpers
 
@@ -198,6 +214,41 @@ def load_json(filename):
 # ------------------------------------------------------------------------------------
 # HTML generation helpers
 
+def strip_html(text):
+    """Strip HTML tags and collapse whitespace for plain-text output."""
+    text = re.sub(r'<br\s*/?>', ' ', text, flags=re.IGNORECASE)
+    text = re.sub(r'<[^>]+>', '', text)
+    return re.sub(r'\s+', ' ', text).strip()
+
+
+def decorate_links(html: str) -> str:
+    """Add external-link or email icons to qualifying anchor tags."""
+    def _add_icon(match):
+        attrs = match.group(1)
+        content = match.group(2)
+
+        # Skip links containing media or structural child elements.
+        if re.search(r'<(img|svg|div|button)\b', content, re.IGNORECASE):
+            return match.group(0)
+
+        href_match = re.search(r'href\s*=\s*["\']([^"\']*)["\']', attrs)
+        if not href_match:
+            return match.group(0)
+
+        href = href_match.group(1)
+
+        if href.startswith('mailto:'):
+            icon = EMAIL_ICON_SVG
+        elif href.startswith('http'):
+            icon = LINK_ICON_SVG
+        else:
+            return match.group(0)
+
+        return f'<a{attrs}>{content}{icon}</a>'
+
+    return re.sub(r'<a(\s[^>]*)>(.*?)</a>', _add_icon, html, flags=re.DOTALL)
+
+
 def is_external(demo):
     """Check if a demo entry is an external link (has a non-empty externalUrl)."""
     return bool(demo.get("externalUrl"))
@@ -214,7 +265,7 @@ def generate_card(demo, card_template):
         href = demo["externalUrl"]
         target = ' target="_blank"'
         image = demo.get("image", "")
-        external_html = '<p class="external-notice">External: This link opens in a new tab.</p>'
+        external_html = f'<p class="external-notice">External: This link opens in a new tab.{LINK_ICON_SVG}</p>'
         img_width = "1200"
         img_height = "630"
     else:
@@ -326,7 +377,7 @@ def wrap_in_base(base_template, navbar_html, footer_html, body_content,
     html = replace_indented(html, "{{canonicalURL}}", canonical_tag)
     html = replace_indented(html, "{{extraHead}}", extra_head)
     html = replace_indented(html, "{{navbar}}", navbar_html)
-    html = replace_indented(html, "{{bodyContent}}", body_content)
+    html = replace_indented(html, "{{bodyContent}}", decorate_links(body_content))
     html = replace_indented(html, "{{footer}}", footer_html)
     # Path prefix (inline, applied last, must be after all other replacements
     # since injected content like extra_head may contain {{basePath}} references)

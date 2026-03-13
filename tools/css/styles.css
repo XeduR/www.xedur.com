@@ -285,6 +285,20 @@ p a:hover {
     text-decoration-color: #fcba04;
 }
 
+.link-icon,
+.email-icon {
+    display: inline-block;
+    width: 0.7em;
+    height: 0.7em;
+    margin-left: 3px;
+    vertical-align: middle;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 .segment {
     padding: 20px;
     margin: 0 auto;
@@ -348,7 +362,8 @@ p a:hover {
     margin: 0 auto;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    grid-gap: 10px;
+    column-gap: 16px;
+    row-gap: 28px;
 }
 
 .project-container {
@@ -356,7 +371,8 @@ p a:hover {
     background: #080808;
     max-width: 480px;
     width: 100%;
-    display: block;
+    display: flex;
+    flex-direction: column;
     position: relative;
     overflow: hidden;
 }
@@ -409,7 +425,7 @@ p a:hover {
     font-size: 0.75em;
     color: #fcba04;
     border-top: 1px solid #222;
-    margin-top: 0;
+    margin-top: auto;
 }
 
 .text-block {
