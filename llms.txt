@@ -1,0 +1,58 @@
+# XeduR - Code Portfolio
+
+> Personal portfolio of Eetu Rantanen (XeduR): interactive demos of games,
+> Solar2D widgets, libraries, and other unassorted web and software projects.
+> Source code for most projects is available on GitHub under the MIT License.
+
+## Links
+
+- Portfolio page: https://www.xedur.com/
+- Professional site: https://www.erantanen.com/
+- Roso Games: https://www.rosogames.fi/en/
+- GitHub: https://github.com/XeduR
+- Contact: eetu@erantanen.com
+
+## Projects
+
+A selection of personal projects, including games, Solar2D tools, and other software.
+
+### Games
+
+These are some of the non-commercial games that I've created over the years in my free time. These games do not include any of the games I've created for my clients or other commercial projects.
+
+- [Gone Diggin'](https://www.xedur.com/demo/gone-diggin/): A simple game about a dwarf that wants to dig for gold. Created for Ludum Dare 48 COMPO.
+- [Grav-O-Delivery](https://www.xedur.com/demo/grav-o-delivery/): A short and sweet game about delivering interplanetary parcels using gravitational pull. Created for Ludum Dare 53 JAM.
+- [Break the Loop](https://www.xedur.com/demo/break-the-loop/): A code-themed puzzle game where you drag and drop code elements to break the loop. Created for Ludum Dare 47 JAM.
+- [xperiment](https://www.xedur.com/demo/xperiment/): A narrative-driven point-and-click game that explores what it means to make someone laugh. Created for Global Game Jam 2024.
+- [Uranium-236](https://www.xedur.com/demo/uranium-236/): A nuclear reactor management game where you must keep an unstable reactor running. Created for Ludum Dare 49.
+- [Last Stand](https://www.xedur.com/demo/last-stand/): Dodge the undead and shoot them for as long as you can. Created for Ludum Dare 50 JAM.
+- [The Dark](https://www.xedur.com/demo/the-dark/): Keep yourself and your campfire alive through a freezing winter night. Created for Ludum Dare 46 COMPO.
+- [Speed Test](https://www.xedur.com/demo/speed-test/): Follow and repeat a sequence of coloured lights as the game gets progressively faster. Written in under 150 lines of code as part of a personal challenge to write complete games in 50, 100, and 150 lines.
+- [Runners](https://www.xedur.com/demo/runners/): Tap the runners before they escape off the screen as the game gets increasingly hectic. Written in under 100 lines of code as part of a personal challenge to write complete games in 50, 100, and 150 lines.
+- [Bomb Tap](https://www.xedur.com/demo/bomb-tap/): Keep a bouncing bomb airborne by tapping before it touches the platforms. Written in under 50 lines of code as part of a personal challenge to write complete games in 50, 100, and 150 lines.
+- [Get A Job Baby!](https://www.xedur.com/demo/get-a-job-baby/): A game about being a newborn baby who has nothing and is put to work. Created for Ludum Dare 45 JAM.
+
+### Widgets, libraries and other unassorted things for Solar2D
+
+These projects range from individual tables or concepts to more complex functions and systems. Essentially, these projects come in all shapes and sizes, but I either didn't consider them big enough or distinct enough to turn them into plugins.
+
+- [Autotile](https://www.xedur.com/demo/autotile/): Touch a cell on a grid and Autotile figures out which tile to place and updates all connected tiles automatically.
+- [Weaver](https://www.xedur.com/demo/weaver/): A narrative and dialogue engine for Solar2D with Twine 2 integration for creating branching stories and dialogue trees.
+- [Morph](https://www.xedur.com/demo/morph/): Morph allows for simple creation and scaling of display objects and their physics bodies in Solar2D.
+- [Performance Meter](https://www.xedur.com/demo/performance-meter/): A customisable on-screen meter for tracking FPS, texture memory, and memory usage in your Solar2D app.
+- [Print to Display](https://www.xedur.com/demo/print-to-display/): Print to Display adds a console to your app, making it easy to view prints even while testing on devices.
+- [Progress Ring](https://www.xedur.com/demo/progress-ring/): A quick and easy plugin for creating progress rings (or circles) in Solar2D.
+- [screen.lua](https://github.com/SpyricGames/Solar2D-Plugins-Public/tree/main/Screen): A table of dynamically calculated screen values for creating resolution-independent UIs and layouts in Solar2D.
+- [advancedAudio.lua](https://github.com/XeduR/Solar2D-Projects/tree/master/advancedAudio): An advanced audio management library for Solar2D with channel management, priority system, and audio type categorization.
+- [Verify Domain](https://www.xedur.com/demo/verify-domain/): A set of Lua functions for verifying that your Solar2D HTML5 app is running on approved domains, helping prevent unauthorized hosting.
+
+### Other projects
+
+All of the projects in here are explicitly my personal code projects. If you wish to see some of the graphic design, websites or other work that I've created for some of my clients over the years, then please visit my other site: www.erantanen.com. Note: All of these projects open in a new page.
+
+- [Solar2D Playground](https://www.solar2dplayground.com/): An interactive website that lets you write, run, and share Solar2D projects directly in your browser.
+- [Solar2D Particle Editor](https://xedur.github.io/solar2d-particle-editor): An interactive browser-based particle effect editor for Solar2D. Create, customize, and export particle emitters with real-time preview and built-in templates.
+- [WebGL2 Lighting Playground](https://xedur.github.io/webgl2-lighting-playground/): A browser-based 3D scene editor for experimenting with real-time lighting, shadows, and translucent color mixing - built entirely with vanilla JavaScript and WebGL2.
+- [Error Tracker](https://error-tracker-demo.infinityfree.me/): A self-hosted error monitoring system for games/apps. Receives error reports from devices, intelligently groups similar errors, and provides real-time dashboards and configurable email alerts.
+- [Pseudorandom Number Generator](https://www.xedur.com/demo/pseudorandom-number-generator/): An interactive demo of pseudorandom number generation using the Linear Congruential Generator (LCG) method, with source code in both Lua and JavaScript.
+- [XeduR.com](https://github.com/XeduR/xedur.github.io): This website that you are on right now! You've seen how it works, but if you want to see the source and how it's built too, then look no further.

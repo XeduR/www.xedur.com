@@ -1,0 +1,14 @@
+{
+    "title": "XeduR - Code Portfolio",
+    "description": "Personal portfolio of Eetu Rantanen (XeduR): interactive demos of games, Solar2D widgets, libraries, and other unassorted web and software projects. Source code for most projects is available on GitHub under the MIT License.",
+    "linksHeading": "Links",
+    "links": [
+        "Portfolio page: https://www.xedur.com/",
+        "Professional site: https://www.erantanen.com/",
+        "Roso Games: https://www.rosogames.fi/en/",
+        "GitHub: https://github.com/XeduR",
+        "Contact: eetu@erantanen.com"
+    ],
+    "projectsHeading": "Projects",
+    "projectsDescription": "A selection of personal projects, including games, Solar2D tools, and other software."
+}

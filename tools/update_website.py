@@ -799,6 +799,75 @@ def check_demo_assets(category_data):
                 print(f"  Asset changed: demo/{folder}/")
 
 
+def build_llms_txt(category_data):
+    """Generate llms.txt, a plain-text site summary for LLM crawlers."""
+    llms_data = load_json("llms.json")
+
+    lines = [f"# {llms_data['title']}", ""]
+
+    # Wrap description as a blockquote.
+    desc_words = llms_data["description"].split()
+    bq_lines = []
+    current = ">"
+    for word in desc_words:
+        if len(current) + 1 + len(word) > 80:
+            bq_lines.append(current)
+            current = ">" + " " + word
+        else:
+            current += " " + word
+    bq_lines.append(current)
+    lines.extend(bq_lines)
+    lines.append("")
+
+    links_heading = llms_data.get("linksHeading", "")
+    if links_heading:
+        lines.append(f"## {links_heading}")
+        lines.append("")
+
+    for link in llms_data.get("links", []):
+        lines.append(f"- {link}")
+    lines.append("")
+
+    projects_heading = llms_data.get("projectsHeading", "")
+    if projects_heading:
+        lines.append(f"## {projects_heading}")
+        lines.append("")
+        projects_desc = llms_data.get("projectsDescription", "")
+        if projects_desc:
+            lines.append(projects_desc)
+            lines.append("")
+
+    for cat_name in CATEGORIES:
+        if cat_name not in category_data:
+            continue
+
+        data = category_data[cat_name]
+        heading_level = "###" if projects_heading else "##"
+        lines.append(f"{heading_level} {data.get('sectionTitle', '')}")
+        lines.append("")
+
+        section_desc = data.get("sectionDescription", "")
+        if section_desc:
+            lines.append(strip_html(section_desc))
+            lines.append("")
+
+        for demo in data.get("demos", []):
+            title = demo.get("title", "")
+            desc = demo.get("descriptionShort", "")
+
+            if is_external(demo):
+                url = demo["externalUrl"]
+            else:
+                folder = demo.get("folder", "")
+                url = f"{SITE_BASE_URL}/demo/{folder}/"
+
+            lines.append(f"- [{title}]({url}): {desc}")
+
+        lines.append("")
+
+    write_file(os.path.join(OUTPUT_DIR, "llms.txt"), "\n".join(lines))
+
+
 def build_sitemap(site_paths):
     """Generate sitemap.xml, updating lastmod only for pages whose content changed.
 
@@ -942,6 +1011,7 @@ def main():
     )
     check_images(category_data)
     check_demo_assets(category_data)
+    build_llms_txt(category_data)
     build_sitemap(site_paths)
 
     if CHANGED_FILES:
