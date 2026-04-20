@@ -21,6 +21,7 @@ A selection of personal projects, including games, Solar2D tools, and other soft
 These are some of the non-commercial games that I've created over the years in my free time. These games do not include any of the games I've created for my clients or other commercial projects.
 
 - [Gone Diggin'](https://www.xedur.com/demo/gone-diggin/): A simple game about a dwarf that wants to dig for gold. Created for Ludum Dare 48 COMPO.
+- [The Hunt for Red April](https://www.xedur.com/demo/the-hunt-for-red-april/): A sonar-based submarine stealth game where every ping reveals your position. Created for Ludum Dare 59.
 - [Grav-O-Delivery](https://www.xedur.com/demo/grav-o-delivery/): A short and sweet game about delivering interplanetary parcels using gravitational pull. Created for Ludum Dare 53 JAM.
 - [Break the Loop](https://www.xedur.com/demo/break-the-loop/): A code-themed puzzle game where you drag and drop code elements to break the loop. Created for Ludum Dare 47 JAM.
 - [xperiment](https://www.xedur.com/demo/xperiment/): A narrative-driven point-and-click game that explores what it means to make someone laugh. Created for Global Game Jam 2024.
