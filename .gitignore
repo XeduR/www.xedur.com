@@ -31,6 +31,3 @@ Desktop.ini
 # Personal settings and build files
 node_modules/
 .claude/
-
-# Misc
-*.ini

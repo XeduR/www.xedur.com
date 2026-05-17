@@ -475,6 +475,43 @@ def build_frontpage(base_template, navbar_html, footer_html,
     og_tags = generate_social_tags(
         frontpage_data.get("seo"), url=f"{SITE_BASE_URL}/"
     )
+
+    # JSON-LD: WebSite for xedur.com referencing the canonical Person on erantanen.com.
+    person_id = "https://www.erantanen.com/#eetu-rantanen"
+    ld_json = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "Person",
+                "@id": person_id,
+                "name": "Eetu Rantanen",
+                "alternateName": "XeduR",
+                "givenName": "Eetu",
+                "familyName": "Rantanen",
+                "url": "https://www.erantanen.com/",
+                "sameAs": [
+                    "https://github.com/XeduR/",
+                    "https://www.erantanen.com/",
+                ],
+            },
+            {
+                "@type": "WebSite",
+                "@id": f"{SITE_BASE_URL}/#website",
+                "url": f"{SITE_BASE_URL}/",
+                "name": "XeduR",
+                "description": meta_desc,
+                "inLanguage": "en",
+                "author": {"@id": person_id},
+                "publisher": {"@id": person_id},
+            },
+        ],
+    }
+    ld_json_script = (
+        '<script type="application/ld+json">\n'
+        + json.dumps(ld_json, indent=4, ensure_ascii=False)
+        + '\n</script>'
+    )
+
     page = wrap_in_base(
         base_template, navbar_html, footer_html,
         body_content=content,
@@ -483,6 +520,7 @@ def build_frontpage(base_template, navbar_html, footer_html,
         meta_keywords=meta_kw,
         og_tags=og_tags,
         base_path="./",
+        extra_head=ld_json_script,
         canonical_url=f"{SITE_BASE_URL}/",
     )
 
@@ -505,6 +543,7 @@ def build_404(base_template, navbar_html, footer_html, four04_template,
             "If you are seeing this, then you are lost."
         ),
         base_path="/",
+        extra_head='<meta name="robots" content="noindex">',
     )
 
     write_file(os.path.join(OUTPUT_DIR, "404.html"), page)
