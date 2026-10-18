@@ -20,6 +20,7 @@ A selection of personal projects, including games, Solar2D tools, and other soft
 
 These are some of the non-commercial games that I've created over the years in my free time. These games do not include any of the games I've created for my clients or other commercial projects.
 
+- [Full Steam Ahead!](https://www.xedur.com/demo/full-steam-ahead/): Shovel coal to make a steamboat go faster and faster for its pompous captain. Created for Ludum Dare 60.
 - [The Hunt for Red April](https://www.xedur.com/demo/the-hunt-for-red-april/): A sonar-based submarine stealth game where every ping reveals your position. Created for Ludum Dare 59.
 - [Gone Diggin'](https://www.xedur.com/demo/gone-diggin/): A simple game about a dwarf that wants to dig for gold. Created for Ludum Dare 48 COMPO.
 - [Grav-O-Delivery](https://www.xedur.com/demo/grav-o-delivery/): A short and sweet game about delivering interplanetary parcels using gravitational pull. Created for Ludum Dare 53 JAM.
