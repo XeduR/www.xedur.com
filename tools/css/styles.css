@@ -193,6 +193,15 @@ a:hover .icon {
     margin-left: 0;
 }
 
+.demo-body {
+    margin-left: 84px;
+}
+
+/* Cancel the nested repo panel's own left margin so it aligns with the body instead of indenting twice. */
+.demo-body .demo-panel {
+    margin-left: 0;
+}
+
 .demo-wrapper {
     width: 100%;
     height: 100%;
@@ -721,3 +730,327 @@ li.dropdown {
     max-width: 512px;
 }
 
+
+/* Tangents: list, post, tags, figures, video embed */
+.tangents-list,
+.tangents-post {
+    max-width: 820px;
+}
+
+.title-tangents,
+.title-tangent {
+    padding-top: 20px;
+}
+
+.tangents-intro {
+    color: #999;
+    margin-bottom: 20px;
+}
+
+.tangents-intro:empty {
+    display: none;
+}
+
+/* Temporary under-construction image on the post-less Tangents pages. */
+.tangents-placeholder {
+    display: block;
+    width: 100%;
+    max-width: 512px;
+    height: auto;
+    margin-bottom: 20px;
+    image-rendering: pixelated;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 20px;
+    font-size: 0.95em;
+}
+
+.tag-filter {
+    margin-bottom: 24px;
+}
+
+.tag-filter-list,
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style-type: none;
+    padding: 0;
+}
+
+.tag-list {
+    margin-bottom: 20px;
+}
+
+.tag-filter-list li,
+.tag-list li {
+    padding: 0;
+}
+
+.tag-chip,
+.tag-filter-list a {
+    display: inline-block;
+    background: #141518;
+    color: #fcba04;
+    font-size: 0.8em;
+    padding: 4px 10px;
+    border-radius: 12px;
+    white-space: nowrap;
+}
+
+.tag-chip:hover,
+.tag-filter-list a:hover {
+    background: #222;
+    text-decoration: none;
+}
+
+.tag-filter-list a.active {
+    background: #fcba04;
+    color: #141518;
+}
+
+.post-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.post-item {
+    padding: 20px 0;
+    border-bottom: 1px solid #222;
+}
+
+.post-item-title {
+    display: block;
+    font-size: 1.4em;
+    color: #fcba04;
+    padding: 0;
+}
+
+.post-item-meta {
+    color: #999;
+    font-size: 0.85em;
+    margin: 6px 0;
+}
+
+.post-item-tags {
+    margin-left: 8px;
+}
+
+.post-item-summary {
+    margin: 0;
+}
+
+.page-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 24px;
+}
+
+.page-nav .nav-newer {
+    margin-right: auto;
+}
+
+.page-nav .nav-older {
+    margin-left: auto;
+}
+
+.post-dates {
+    color: #999;
+    font-size: 0.85em;
+    margin-bottom: 20px;
+}
+
+.tangent-body,
+.demo-body {
+    line-height: 1.6;
+}
+
+.tangent-body p,
+.demo-body p {
+    margin-bottom: 20px;
+}
+
+.tangent-body h2,
+.demo-body h2,
+.tangent-body h3,
+.demo-body h3 {
+    padding-top: 12px;
+}
+
+.tangent-body h4,
+.demo-body h4,
+.tangent-body h5,
+.demo-body h5,
+.tangent-body h6,
+.demo-body h6 {
+    color: #ffffff;
+    background: none;
+    text-align: left;
+    font-size: 1.2em;
+    padding: 12px 0 0;
+    margin: 0;
+}
+
+.tangent-body ul,
+.demo-body ul,
+.tangent-body ol,
+.demo-body ol {
+    margin-bottom: 20px;
+    padding-left: 24px;
+}
+
+.tangent-body ul,
+.demo-body ul {
+    list-style-type: disc;
+}
+
+.tangent-body ol,
+.demo-body ol {
+    list-style-type: decimal;
+}
+
+.tangent-body li,
+.demo-body li {
+    font-weight: 300;
+    padding: 4px 0;
+}
+
+.tangent-body a,
+.demo-body a {
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, 0.3);
+}
+
+.tangent-body a:hover,
+.demo-body a:hover {
+    text-decoration-color: #fcba04;
+}
+
+.tangent-body blockquote,
+.demo-body blockquote {
+    border-left: 3px solid #fcba04;
+    background: #141518;
+    margin: 0 0 20px;
+    padding: 4px 16px;
+}
+
+.tangent-body blockquote p,
+.demo-body blockquote p {
+    margin: 0;
+}
+
+.tangent-body hr,
+.demo-body hr {
+    border-top: 1px solid #222;
+    margin: 24px 0;
+}
+
+.tangent-body code,
+.demo-body code {
+    background: #141518;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+.tangent-body pre,
+.demo-body pre {
+    background: #141518;
+    padding: 16px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+}
+
+.tangent-body pre code,
+.demo-body pre code {
+    background: none;
+    padding: 0;
+    font-size: 0.9em;
+}
+
+.post-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #222;
+}
+
+.post-nav .nav-prev {
+    margin-right: auto;
+}
+
+.post-nav .nav-next {
+    margin-left: auto;
+    text-align: right;
+}
+
+.md-figure {
+    max-width: 100%;
+    margin: 20px auto;
+    text-align: center;
+}
+
+.md-figure img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.md-figure figcaption {
+    color: #999;
+    font-size: 0.85em;
+    text-align: center;
+    margin-top: 8px;
+}
+
+.video-placeholder {
+    width: 100%;
+    max-width: 560px;
+    aspect-ratio: 16 / 9;
+    position: relative;
+    background: #000 center/cover no-repeat;
+    margin: 20px auto;
+}
+
+.video-placeholder iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.overlay {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 12px 10px;
+    border-radius: 4px;
+    text-align: center;
+    color: #ffffff;
+}
+
+.overlay p {
+    font-size: 0.9em;
+    margin: 0 0 10px;
+}
+
+.overlay button.video-consent {
+    background: #fcba04;
+    color: #141518;
+    font-family: 'Roboto', sans-serif;
+    font-size: 1em;
+    font-weight: bold;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+}
+
+.overlay button.video-consent:hover {
+    box-shadow: 0 0 12px rgba(252, 186, 4, 0.5);
+}

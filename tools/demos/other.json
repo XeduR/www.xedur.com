@@ -1,0 +1,12 @@
+{
+    "sectionTitle": "Other projects",
+    "sectionDescription": "All of the projects in here are explicitly my personal code projects. If you wish to see some of the graphic design, websites or other work that I've created for some of my clients over the years, then please visit my other site: <a href=\"https://www.erantanen.com/\">www.erantanen.com</a>.<br><br><strong>Note</strong>: All of these projects open in a new page.",
+    "demos": [
+        "solar2d-playground",
+        "solar2d-particle-editor",
+        "webgl2-lighting-playground",
+        "error-tracker",
+        "pseudorandom-number-generator",
+        "xedur-com"
+    ]
+}

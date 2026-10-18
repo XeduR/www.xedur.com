@@ -5,21 +5,28 @@ Reads templates and JSON data from components/,
 then generates HTML pages in the site root directory.
 
 Usage:
-    python update_website.py          # normal build
-    python update_website.py min      # build with minified HTML
+    python update_website.py            # incremental build
+    python update_website.py min        # incremental build, minified HTML
+    python update_website.py force      # full rebuild (ignore the skip cache)
+    python update_website.py min force  # full minified rebuild
 """
 
 import os
 import re
 import sys
 import json
-from datetime import date
+import hashlib
+from datetime import date, datetime
+
+import markdown_engine
+import generate_social_images
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(SCRIPT_DIR)
 COMPONENTS_DIR = os.path.join(SCRIPT_DIR, "components")
 TEMPLATES_DIR = os.path.join(COMPONENTS_DIR, "templates")
 DATA_DIR = os.path.join(COMPONENTS_DIR, "data")
+DEMOS_DIR = os.path.join(SCRIPT_DIR, "demos")
 STANDALONE_DIR = os.path.join(SCRIPT_DIR, "standalone")
 CSS_SRC_DIR = os.path.join(SCRIPT_DIR, "css")
 JS_SRC_DIR = os.path.join(SCRIPT_DIR, "js")
@@ -45,6 +52,22 @@ DEFAULT_KEYWORDS = (
 
 SITE_BASE_URL = "https://www.xedur.com"
 
+# Tangents writing system.
+TANGENTS_SRC_DIR = os.path.join(SCRIPT_DIR, "tangents")
+TANGENTS_DATES_FILE = os.path.join(DATA_DIR, "tangents_dates.json")
+TANGENTS_PAGE_SIZE = 10
+FEED_MAX_ENTRIES = 20
+
+# Intro blurb on the Tangents index (site chrome; reword freely).
+TANGENTS_INTRO = "Occasional musings, tutorials, and half-formed ideas."
+
+# Locale-independent English month names for the "13 July 2026" date format.
+MONTHS = ["January", "February", "March", "April", "May", "June",
+          "July", "August", "September", "October", "November", "December"]
+
+# Post slugs (file stems) must be lowercase kebab-case.
+TANGENT_SLUG_RE = re.compile(r"^[a-z0-9-]+$")
+
 # Inline SVG icons injected next to external and mailto links.
 LINK_ICON_SVG = (
     '<svg class="link-icon" viewBox="0 0 24 24">'
@@ -60,6 +83,82 @@ EMAIL_ICON_SVG = (
     '<path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>'
     '</svg>'
 )
+
+# ------------------------------------------------------------------------------------
+# Incremental build cache and build log
+
+# Gitignored local build cache (content-hash manifest of sources and outputs).
+BUILD_CACHE_FILE = os.path.join(SCRIPT_DIR, ".build_cache.json")
+
+# Sources whose change forces a full rebuild of every per-item page. Paths are
+# relative to SCRIPT_DIR (the tools/ directory). CSS is inlined into every page,
+# and the base/navbar/footer templates plus the markdown engine affect them all.
+GLOBAL_SOURCES = [
+    "components/templates/base.html",
+    "components/templates/navbar.html",
+    "components/templates/footer.html",
+    "css/styles.css",
+    "update_website.py",
+    "markdown_engine.py",
+]
+
+# Repo-relative POSIX patterns for paths prune_orphans is allowed to delete. A
+# stale cache entry matching none of these is warned and left in place, so a
+# poisoned or hand-edited cache can never delete a manual asset.
+GENERATED_OUTPUT_PATTERNS = [
+    re.compile(r"^index\.html$"),
+    re.compile(r"^404\.html$"),
+    re.compile(r"^sitemap\.xml$"),
+    re.compile(r"^llms\.txt$"),
+    re.compile(r"^js/[^/]+\.js$"),
+    re.compile(r"^demo/index\.html$"),
+    re.compile(r"^demo/[^/]+/index\.html$"),
+    re.compile(r"^demo/[^/]+/app/index\.html$"),
+    re.compile(r"^tangents/feed\.xml$"),
+    re.compile(r"^tangents/(?:[^/]+/)*index\.html$"),
+    # Auto-generated social cards (per-post and the generic index card). Custom
+    # socialImage files never match these and are never recorded, so pruning
+    # cannot touch them.
+    re.compile(r"^tangents/[^/]+/[^/]+-social\.png$"),
+    re.compile(r"^tangents/tangents-social\.png$"),
+]
+
+# Loaded from the previous manifest by load_build_cache(); read by should_build().
+_PREV_SOURCES = {} # {rel_path: sha256}
+_PREV_OUTPUTS = {} # {rel_path: [dep, ...]}
+_PREV_APP_LISTINGS = {} # {app_dir_rel: "a.bin,b.data,..."}
+_PREV_MINIFY = False # MINIFY mode of the run that wrote the manifest
+
+# Accumulated during this run.
+_HASH_CACHE = {} # {abs_path: sha256} memoized for this run
+_NEW_OUTPUTS = {} # {rel_path: [dep, ...]}
+_NEW_APP_LISTINGS = {} # {app_dir_rel: listing}
+
+SKIPPED_PAGES = 0 # per-item pages skipped as up to date
+CACHE_MISSING = True # no prior cache existed (forces a full build)
+FORCE = False # set from the "force" CLI arg
+GLOBAL_DIRTY = True # recomputed in main() after the cache loads
+
+# Per-run build log (gitignored directory, newest BUILD_LOG_KEEP kept).
+BUILD_LOG_DIR = os.path.join(SCRIPT_DIR, "build_logs")
+BUILD_LOG_KEEP = 30
+BUILD_LOG_EVENTS = [] # [(level, message)], level in {"info", "warning", "error"}
+
+
+def log_info(message):
+    print(f"  {message}")
+    BUILD_LOG_EVENTS.append(("info", message))
+
+
+def log_warning(message):
+    print(f"  WARNING: {message}")
+    BUILD_LOG_EVENTS.append(("warning", message))
+
+
+def log_error(message):
+    print(f"  ERROR: {message}")
+    BUILD_LOG_EVENTS.append(("error", message))
+
 
 # ------------------------------------------------------------------------------------
 # Minification and formatting helpers
@@ -211,6 +310,293 @@ def load_json(filename):
         return json.load(f)
 
 
+def load_demo_data():
+    """Return (manifests, demos_by_stem).
+
+    manifests[cat] = {sectionTitle, sectionDescription, demos: [stem, ...]}
+    demos_by_stem[stem] = parsed front-matter dict for tools/demos/<stem>.md
+    """
+    manifests, demos_by_stem = {}, {}
+    for cat in CATEGORIES:
+        path = os.path.join(DEMOS_DIR, f"{cat}.json")
+        if not os.path.exists(path):
+            continue
+        with open(path, "r", encoding="utf-8") as f:
+            manifests[cat] = json.load(f)
+        for stem in manifests[cat].get("demos", []):
+            if stem in demos_by_stem:
+                continue
+            md_path = os.path.join(DEMOS_DIR, f"{stem}.md")
+            with open(md_path, "r", encoding="utf-8") as f:
+                front, body = markdown_engine.parse_front_matter(f.read(), source=f"{stem}.md")
+            # The stem is the demo identity; for non-external demos it must equal
+            # the front-matter folder (the demo/<folder>/ output dir).
+            if not front.get("externalUrl") and front.get("folder") != stem:
+                raise ValueError(f"{stem}.md: front-matter folder {front.get('folder')!r} must equal the file stem")
+            front["_body"] = body            # stash raw body for lazy render
+            demos_by_stem[stem] = front
+    return manifests, demos_by_stem
+
+
+# ------------------------------------------------------------------------------------
+# Incremental build helpers
+
+def _rel(abs_path):
+    """Repo-relative POSIX path for a manifest key."""
+    return os.path.relpath(abs_path, ROOT_DIR).replace(os.sep, "/")
+
+
+def source_hash(rel_path):
+    """SHA-256 of a source file, memoized. rel_path is repo-relative POSIX.
+
+    Missing files hash to the empty-string sentinel "" so that adding or
+    removing a dependency is itself detected as a change.
+    """
+    abs_path = os.path.join(ROOT_DIR, rel_path.replace("/", os.sep))
+    if abs_path in _HASH_CACHE:
+        return _HASH_CACHE[abs_path]
+    if not os.path.isfile(abs_path):
+        _HASH_CACHE[abs_path] = ""
+        return ""
+    h = hashlib.sha256()
+    with open(abs_path, "rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    digest = h.hexdigest()
+    _HASH_CACHE[abs_path] = digest
+    return digest
+
+
+def load_build_cache():
+    """Load the previous build manifest into module state.
+
+    Runs even under FORCE: pruning and the app-listing comparison need the
+    previous manifest either way. FORCE only bypasses the skip decisions, which
+    check it directly. A corrupt, unreadable, or structurally invalid cache is
+    treated as missing so a bad file never breaks the build.
+    """
+    global _PREV_SOURCES, _PREV_OUTPUTS, _PREV_APP_LISTINGS, _PREV_MINIFY, CACHE_MISSING
+    if not os.path.exists(BUILD_CACHE_FILE):
+        CACHE_MISSING = True
+        return
+    try:
+        with open(BUILD_CACHE_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        CACHE_MISSING = True
+        return
+
+    # An unrecognized schema version must not be misread as v1.
+    if not isinstance(data, dict) or data.get("version") != 1:
+        CACHE_MISSING = True
+        return
+
+    sources = data.get("sources")
+    outputs = data.get("outputs")
+    listings = data.get("app_listings")
+    if not (isinstance(sources, dict) and isinstance(outputs, dict)
+            and isinstance(listings, dict)):
+        CACHE_MISSING = True
+        return
+
+    _PREV_SOURCES = sources
+    _PREV_OUTPUTS = outputs
+    _PREV_APP_LISTINGS = listings
+    _PREV_MINIFY = bool(data.get("minify", False))
+    CACHE_MISSING = False
+
+
+def compute_global_dirty():
+    """True if any global source changed (cache missing, force, or mode flip)."""
+    if CACHE_MISSING or FORCE:
+        return True
+    if _PREV_MINIFY != MINIFY:
+        # A min build and a normal build produce different bytes from the same
+        # sources, so switching modes must rebuild everything.
+        return True
+    for rel in (_rel(os.path.join(SCRIPT_DIR, p)) for p in GLOBAL_SOURCES):
+        if source_hash(rel) != _PREV_SOURCES.get(rel):
+            return True
+    return False
+
+
+def should_build(output_rel, dep_rels, extra_dirty=False):
+    """Decide whether a per-item page must be regenerated.
+
+    dep_rels: repo-relative POSIX source paths this output depends on. Do NOT
+        include the global sources; GLOBAL_DIRTY covers those.
+    extra_dirty: caller-supplied dirtiness for inputs that are not hashable
+        source files (the app-listing comparison uses this).
+    Always records the output and its deps in _NEW_OUTPUTS so pruning keeps the
+    page alive even when the build is skipped. A change to the dependency SET
+    itself (a dep added or removed since last run) also forces a rebuild; the
+    per-dep hash loop below cannot see a dropped dep because it is no longer in
+    dep_rels. Tangents post pages rely on this when a neighbour post appears or
+    disappears, and Task 4's custom-image dep will rely on it too.
+    """
+    global SKIPPED_PAGES
+    _NEW_OUTPUTS[output_rel] = list(dep_rels)
+    if GLOBAL_DIRTY or CACHE_MISSING or FORCE or extra_dirty:
+        return True
+    abs_out = os.path.join(ROOT_DIR, output_rel.replace("/", os.sep))
+    if not os.path.exists(abs_out):
+        return True
+    if output_rel not in _PREV_OUTPUTS:
+        return True
+    if set(dep_rels) != set(_PREV_OUTPUTS[output_rel]):
+        return True
+    for dep in dep_rels:
+        if source_hash(dep) != _PREV_SOURCES.get(dep):
+            return True
+    SKIPPED_PAGES += 1
+    return False
+
+
+def record_output(output_rel, dep_rels=()):
+    """Record an output produced outside should_build so pruning keeps it.
+
+    Used by write_file for the always-built aggregate pages, and available to
+    future builders that emit outputs (for example generated images) without a
+    per-item skip decision.
+    """
+    _NEW_OUTPUTS[output_rel] = list(dep_rels)
+
+
+def save_build_cache():
+    """Persist the manifest: hash every source referenced this run.
+
+    Hashes are gathered here (memoized via source_hash) rather than relying on
+    what the skip checks hashed: on cold and forced builds should_build and
+    compute_global_dirty short-circuit before hashing, and a manifest saved from
+    those partial hashes would leave the next run unable to skip anything.
+    """
+    referenced = set()
+    for deps in _NEW_OUTPUTS.values():
+        referenced.update(deps)
+    referenced.update(_rel(os.path.join(SCRIPT_DIR, p)) for p in GLOBAL_SOURCES)
+    sources = {rel: source_hash(rel) for rel in sorted(referenced)}
+    data = {
+        "version": 1,
+        "sources": sources,
+        "outputs": _NEW_OUTPUTS,
+        "app_listings": _NEW_APP_LISTINGS,
+        "minify": MINIFY,
+    }
+    with open(BUILD_CACHE_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, sort_keys=True)
+        f.write("\n")
+
+
+def _is_generated_output(rel):
+    """True if rel matches a recognized generated-output pattern (prune-eligible)."""
+    return any(p.match(rel) for p in GENERATED_OUTPUT_PATTERNS)
+
+
+def prune_orphans():
+    """Delete generated files present last run but not produced this run.
+
+    A stale path is deleted only when it matches a recognized generated-output
+    pattern (GENERATED_OUTPUT_PATTERNS); any other stale cache entry is warned
+    and left in place, so a hand-edited or corrupted cache can never delete a
+    manual asset. Returns the sorted list of pruned repo-relative paths.
+    """
+    stale = set(_PREV_OUTPUTS) - set(_NEW_OUTPUTS)
+    removed = []
+    removed_dirs = set()
+    for rel in sorted(stale):
+        if not _is_generated_output(rel):
+            log_warning(f"stale cache entry is not a recognized generated path, leaving in place: {rel}")
+            continue
+        abs_path = os.path.join(ROOT_DIR, rel.replace("/", os.sep))
+        if os.path.isfile(abs_path):
+            os.remove(abs_path)
+            log_info(f"Pruned: {rel}")
+            removed.append(rel)
+            removed_dirs.add(os.path.dirname(abs_path))
+    # Remove now-empty generated directories (deepest first), but never ROOT.
+    for d in sorted(removed_dirs, key=len, reverse=True):
+        try:
+            while d and os.path.abspath(d) != os.path.abspath(ROOT_DIR) and not os.listdir(d):
+                os.rmdir(d)
+                d = os.path.dirname(d)
+        except OSError:
+            pass
+    return removed
+
+
+def write_build_log(mode, force, pruned, social=None):
+    """Write a timestamped build report to tools/build_logs/ and rotate old logs.
+
+    Keeps the newest BUILD_LOG_KEEP logs (counting the one written now) and
+    reports how many older logs were deleted. social, when given, is the
+    generate_social_images.resolve_and_generate result; its per-card lists feed
+    the "Social images" section.
+    """
+    os.makedirs(BUILD_LOG_DIR, exist_ok=True)
+
+    # Rotate before writing so the deletion count lands in this run's log.
+    existing = sorted(
+        name for name in os.listdir(BUILD_LOG_DIR)
+        if name.startswith("build_log_") and name.endswith(".txt")
+    )
+    surplus = max(0, len(existing) - (BUILD_LOG_KEEP - 1))
+    deleted = 0
+    for name in existing[:surplus]:
+        try:
+            os.remove(os.path.join(BUILD_LOG_DIR, name))
+            deleted += 1
+        except OSError:
+            pass
+
+    now = datetime.now()
+    errors = [m for level, m in BUILD_LOG_EVENTS if level == "error"]
+    warnings = [m for level, m in BUILD_LOG_EVENTS if level == "warning"]
+    written = sorted(CHANGED_FILES)
+
+    lines = [f"Build log: {now.strftime('%Y-%m-%d %H:%M:%S')}"]
+    lines.append(f"Mode: {mode}; force: {'yes' if force else 'no'}")
+    lines.append(
+        f"Result: {len(written)} file(s) written, "
+        f"{SKIPPED_PAGES} per-item page(s) skipped as up to date, "
+        f"{len(pruned)} file(s) pruned"
+    )
+
+    for title, items in (
+        ("Errors", errors),
+        ("Warnings", warnings),
+        ("Files written", written),
+        ("Pruned", pruned),
+    ):
+        lines.append("")
+        lines.append(f"{title} ({len(items)}):")
+        lines.extend(f"- {item}" for item in items)
+
+    if social is not None:
+        generated = sorted(social["generated"])
+        skipped = sorted(social["skipped"])
+        custom = sorted(rel for _, rel in social["custom"])
+        lines.append("")
+        lines.append("Social images:")
+        for label, items in (
+            ("Generated", generated),
+            ("Skipped, up to date", skipped),
+            ("Custom", custom),
+        ):
+            suffix = (": " + ", ".join(items)) if items else ":"
+            lines.append(f"- {label} ({len(items)}){suffix}")
+
+    lines.append("")
+    lines.append(f"Old build logs deleted: {deleted}")
+
+    stamp = now.strftime("%Y-%m-%d_%H-%M-%S")
+    log_path = os.path.join(BUILD_LOG_DIR, f"build_log_{stamp}.txt")
+    if os.path.exists(log_path):
+        # Two builds in the same second would clobber; disambiguate by microsecond.
+        log_path = os.path.join(BUILD_LOG_DIR, f"build_log_{stamp}_{now.microsecond:06d}.txt")
+    with open(log_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+
+
 # ------------------------------------------------------------------------------------
 # HTML generation helpers
 
@@ -296,46 +682,43 @@ def generate_card(demo, card_template):
     return card.rstrip('\n')
 
 
-def generate_section(category_name, data, card_template, section_template):
+def generate_section(category_name, manifest, demos_by_stem, card_template, section_template):
     """Generate a full frontpage section from the section and card templates."""
-    demos = data.get("demos", [])
-
     cards_html = ""
-    for demo in demos:
-        cards_html += generate_card(demo, card_template) + '\n'
+    for stem in manifest.get("demos", []):
+        cards_html += generate_card(demos_by_stem[stem], card_template) + '\n'
 
     html = section_template
     html = html.replace("{{sectionId}}", category_name)
-    html = html.replace("{{sectionTitle}}", data.get("sectionTitle", ""))
-    html = html.replace("{{sectionDescription}}", data.get("sectionDescription", ""))
+    html = html.replace("{{sectionTitle}}", manifest.get("sectionTitle", ""))
+    html = html.replace("{{sectionDescription}}", manifest.get("sectionDescription", ""))
     html = replace_indented(html, "{{sectionCards}}", cards_html.rstrip('\n'))
     return html.rstrip('\n')
 
 
-def generate_repo_panel(repository, repo_panel_template, private_template=""):
-    """Generate the repository link panel from the template."""
-    if not repository:
-        return private_template.rstrip('\n')
+def generate_social_tags(seo, url="", og_type="website", published=None, modified=None,
+                         image_width=0, image_height=0):
+    """Generate Open Graph and Twitter/X Card meta tags from SEO data.
 
-    html = repo_panel_template
-    html = html.replace("{{repository}}", repository)
-    return html.rstrip('\n')
-
-
-def generate_social_tags(seo, url=""):
-    """Generate Open Graph and Twitter/X Card meta tags from SEO data."""
+    og_type defaults to "website" so existing callers are unchanged; posts pass
+    "article" with published/modified dates to emit the article:* time tags.
+    image_width/image_height, when both set, add og:image:width/height (Tangents
+    pages, whose card is 1200x630); the Twitter mirror has no dimension tags.
+    """
     if not seo:
         return ""
 
-    og_title = seo.get("ogTitle", "")
-    og_description = seo.get("ogDescription", "")
+    # Escape author text once here so callers pass raw values (og:image is a
+    # site-generated URL and stays verbatim).
+    og_title = escape_html(seo.get("ogTitle", ""))
+    og_description = escape_html(seo.get("ogDescription", ""))
     og_image = seo.get("ogImage", "")
-    og_image_alt = seo.get("ogImageAlt", "")
+    og_image_alt = escape_html(seo.get("ogImageAlt", ""))
 
     # Open Graph tags
     og_lines = ['<!-- Open Graph meta tags -->']
     og_lines.append('<meta property="og:site_name" content="XeduR">')
-    og_lines.append('<meta property="og:type" content="website">')
+    og_lines.append(f'<meta property="og:type" content="{og_type}">')
     if url:
         og_lines.append(f'<meta property="og:url" content="{url}">')
     if og_title:
@@ -344,8 +727,16 @@ def generate_social_tags(seo, url=""):
         og_lines.append(f'<meta property="og:description" content="{og_description}">')
     if og_image:
         og_lines.append(f'<meta property="og:image" content="{og_image}">')
+        if image_width and image_height:
+            og_lines.append(f'<meta property="og:image:width" content="{image_width}">')
+            og_lines.append(f'<meta property="og:image:height" content="{image_height}">')
     if og_image_alt:
         og_lines.append(f'<meta property="og:image:alt" content="{og_image_alt}">')
+    if og_type == "article":
+        if published:
+            og_lines.append(f'<meta property="article:published_time" content="{published.isoformat()}">')
+        if modified:
+            og_lines.append(f'<meta property="article:modified_time" content="{modified.isoformat()}">')
 
     # Twitter/X Card tags (mirrors OG values)
     twitter_lines = ['<!-- Twitter/X Card meta tags -->']
@@ -367,10 +758,12 @@ def wrap_in_base(base_template, navbar_html, footer_html, body_content,
                  og_tags="", base_path="", extra_head="", canonical_url=""):
     """Wrap body content in the base HTML template."""
     html = base_template
-    # Inline tags (single-line values)
+    # Inline tags (single-line values). meta_description and page_title carry
+    # author text into a content="..." attribute and <title>, so escape here
+    # (callers pass raw values; single escaping is guaranteed).
     html = html.replace("{{metaKeywords}}", meta_keywords)
-    html = html.replace("{{metaDescription}}", meta_description)
-    html = html.replace("{{pageTitle}}", page_title)
+    html = html.replace("{{metaDescription}}", escape_html(meta_description))
+    html = html.replace("{{pageTitle}}", escape_html(page_title))
     # Block tags (multi-line content that needs indentation)
     html = replace_indented(html, "{{ogTags}}", og_tags)
     canonical_tag = f'<link rel="canonical" href="{canonical_url}">' if canonical_url else ""
@@ -390,13 +783,20 @@ def write_file(filepath, content):
 
     If MINIFY is enabled and the file is HTML, minify before comparing.
     Files that are actually written are recorded in CHANGED_FILES so that
-    build_sitemap can update only the dates that need changing.
+    build_sitemap can update only the dates that need changing. Every target
+    path is also recorded in the build manifest so orphan pruning keeps it.
     """
     if MINIFY and filepath.endswith(".html"):
         content = minify_html(content)
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
 
     rel_path = os.path.relpath(filepath, ROOT_DIR)
+    rel_key = rel_path.replace(os.sep, "/")
+
+    # should_build already recorded per-item pages with their deps; aggregates
+    # (always rebuilt) are recorded here so they are never pruned.
+    if rel_key not in _NEW_OUTPUTS:
+        record_output(rel_key)
 
     # Skip writing if the file already exists with identical content.
     if os.path.exists(filepath):
@@ -407,20 +807,23 @@ def write_file(filepath, content):
 
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(content)
-    CHANGED_FILES.add(rel_path.replace("\\", "/"))
+    CHANGED_FILES.add(rel_key)
     print(f"  Built: {rel_path}")
 
 
 # ------------------------------------------------------------------------------------
 # Build steps
 
-def collect_site_paths(category_data, include_hashes=False):
+def collect_site_paths(manifests, demos_by_stem, include_hashes=False, tangents_posts=None):
     """Collect all valid page paths on the site.
 
     Args:
-        category_data: The loaded category JSON data.
+        manifests: Per-category manifest dicts (section metadata + stem lists).
+        demos_by_stem: Parsed front-matter dicts keyed by demo stem.
         include_hashes: If True, include hash-based anchor sections
                         (e.g. /#plugins) for fuzzy matching on the 404 page.
+        tangents_posts: The sorted Tangents post list; its pages (index,
+                        pagination, posts, tag pages) are appended when given.
     Returns:
         A list of root-relative path strings.
     """
@@ -432,21 +835,25 @@ def collect_site_paths(category_data, include_hashes=False):
         paths.append("/demo/")
 
     for cat_name in CATEGORIES:
-        if cat_name not in category_data:
+        if cat_name not in manifests:
             continue
-        for demo in category_data[cat_name].get("demos", []):
+        for stem in manifests[cat_name]["demos"]:
+            demo = demos_by_stem[stem]
             if is_external(demo):
                 continue
             folder = demo.get("folder")
             if folder:
                 paths.append(f"/demo/{folder}/")
 
+    if tangents_posts is not None:
+        paths.extend(enumerate_tangents_paths(tangents_posts))
+
     return paths
 
 
 def build_frontpage(base_template, navbar_html, footer_html,
-                    contact_html, frontpage_content, category_data):
-    """Build index.html from frontpage.html and category JSON data."""
+                    contact_html, frontpage_content, manifests, demos_by_stem):
+    """Build index.html from frontpage.html and the demo manifests."""
     card_template = load_file("card.html")
     section_template = load_file("section.html")
 
@@ -458,9 +865,9 @@ def build_frontpage(base_template, navbar_html, footer_html,
     # Replace category tags with generated section HTML
     for cat_name in CATEGORIES:
         tag = "{{" + cat_name + "}}"
-        if cat_name in category_data:
+        if cat_name in manifests:
             section = generate_section(
-                cat_name, category_data[cat_name],
+                cat_name, manifests[cat_name], demos_by_stem,
                 card_template, section_template,
             )
             content = replace_indented(content, tag, section)
@@ -550,91 +957,111 @@ def build_404(base_template, navbar_html, footer_html, four04_template,
 
 
 def build_demo_pages(base_template, navbar_html, footer_html,
-                     demo_template, iframe_template, category_data):
+                     demo_template, iframe_template, manifests, demos_by_stem):
     """Build individual demo pages for all non-external demos."""
-    repo_panel_template = load_file("repo-panel.html")
-    repo_private_template = load_file("repo-panel-private.html")
+    demo_tpl_rel = _rel(os.path.join(TEMPLATES_DIR, "demo.html"))
+    repo_public_rel = _rel(os.path.join(TEMPLATES_DIR, "repo-panel.html"))
+    repo_private_rel = _rel(os.path.join(TEMPLATES_DIR, "repo-panel-private.html"))
+    iframe_tpl_rel = _rel(os.path.join(TEMPLATES_DIR, "iframe.html"))
 
     for cat_name in CATEGORIES:
-        if cat_name not in category_data:
+        if cat_name not in manifests:
             continue
 
-        for demo in category_data[cat_name].get("demos", []):
+        for stem in manifests[cat_name]["demos"]:
+            demo = demos_by_stem[stem]
             # Skip external and standalone entries (handled separately)
             if is_external(demo) or is_standalone(demo):
                 continue
 
-            folder = demo.get("folder")
-            if not folder:
-                continue
-
+            folder = demo["folder"]
             title = demo.get("title", "")
             desc_short = demo.get("descriptionShort", "")
-            desc_long = demo.get("descriptionLong") or desc_short
-            repository = demo.get("repository")
-            seo = demo.get("seo")
 
-            # Build demo page body from template
-            body = demo_template
-            body = body.replace("{{demoTitle}}", title)
-            body = body.replace("{{demoImage}}", f"{folder}-large.jpg")
-            body = body.replace("{{demoDescriptionLong}}", desc_long)
-            body = replace_indented(
-                body, "{{demoRepository}}",
-                generate_repo_panel(repository, repo_panel_template, repo_private_template),
-            )
-            # Determine meta description and OG tags.
-            meta_desc = desc_short
-            demo_url = f"{SITE_BASE_URL}/demo/{folder}/"
-            demo_seo = dict(seo) if seo else {}
-            if seo:
-                meta_desc = seo.get("metaDescription") or desc_short
-            demo_seo["ogImage"] = f"{SITE_BASE_URL}/demo/{folder}/{folder}-large.jpg"
-            demo_seo.setdefault("ogImageAlt", f"Screenshot of {title}")
-            og_tags = generate_social_tags(demo_seo, url=demo_url)
-
-            # Wrap in base template
-            page = wrap_in_base(
-                base_template, navbar_html, footer_html,
-                body_content=body,
-                page_title=f"XeduR - {title}",
-                meta_description=meta_desc,
-                og_tags=og_tags,
-                base_path="../../",
-                canonical_url=demo_url,
-            )
-
-            # Write demo page under demo/ subfolder
             demo_dir = os.path.join(OUTPUT_DIR, "demo", folder)
-            write_file(os.path.join(demo_dir, "index.html"), page)
+            md_rel = _rel(os.path.join(DEMOS_DIR, f"{stem}.md"))
 
-            # Scan app/ folder for the .bin file
+            # Record and decide both pages before the .bin scan below: a
+            # transiently missing binary must not leave a live page unrecorded,
+            # or prune_orphans would delete it over a build hiccup.
+            page_rel = f"demo/{folder}/index.html"
+            page_deps = [md_rel, demo_tpl_rel, repo_public_rel, repo_private_rel]
+            build_page = should_build(page_rel, page_deps)
+
             app_dir = os.path.join(demo_dir, "app")
-            bin_files = [f for f in os.listdir(app_dir) if f.endswith(".bin")] if os.path.isdir(app_dir) else []
+            app_files = sorted(os.listdir(app_dir)) if os.path.isdir(app_dir) else []
+            listing = ",".join(app_files)
+            app_key = f"demo/{folder}/app/"
+            listing_changed = listing != _PREV_APP_LISTINGS.get(app_key)
+            _NEW_APP_LISTINGS[app_key] = listing
+            app_page_rel = f"demo/{folder}/app/index.html"
+            app_deps = [md_rel, iframe_tpl_rel]
+            build_app = should_build(app_page_rel, app_deps, extra_dirty=listing_changed)
 
+            if build_page:
+                body_html, meta = markdown_engine.render_markdown(demo["_body"], base_path="../../")
+                for w in meta["warnings"]:
+                    log_warning(f"{stem}.md: {w}")
+
+                # Build demo page body from template
+                body = demo_template
+                body = body.replace("{{demoTitle}}", title)
+                body = body.replace("{{demoImage}}", f"{folder}-large.jpg")
+                body = replace_indented(body, "{{demoBody}}", body_html)
+
+                # SEO from flat front-matter keys (nested seo object retired).
+                demo_seo = {
+                    "ogTitle": demo.get("ogTitle", f"XeduR - {title}"),
+                    "ogDescription": demo.get("ogDescription", desc_short),
+                    "ogImage": f"{SITE_BASE_URL}/demo/{folder}/{folder}-large.jpg",
+                    "ogImageAlt": demo.get("ogImageAlt", f"Screenshot of {title}"),
+                }
+                meta_desc = demo.get("metaDescription") or desc_short
+                demo_url = f"{SITE_BASE_URL}/demo/{folder}/"
+                og_tags = generate_social_tags(demo_seo, url=demo_url)
+
+                # Wrap in base template
+                page = wrap_in_base(
+                    base_template, navbar_html, footer_html,
+                    body_content=body,
+                    page_title=f"XeduR - {title}",
+                    meta_description=meta_desc,
+                    og_tags=og_tags,
+                    base_path="../../",
+                    canonical_url=demo_url,
+                )
+
+                # Write demo page under demo/ subfolder
+                write_file(os.path.join(demo_dir, "index.html"), page)
+
+            # The app loader needs the .bin name, so scan even when the page is
+            # up to date; a missing binary is an error worth reporting each run.
+            bin_files = [f for f in app_files if f.endswith(".bin")]
             if not bin_files:
-                print(f"  ERROR: No .bin file found in demo/{folder}/app/")
+                log_error(f"No .bin file found in demo/{folder}/app/")
                 continue
             if len(bin_files) > 1:
-                print(f"  WARNING: Multiple .bin files in demo/{folder}/app/: {bin_files}")
+                log_warning(f"Multiple .bin files in demo/{folder}/app/: {bin_files}")
 
             bin_name = bin_files[0].removesuffix(".bin")
 
-            # Create app/ subfolder with iframe loader
-            iframe_html = iframe_template.replace("{{demoTitle}}", title)
-            iframe_html = iframe_html.replace("{{demoBinName}}", bin_name)
-            iframe_html = iframe_html.replace("{{demoDescription}}", desc_short)
-            write_file(os.path.join(demo_dir, "app", "index.html"), iframe_html)
+            if build_app:
+                # Create app/ subfolder with iframe loader
+                iframe_html = iframe_template.replace("{{demoTitle}}", title)
+                iframe_html = iframe_html.replace("{{demoBinName}}", bin_name)
+                iframe_html = iframe_html.replace("{{demoDescription}}", desc_short)
+                write_file(os.path.join(demo_dir, "app", "index.html"), iframe_html)
 
 
 def build_demo_index(base_template, navbar_html, footer_html,
-                     demo_index_template, category_data):
+                     demo_index_template, manifests, demos_by_stem):
     """Build demo/index.html with a simple list of all available demos."""
     items = []
     for cat_name in CATEGORIES:
-        if cat_name not in category_data:
+        if cat_name not in manifests:
             continue
-        for demo in category_data[cat_name].get("demos", []):
+        for stem in manifests[cat_name]["demos"]:
+            demo = demos_by_stem[stem]
             if is_external(demo):
                 continue
             folder = demo.get("folder")
@@ -656,18 +1083,19 @@ def build_demo_index(base_template, navbar_html, footer_html,
     write_file(os.path.join(OUTPUT_DIR, "demo", "index.html"), page)
 
 
-def build_standalone_pages(base_template, navbar_html, footer_html, category_data):
+def build_standalone_pages(base_template, navbar_html, footer_html, manifests, demos_by_stem):
     """Build pages for standalone projects that use their own content templates.
 
-    Standalone projects are identified by ``"type": "standalone"`` in their
-    JSON data entry.  Source files (content.html, head.html, config.json) are
-    read from tools/standalone/<folder>/.
+    Standalone projects are identified by ``type: standalone`` in their front
+    matter.  Source files (content.html, head.html, config.json) are read from
+    tools/standalone/<folder>/.
     """
     for cat_name in CATEGORIES:
-        if cat_name not in category_data:
+        if cat_name not in manifests:
             continue
 
-        for demo in category_data[cat_name].get("demos", []):
+        for stem in manifests[cat_name]["demos"]:
+            demo = demos_by_stem[stem]
             if not is_standalone(demo):
                 continue
 
@@ -676,8 +1104,22 @@ def build_standalone_pages(base_template, navbar_html, footer_html, category_dat
                 continue
 
             standalone_dir = os.path.join(STANDALONE_DIR, folder)
+
+            # Record and decide before the source-folder check so a temporarily
+            # missing tools/standalone/<folder>/ never gets the live page pruned.
+            page_rel = f"demo/{folder}/index.html"
+            deps = [
+                _rel(os.path.join(DEMOS_DIR, f"{stem}.md")),
+                _rel(os.path.join(standalone_dir, "content.html")),
+                _rel(os.path.join(standalone_dir, "head.html")),
+                _rel(os.path.join(standalone_dir, "config.json")),
+            ]
+            build = should_build(page_rel, deps)
+
             if not os.path.isdir(standalone_dir):
-                print(f"  Warning: standalone folder not found: {folder}")
+                log_warning(f"standalone folder not found: {folder}")
+                continue
+            if not build:
                 continue
 
             # Load standalone project files
@@ -726,18 +1168,474 @@ def build_standalone_pages(base_template, navbar_html, footer_html, category_dat
             write_file(os.path.join(demo_dir, "index.html"), page)
 
 
-def check_images(category_data):
+# ------------------------------------------------------------------------------------
+# Tangents (markdown-authored posts, paginated list/tag pages, Atom feed)
+
+def escape_html(text):
+    """Escape author text for safe use in HTML element and attribute contexts."""
+    text = text.replace("&", "&amp;")
+    text = text.replace("<", "&lt;")
+    text = text.replace(">", "&gt;")
+    text = text.replace('"', "&quot;")
+    return text
+
+
+def escape_xml(text):
+    """Escape text for an Atom/XML text node."""
+    text = text.replace("&", "&amp;")
+    text = text.replace("<", "&lt;")
+    text = text.replace(">", "&gt;")
+    return text
+
+
+def format_date(d):
+    """Render a date as '13 July 2026' (locale-independent English month)."""
+    return f"{d.day} {MONTHS[d.month - 1]} {d.year}"
+
+
+def base_path_for(url_dir):
+    """Return the '../'-chain from a page's URL dir back to the site root.
+
+    'tangents/tag/solar2d/2/' -> '../../../../'; 'tangents/' -> '../'; '' -> ''.
+    """
+    trimmed = url_dir.strip("/")
+    depth = trimmed.count("/") + 1 if trimmed else 0
+    return "../" * depth
+
+
+def tag_slug(label):
+    """Slugify a tag label: 'Solar2D' -> 'solar2d', 'Game Dev' -> 'game-dev'."""
+    return re.sub(r"[^a-z0-9]+", "-", label.strip().lower()).strip("-")
+
+
+def collect_tangents_tags(posts):
+    """Return {label: count} across posts, erroring on a slug collision.
+
+    Two spellings that slugify to the same value (e.g. 'Solar2D' and 'solar2d')
+    would silently share one tag page, so this raises instead of picking a winner.
+    """
+    counts = {}
+    slug_owner = {}
+    for post in posts:
+        for label in post["tags"]:
+            slug = tag_slug(label)
+            if slug in slug_owner and slug_owner[slug] != label:
+                raise ValueError(
+                    f"tangents: tag spellings {slug_owner[slug]!r} and {label!r} both "
+                    f"map to slug {slug!r}; unify them in the post front matter"
+                )
+            slug_owner[slug] = label
+            counts[label] = counts.get(label, 0) + 1
+    return counts
+
+
+def _paginate(subset):
+    """Split posts into page-sized slices; always at least one (possibly empty) page."""
+    return [subset[i:i + TANGENTS_PAGE_SIZE]
+            for i in range(0, len(subset), TANGENTS_PAGE_SIZE)] or [[]]
+
+
+def enumerate_tangents_paths(posts):
+    """All root-relative Tangents page paths (index, pagination, posts, tag pages).
+
+    Shared with collect_site_paths so the sitemap and the 404 fuzzy matcher list
+    exactly the pages the builders emit.
+    """
+    paths = ["/tangents/"]
+    for page_no in range(2, len(_paginate(posts)) + 1):
+        paths.append(f"/tangents/{page_no}/")
+
+    for post in posts:
+        paths.append(f"/tangents/{post['slug']}/")
+
+    tag_counts = collect_tangents_tags(posts)
+    for label in sorted(tag_counts):
+        slug = tag_slug(label)
+        subset = [p for p in posts if label in p["tags"]]
+        prefix = f"/tangents/tag/{slug}/"
+        paths.append(prefix)
+        for page_no in range(2, len(_paginate(subset)) + 1):
+            paths.append(f"{prefix}{page_no}/")
+
+    return paths
+
+
+def render_post_tags(tags):
+    """Return the post page's tag chip list, or '' when there are no tags."""
+    if not tags:
+        return ""
+    items = []
+    for label in tags:
+        items.append(
+            '<li><a class="tag-chip" href="{{basePath}}tangents/tag/' + tag_slug(label)
+            + '/">' + escape_html(label) + "</a></li>"
+        )
+    return '<ul class="tag-list">\n' + "\n".join(items) + "\n</ul>"
+
+
+def render_inline_tags(tags):
+    """Return inline tag chips for a list row's meta line, or '' when there are none."""
+    if not tags:
+        return ""
+    chips = []
+    for label in tags:
+        chips.append(
+            '<a class="tag-chip" href="{{basePath}}tangents/tag/' + tag_slug(label)
+            + '/">' + escape_html(label) + "</a>"
+        )
+    return ' <span class="post-item-tags">' + "".join(chips) + "</span>"
+
+
+def load_tangents_posts():
+    """Parse tools/tangents/*.md into sorted post dicts and update the dates map.
+
+    Publish dates are assigned on first sight and stored in tangents_dates.json
+    (committed, since they cannot be re-derived).  "Last updated" bumps only when
+    the rendered body's hash changes, so editing summary/tags/title alone does not.
+    """
+    dates_map = {}
+    if os.path.exists(TANGENTS_DATES_FILE):
+        with open(TANGENTS_DATES_FILE, "r", encoding="utf-8") as f:
+            dates_map = json.load(f)
+
+    if os.path.isdir(TANGENTS_SRC_DIR):
+        md_files = sorted(f for f in os.listdir(TANGENTS_SRC_DIR) if f.endswith(".md"))
+    else:
+        md_files = []
+
+    today = date.today()
+    posts = []
+
+    for filename in md_files:
+        slug = filename[:-3]
+        if not TANGENT_SLUG_RE.match(slug):
+            raise ValueError(
+                f"tangents: invalid slug {slug!r} (must be lowercase kebab-case [a-z0-9-]+)"
+            )
+
+        path = os.path.join(TANGENTS_SRC_DIR, filename)
+        with open(path, "r", encoding="utf-8") as f:
+            front, body = markdown_engine.parse_front_matter(f.read(), source=filename)
+
+        if front.get("draft"):
+            continue
+
+        title = front.get("title")
+        summary = front.get("summary")
+        if not title:
+            raise ValueError(f"tangents/{filename}: missing required 'title'")
+        if not summary:
+            raise ValueError(f"tangents/{filename}: missing required 'summary'")
+
+        body_html, meta = markdown_engine.render_markdown(
+            body, base_path=base_path_for(f"tangents/{slug}/")
+        )
+        for warning in meta["warnings"]:
+            log_warning(f"tangents/{filename}: {warning}")
+
+        content_hash = hashlib.sha256(body_html.encode("utf-8")).hexdigest()
+        fm_published = front.get("published")  # date or None (front-matter override)
+
+        entry = dates_map.get(slug)
+        if entry is None:
+            published = fm_published or today
+            updated = None
+        else:
+            published = fm_published or date.fromisoformat(entry["published"])
+            if content_hash != entry.get("contentHash"):
+                updated = today
+            elif entry.get("updated"):
+                updated = date.fromisoformat(entry["updated"])
+            else:
+                updated = None
+
+        dates_map[slug] = {
+            "published": published.isoformat(),
+            "updated": updated.isoformat() if updated else None,
+            "contentHash": content_hash,
+        }
+
+        posts.append({
+            "slug": slug,
+            "title": title,
+            "summary": summary,
+            "tags": front.get("tags", []),
+            "published": published,
+            "updated": updated,
+            "body_html": body_html,
+            "needs_video_js": meta["needs_video_js"],
+            "social_image": front.get("socialImage"),
+        })
+
+    # Newest first; same-day ties break by slug descending (deterministic).
+    posts.sort(key=lambda p: (p["published"], p["slug"]), reverse=True)
+
+    with open(TANGENTS_DATES_FILE, "w", encoding="utf-8") as f:
+        json.dump(dates_map, f, indent=4, sort_keys=True)
+        f.write("\n")
+
+    return posts
+
+
+def build_tangents_posts(base_template, navbar_html, footer_html, post_template, posts):
+    """Write tangents/<slug>/index.html for every post, with Prev/Next nav and SEO."""
+    total = len(posts)
+    post_tpl_rel = _rel(os.path.join(TEMPLATES_DIR, "tangents-post.html"))
+    dates_rel = _rel(TANGENTS_DATES_FILE)
+    for i, post in enumerate(posts):
+        slug = post["slug"]
+        page_rel = f"tangents/{slug}/index.html"
+        md_rel = _rel(os.path.join(TANGENTS_SRC_DIR, f"{slug}.md"))
+
+        # The Prev/Next nav embeds the immediate neighbours' titles, so the page
+        # depends on their sources too. A neighbour retitle changes that dep's
+        # hash; a neighbour added or removed changes the dependency set, which
+        # should_build detects even though the dropped path leaves dep_rels.
+        deps = [md_rel, post_tpl_rel, dates_rel]
+        if i > 0:
+            deps.append(_rel(os.path.join(TANGENTS_SRC_DIR, f"{posts[i - 1]['slug']}.md")))
+        if i < total - 1:
+            deps.append(_rel(os.path.join(TANGENTS_SRC_DIR, f"{posts[i + 1]['slug']}.md")))
+        # A custom socialImage names a file whose presence flips the page's
+        # og:image between the custom name and the generated card. Depending on
+        # it (even while absent, via source_hash's "" sentinel) rebuilds the page
+        # exactly when that file appears or disappears.
+        social_image = post.get("social_image")
+        if social_image and social_image != "auto":
+            deps.append(f"tangents/{slug}/{social_image}")
+        if not should_build(page_rel, deps):
+            continue
+
+        title = post["title"]
+        published = post["published"]
+        updated = post["updated"]
+        canonical = f"{SITE_BASE_URL}/tangents/{slug}/"
+
+        dates_str = f"Published: {format_date(published)}"
+        if updated:
+            dates_str += f"<br>Last updated: {format_date(updated)}"
+
+        # Previous = older (higher index), Next = newer (lower index); hide at ends.
+        nav_links = []
+        if i < total - 1:
+            older = posts[i + 1]
+            nav_links.append(
+                '<a class="nav-prev" href="{{basePath}}tangents/' + older["slug"]
+                + '/">Previous post: ' + escape_html(older["title"]) + "</a>"
+            )
+        if i > 0:
+            newer = posts[i - 1]
+            nav_links.append(
+                '<a class="nav-next" href="{{basePath}}tangents/' + newer["slug"]
+                + '/">Next post: ' + escape_html(newer["title"]) + "</a>"
+            )
+
+        body = post_template
+        body = body.replace("{{postTitle}}", escape_html(title))
+        body = body.replace("{{postDates}}", dates_str)
+        body = replace_indented(body, "{{postTags}}", render_post_tags(post["tags"]))
+        body = replace_indented(body, "{{postBody}}", post["body_html"])
+        body = replace_indented(body, "{{postNav}}", "\n".join(nav_links))
+
+        og_image = post["og_image"]
+        seo = {
+            "ogTitle": title,
+            "ogDescription": post["summary"],
+            "ogImage": og_image,
+            "ogImageAlt": title,
+        }
+        og_tags = generate_social_tags(
+            seo, url=canonical, og_type="article",
+            published=published, modified=(updated or published),
+            image_width=1200, image_height=630,
+        )
+
+        # BlogPosting reuses the canonical Person entity on erantanen.com.
+        person = {
+            "@type": "Person",
+            "@id": "https://www.erantanen.com/#eetu-rantanen",
+            "name": "Eetu Rantanen",
+        }
+        ld = {
+            "@context": "https://schema.org",
+            "@type": "BlogPosting",
+            "headline": title,
+            "description": post["summary"],
+            "datePublished": published.isoformat(),
+            "dateModified": (updated or published).isoformat(),
+            "url": canonical,
+            "mainEntityOfPage": canonical,
+            "author": person,
+            "publisher": person,
+        }
+        if og_image:
+            ld["image"] = og_image
+        ld_script = (
+            '<script type="application/ld+json">\n'
+            + json.dumps(ld, indent=4, ensure_ascii=False)
+            + "\n</script>"
+        )
+
+        extra_head_parts = [
+            ld_script,
+            '<link rel="alternate" type="application/atom+xml" '
+            'title="XeduR - Tangents" href="{{basePath}}tangents/feed.xml">',
+        ]
+        if post["needs_video_js"]:
+            extra_head_parts.append('<script defer src="{{basePath}}js/video-consent.js"></script>')
+
+        page = wrap_in_base(
+            base_template, navbar_html, footer_html,
+            body_content=body,
+            page_title=f"XeduR - {title}",
+            meta_description=post["summary"],
+            og_tags=og_tags,
+            base_path="../../",
+            extra_head="\n".join(extra_head_parts),
+            canonical_url=canonical,
+        )
+        write_file(os.path.join(OUTPUT_DIR, "tangents", slug, "index.html"), page)
+
+
+def build_tangents_list_pages(base_template, navbar_html, footer_html,
+                              list_template, item_template, posts, tangents_card_url):
+    """Build the paginated index and one paginated page set per tag."""
+    tag_counts = collect_tangents_tags(posts)
+
+    def render_item(post):
+        row = item_template
+        row = row.replace("{{itemSlug}}", post["slug"])
+        row = row.replace("{{itemTitle}}", escape_html(post["title"]))
+        row = row.replace("{{itemDate}}", format_date(post["published"]))
+        row = row.replace("{{itemTags}}", render_inline_tags(post["tags"]))
+        row = row.replace("{{itemSummary}}", escape_html(post["summary"]))
+        return row.rstrip("\n")
+
+    def build_tag_filter(active_label):
+        if not tag_counts:
+            return ""
+        items = []
+        all_active = ' class="active"' if active_label is None else ""
+        items.append('<li><a' + all_active + ' href="{{basePath}}tangents/">All</a></li>')
+        for label in sorted(tag_counts):
+            active = ' class="active"' if label == active_label else ""
+            items.append(
+                '<li><a' + active + ' href="{{basePath}}tangents/tag/' + tag_slug(label)
+                + '/">' + escape_html(label) + " (" + str(tag_counts[label]) + ")</a></li>"
+            )
+        return '<ul class="tag-filter-list">\n' + "\n".join(items) + "\n</ul>"
+
+    def build_page_nav(url_prefix, page_no, n):
+        links = []
+        if page_no > 1:
+            newer_dir = url_prefix if page_no - 1 == 1 else f"{url_prefix}{page_no - 1}/"
+            links.append('<a class="nav-newer" href="{{basePath}}' + newer_dir + '">Newer posts</a>')
+        if page_no < n:
+            older_dir = f"{url_prefix}{page_no + 1}/"
+            links.append('<a class="nav-older" href="{{basePath}}' + older_dir + '">Older posts</a>')
+        return "\n".join(links)
+
+    def build_paginated(subset, url_prefix, heading_html, intro, page_title_base,
+                        meta_desc, active_label):
+        pages = _paginate(subset)
+        n = len(pages)
+        for idx, page_posts in enumerate(pages):
+            page_no = idx + 1
+            url_dir = url_prefix if page_no == 1 else f"{url_prefix}{page_no}/"
+            base_path = base_path_for(url_dir)
+            canonical = f"{SITE_BASE_URL}/{url_dir}"
+            page_title = page_title_base if page_no == 1 else f"{page_title_base} (page {page_no})"
+
+            body = list_template
+            body = body.replace("{{listHeading}}", heading_html)
+            body = body.replace("{{listIntro}}", intro)
+            body = replace_indented(body, "{{tagFilter}}", build_tag_filter(active_label))
+            body = replace_indented(body, "{{postItems}}", "\n".join(render_item(p) for p in page_posts))
+            body = replace_indented(body, "{{pageNav}}", build_page_nav(url_prefix, page_no, n))
+
+            seo = {
+                "ogTitle": page_title,
+                "ogDescription": meta_desc,
+                "ogImage": tangents_card_url,
+                "ogImageAlt": "XeduR - Tangents",
+            }
+            og_tags = generate_social_tags(
+                seo, url=canonical, image_width=1200, image_height=630
+            )
+
+            page = wrap_in_base(
+                base_template, navbar_html, footer_html,
+                body_content=body,
+                page_title=page_title,
+                meta_description=meta_desc,
+                og_tags=og_tags,
+                base_path=base_path,
+                canonical_url=canonical,
+            )
+            write_file(os.path.join(OUTPUT_DIR, url_dir, "index.html"), page)
+
+    build_paginated(
+        posts, "tangents/", "Tangents", TANGENTS_INTRO,
+        "XeduR - Tangents", TANGENTS_INTRO, None,
+    )
+
+    for label in sorted(tag_counts):
+        subset = [p for p in posts if label in p["tags"]]
+        heading_html = 'Tangents tagged "' + escape_html(label) + '"'
+        build_paginated(
+            subset, f"tangents/tag/{tag_slug(label)}/", heading_html, "",
+            f"XeduR - Tangents tagged {label}",
+            f"Tangents posts tagged {label}.", label,
+        )
+
+
+def build_tangents_feed(posts):
+    """Write the Atom 1.0 feed to tangents/feed.xml (newest FEED_MAX_ENTRIES posts)."""
+    included = posts[:FEED_MAX_ENTRIES]
+    if included:
+        feed_updated = max((p["updated"] or p["published"]) for p in included)
+    else:
+        feed_updated = date.today()
+
+    lines = ['<?xml version="1.0" encoding="UTF-8"?>']
+    lines.append('<feed xmlns="http://www.w3.org/2005/Atom">')
+    lines.append("    <title>XeduR - Tangents</title>")
+    lines.append(f"    <id>{SITE_BASE_URL}/tangents/</id>")
+    lines.append(f'    <link rel="alternate" href="{SITE_BASE_URL}/tangents/"/>')
+    lines.append(f'    <link rel="self" href="{SITE_BASE_URL}/tangents/feed.xml"/>')
+    lines.append(f"    <icon>{SITE_BASE_URL}/favicon-96x96.png</icon>")
+    lines.append(f"    <logo>{SITE_BASE_URL}/img/xedur-code-portfolio.png</logo>")
+    lines.append(f"    <updated>{feed_updated.isoformat()}T00:00:00Z</updated>")
+    lines.append("    <author><name>Eetu Rantanen</name></author>")
+    for post in included:
+        published = post["published"].isoformat()
+        modified = (post["updated"] or post["published"]).isoformat()
+        lines.append("    <entry>")
+        lines.append(f'        <title>{escape_xml(post["title"])}</title>')
+        lines.append(f'        <id>{SITE_BASE_URL}/tangents/{post["slug"]}/</id>')
+        lines.append(f'        <link rel="alternate" href="{SITE_BASE_URL}/tangents/{post["slug"]}/"/>')
+        lines.append(f"        <published>{published}T00:00:00Z</published>")
+        lines.append(f"        <updated>{modified}T00:00:00Z</updated>")
+        lines.append(f'        <summary>{escape_xml(post["summary"])}</summary>')
+        lines.append("    </entry>")
+    lines.append("</feed>")
+
+    write_file(os.path.join(OUTPUT_DIR, "tangents", "feed.xml"), "\n".join(lines) + "\n")
+
+
+def check_images(manifests, demos_by_stem):
     """Verify that all expected images exist on disk.
 
     For non-external demos (regular and standalone), checks for
     ``demo/<folder>/<folder>-small.jpg`` and ``demo/<folder>/<folder>-large.jpg``.
-    For external links, checks the image path defined in JSON.
+    For external links, checks the image path defined in front matter.
     """
     missing = []
     for cat_name in CATEGORIES:
-        if cat_name not in category_data:
+        if cat_name not in manifests:
             continue
-        for demo in category_data[cat_name].get("demos", []):
+        for stem in manifests[cat_name]["demos"]:
+            demo = demos_by_stem[stem]
             if is_external(demo):
                 image = demo.get("image", "")
                 if image:
@@ -754,13 +1652,11 @@ def check_images(category_data):
                     if not os.path.isfile(img_path):
                         missing.append(f"demo/{folder}/{img_name}")
 
-    if missing:
-        print(f"\n  WARNING: {len(missing)} image(s) not found:")
-        for m in missing:
-            print(f"    - {m}")
+    for m in missing:
+        log_warning(f"image not found: {m}")
 
 
-def check_demo_assets(category_data):
+def check_demo_assets(manifests, demos_by_stem):
     """Detect non-generated asset changes in demo and standalone directories.
 
     For regular demos, scans ``demo/<folder>/app/`` (excluding the generated
@@ -776,10 +1672,11 @@ def check_demo_assets(category_data):
             existing_dates = json.load(f)
 
     for cat_name in CATEGORIES:
-        if cat_name not in category_data:
+        if cat_name not in manifests:
             continue
 
-        for demo in category_data[cat_name].get("demos", []):
+        for stem in manifests[cat_name]["demos"]:
+            demo = demos_by_stem[stem]
             if is_external(demo):
                 continue
 
@@ -838,7 +1735,7 @@ def check_demo_assets(category_data):
                 print(f"  Asset changed: demo/{folder}/")
 
 
-def build_llms_txt(category_data):
+def build_llms_txt(manifests, demos_by_stem):
     """Generate llms.txt, a plain-text site summary for LLM crawlers."""
     llms_data = load_json("llms.json")
 
@@ -877,20 +1774,21 @@ def build_llms_txt(category_data):
             lines.append("")
 
     for cat_name in CATEGORIES:
-        if cat_name not in category_data:
+        if cat_name not in manifests:
             continue
 
-        data = category_data[cat_name]
+        manifest = manifests[cat_name]
         heading_level = "###" if projects_heading else "##"
-        lines.append(f"{heading_level} {data.get('sectionTitle', '')}")
+        lines.append(f"{heading_level} {manifest.get('sectionTitle', '')}")
         lines.append("")
 
-        section_desc = data.get("sectionDescription", "")
+        section_desc = manifest.get("sectionDescription", "")
         if section_desc:
             lines.append(strip_html(section_desc))
             lines.append("")
 
-        for demo in data.get("demos", []):
+        for stem in manifest["demos"]:
+            demo = demos_by_stem[stem]
             title = demo.get("title", "")
             desc = demo.get("descriptionShort", "")
 
@@ -907,14 +1805,16 @@ def build_llms_txt(category_data):
     write_file(os.path.join(OUTPUT_DIR, "llms.txt"), "\n".join(lines))
 
 
-def build_sitemap(site_paths):
+def build_sitemap(site_paths, tangents_lastmod=None):
     """Generate sitemap.xml, updating lastmod only for pages whose content changed.
 
     A persistent JSON file (sitemap_dates.json) stores the last-modified date
     for each page.  Only pages recorded in CHANGED_FILES get today's date;
     all others keep their previously stored date.  Pages appearing for the
-    first time also receive today's date.
+    first time also receive today's date.  tangents_lastmod overrides the
+    heuristic for post pages with the post's own updated/published date.
     """
+    tangents_lastmod = tangents_lastmod or {}
     today = date.today().isoformat()
 
     # Load previously stored dates (if any).
@@ -932,7 +1832,9 @@ def build_sitemap(site_paths):
         else:
             output_file = path.strip("/") + "/index.html"
 
-        if output_file in CHANGED_FILES:
+        if path in tangents_lastmod:
+            updated_dates[path] = tangents_lastmod[path]
+        elif output_file in CHANGED_FILES:
             updated_dates[path] = today
         elif path in existing_dates:
             updated_dates[path] = existing_dates[path]
@@ -967,7 +1869,9 @@ def build_static_assets():
     """Copy JS source files from tools/ into the site root.
 
     CSS is inlined into the HTML templates, so only JS files are copied.
-    When MINIFY is enabled the files are minified before writing.
+    When MINIFY is enabled the files are minified before writing. Each copy is
+    cache-gated: unchanged sources are skipped, and the copy is recorded in the
+    manifest so a JS file deleted from tools/js/ has its stale copy pruned.
     """
     if not os.path.isdir(JS_SRC_DIR):
         return
@@ -975,6 +1879,8 @@ def build_static_assets():
     for filename in sorted(os.listdir(JS_SRC_DIR)):
         src_path = os.path.join(JS_SRC_DIR, filename)
         if not os.path.isfile(src_path):
+            continue
+        if not should_build(f"js/{filename}", [_rel(src_path)]):
             continue
         with open(src_path, "r", encoding="utf-8") as f:
             content = f.read()
@@ -987,11 +1893,15 @@ def build_static_assets():
 # Main
 
 def main():
-    global MINIFY
-    MINIFY = len(sys.argv) > 1 and sys.argv[1] == "min"
+    global MINIFY, FORCE, GLOBAL_DIRTY
+    args = set(sys.argv[1:])
+    MINIFY = "min" in args
+    FORCE = "force" in args
 
     mode = "minified" if MINIFY else "standard"
     print(f"Building site ({mode})...")
+    if FORCE:
+        print("  Force: full rebuild requested.")
 
     # Load all source files and inline CSS into the base template so pages
     # don't need an external stylesheet (eliminates a render-blocking request).
@@ -1016,17 +1926,68 @@ def main():
     frontpage_content = load_file("frontpage.html")
     four04_template = load_file("404.html")
     demo_index_template = load_file("demo-index.html")
+    tangents_post_template = load_file("tangents-post.html")
+    tangents_list_template = load_file("tangents-list.html")
+    tangents_item_template = load_file("tangents-item.html")
 
-    # Load category JSON data
-    category_data = {}
-    for cat in CATEGORIES:
-        json_path = os.path.join(DATA_DIR, f"{cat}.json")
-        if os.path.exists(json_path):
-            category_data[cat] = load_json(f"{cat}.json")
+    # Register the site-specific github directive so markdown demo bodies can
+    # emit the repo panel (mirrors the retired generate_repo_panel behaviour).
+    repo_public = load_file("repo-panel.html")
+    repo_private = load_file("repo-panel-private.html")
+
+    def _github_directive(params, meta, base_path):
+        repo = params.get("repo")
+        url = params.get("url") or (f"https://github.com/{repo}" if repo else None)
+        if not url:
+            return repo_private.rstrip("\n")
+        return repo_public.replace("{{repository}}", url).rstrip("\n")
+
+    markdown_engine.register_directive("github", _github_directive)
+
+    # Load demo manifests and per-demo markdown front matter
+    manifests, demos_by_stem = load_demo_data()
+
+    # Load Tangents posts (updates tangents_dates.json) before path collection so
+    # the sitemap and 404 fuzzy matcher can enumerate the post/tag/pagination pages.
+    tangents_posts = load_tangents_posts()
+
+    # Resolve each post's social card (custom-or-generated) and the generic card.
+    # The generator manages its own regeneration through a committed hash manifest,
+    # so it is not a GLOBAL_SOURCES entry; force flows through so a forced build
+    # also refreshes every card (its byte-compare keeps identical output write-free).
+    social = generate_social_images.resolve_and_generate(
+        [{"slug": p["slug"], "title": p["title"], "socialImage": p["social_image"]}
+         for p in tangents_posts],
+        force=FORCE,
+    )
+    for p in tangents_posts:
+        p["og_image"] = f"{SITE_BASE_URL}/{social['og_image'][p['slug']]}"
+    tangents_card_url = f"{SITE_BASE_URL}/{social['index_card']}"
+    for warning in social["warnings"]:
+        log_warning(warning)
+    # Record auto-generated cards (generated or skipped) so a deleted post's card
+    # is pruned like its page. Custom images are never recorded, so the prune
+    # guard leaves them untouched.
+    for rel in social["generated"]:
+        record_output(rel)
+    for rel in social["skipped"]:
+        record_output(rel)
 
     # Collect site paths for sitemap and 404 fuzzy matching
-    site_paths = collect_site_paths(category_data)
-    fuzzy_paths = collect_site_paths(category_data, include_hashes=True)
+    site_paths = collect_site_paths(manifests, demos_by_stem, tangents_posts=tangents_posts)
+    fuzzy_paths = collect_site_paths(
+        manifests, demos_by_stem, include_hashes=True, tangents_posts=tangents_posts
+    )
+
+    # Load the previous manifest and decide global dirtiness before any builder
+    # runs (the JS copies are cache-gated too).
+    load_build_cache()
+    GLOBAL_DIRTY = compute_global_dirty()
+    if GLOBAL_DIRTY and not CACHE_MISSING and not FORCE:
+        if _PREV_MINIFY != MINIFY:
+            log_info(f"Minify mode changed (now {mode}): rebuilding all pages.")
+        else:
+            log_info("Global component changed: rebuilding all pages.")
 
     # Copy (and optionally minify) CSS and JS assets
     build_static_assets()
@@ -1034,29 +1995,53 @@ def main():
     # Build all pages
     build_frontpage(
         base_template, navbar_html, footer_html,
-        contact_html, frontpage_content, category_data,
+        contact_html, frontpage_content, manifests, demos_by_stem,
     )
     build_404(base_template, navbar_html, footer_html, four04_template, fuzzy_paths)
     build_demo_pages(
         base_template, navbar_html, footer_html,
-        demo_template, iframe_template, category_data,
+        demo_template, iframe_template, manifests, demos_by_stem,
     )
     build_standalone_pages(
-        base_template, navbar_html, footer_html, category_data,
+        base_template, navbar_html, footer_html, manifests, demos_by_stem,
     )
     build_demo_index(
         base_template, navbar_html, footer_html,
-        demo_index_template, category_data,
+        demo_index_template, manifests, demos_by_stem,
     )
-    check_images(category_data)
-    check_demo_assets(category_data)
-    build_llms_txt(category_data)
-    build_sitemap(site_paths)
+    build_tangents_posts(
+        base_template, navbar_html, footer_html,
+        tangents_post_template, tangents_posts,
+    )
+    build_tangents_list_pages(
+        base_template, navbar_html, footer_html,
+        tangents_list_template, tangents_item_template, tangents_posts,
+        tangents_card_url,
+    )
+    build_tangents_feed(tangents_posts)
+    check_images(manifests, demos_by_stem)
+    check_demo_assets(manifests, demos_by_stem)
+    build_llms_txt(manifests, demos_by_stem)
+
+    # Post pages carry their own updated/published lastmod (more meaningful than
+    # the build-day heuristic used for aggregate pages).
+    tangents_lastmod = {
+        f"/tangents/{p['slug']}/": (p["updated"] or p["published"]).isoformat()
+        for p in tangents_posts
+    }
+    build_sitemap(site_paths, tangents_lastmod)
+
+    # Prune orphaned outputs, persist the manifest, and write the build log.
+    pruned = prune_orphans()
+    save_build_cache()
+    write_build_log(mode, FORCE, pruned, social)
 
     if CHANGED_FILES:
         print(f"\n  {len(CHANGED_FILES)} file(s) updated.")
     else:
-        print("\n  All files up to date — nothing written.")
+        print("\n  All files up to date: nothing written.")
+    if SKIPPED_PAGES:
+        print(f"  {SKIPPED_PAGES} page(s) skipped as up to date.")
     print("Build complete.")
 
 
