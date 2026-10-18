@@ -29,10 +29,6 @@ These are some of the non-commercial games that I've created over the years in m
 - [Uranium-236](https://www.xedur.com/demo/uranium-236/): A nuclear reactor management game where you must keep an unstable reactor running. Created for Ludum Dare 49.
 - [Last Stand](https://www.xedur.com/demo/last-stand/): Dodge the undead and shoot them for as long as you can. Created for Ludum Dare 50 JAM.
 - [The Dark](https://www.xedur.com/demo/the-dark/): Keep yourself and your campfire alive through a freezing winter night. Created for Ludum Dare 46 COMPO.
-- [Speed Test](https://www.xedur.com/demo/speed-test/): Follow and repeat a sequence of coloured lights as the game gets progressively faster. Written in under 150 lines of code as part of a personal challenge to write complete games in 50, 100, and 150 lines.
-- [Runners](https://www.xedur.com/demo/runners/): Tap the runners before they escape off the screen as the game gets increasingly hectic. Written in under 100 lines of code as part of a personal challenge to write complete games in 50, 100, and 150 lines.
-- [Bomb Tap](https://www.xedur.com/demo/bomb-tap/): Keep a bouncing bomb airborne by tapping before it touches the platforms. Written in under 50 lines of code as part of a personal challenge to write complete games in 50, 100, and 150 lines.
-- [Get A Job Baby!](https://www.xedur.com/demo/get-a-job-baby/): A game about being a newborn baby who has nothing and is put to work. Created for Ludum Dare 45 JAM.
 
 ### Widgets, libraries and other unassorted things for Solar2D
 
