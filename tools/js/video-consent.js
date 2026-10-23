@@ -25,8 +25,26 @@ function loadVideos() {
     });
 }
 
+// Blocked site storage makes the localStorage getter itself throw, so every
+// access is guarded; consent then lasts only until the page reloads.
+function readConsent() {
+    try {
+        return localStorage.getItem("videosAccepted") === "true";
+    } catch (error) {
+        return false;
+    }
+}
+
+function storeConsent() {
+    try {
+        localStorage.setItem("videosAccepted", "true");
+    } catch (error) {
+        console.warn("Video consent could not be saved:", error);
+    }
+}
+
 function acceptVideos() {
-    localStorage.setItem("videosAccepted", "true");
+    storeConsent();
     loadVideos();
 }
 
@@ -53,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    if (localStorage.getItem("videosAccepted") === "true") {
+    if (readConsent()) {
         loadVideos();
     }
 });

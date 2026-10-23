@@ -468,7 +468,8 @@ def resolve_and_generate(posts, force=False, prune=True, demos=()):
                     f"tangents/{slug}: socialImage {social_image!r} must be a bare "
                     f"filename inside tangents/{slug}/ (no '/', '\\', or '..')"
                 )
-            if social_image == reserved:
+            # Case-insensitive filesystems treat mypost-Social.png as the card itself.
+            if social_image.lower() == reserved.lower():
                 raise SocialImageError(
                     f"tangents/{slug}: socialImage {social_image!r} uses the reserved "
                     f"generated-card name; rename the custom file or drop the key"
@@ -519,6 +520,7 @@ def resolve_and_generate(posts, force=False, prune=True, demos=()):
 def _load_posts_from_disk():
     """Gather non-draft post slug/title/socialImage from tools/tangents/*.md."""
     import markdown_engine
+    import update_website
 
     posts = []
     if not os.path.isdir(TANGENTS_SRC_DIR):
@@ -526,6 +528,12 @@ def _load_posts_from_disk():
     for filename in sorted(os.listdir(TANGENTS_SRC_DIR)):
         if not filename.endswith(".md"):
             continue
+        slug = filename[:-3]
+        # The slug becomes the card's output directory, so it gets the site build's check.
+        if not update_website.TANGENT_SLUG_RE.match(slug):
+            raise ValueError(
+                f"tangents: invalid slug {slug!r} (must be lowercase kebab-case [a-z0-9-]+)"
+            )
         path = os.path.join(TANGENTS_SRC_DIR, filename)
         with open(path, "r", encoding="utf-8") as f:
             front, _ = markdown_engine.parse_front_matter(f.read(), source=filename)
@@ -536,7 +544,7 @@ def _load_posts_from_disk():
             # The site build enforces a title; standalone we just skip it.
             continue
         posts.append({
-            "slug": filename[:-3],
+            "slug": slug,
             "title": title,
             "socialImage": front.get("socialImage"),
         })

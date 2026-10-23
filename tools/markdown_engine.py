@@ -47,6 +47,26 @@ def _escape_code(text):
     return text
 
 
+_SAFE_URL_SCHEMES = ("http", "https", "mailto")
+_URL_STRIP_CHARS = "".join(chr(code) for code in range(0x21))
+
+
+def is_safe_url(url):
+    """True for http, https, mailto, relative, and '#' anchor URLs.
+
+    Browsers ignore ASCII whitespace and control characters inside a scheme, so
+    the check drops them too before reading it.
+    """
+    cleaned = "".join(ch for ch in url if ch not in _URL_STRIP_CHARS)
+    for ch in cleaned:
+        if ch in "/?#":
+            return True
+        if ch == ":":
+            scheme = cleaned.split(":", 1)[0].lower()
+            return scheme in _SAFE_URL_SCHEMES
+    return True
+
+
 def _normalize_input(text):
     """Normalize CR/CRLF newlines to LF and strip NUL bytes.
 
@@ -148,9 +168,12 @@ def parse_front_matter(text: str, *, source: str = "<string>") -> tuple[dict, st
 
 _INLINE_CODE_RE = re.compile(r'`([^`]+)`')
 _LINK_RE = re.compile(r'\[([^\]]+)\]\(([^)]+)\)')
+_BOLD_ITALIC_RE = re.compile(r'\*\*\*(.+?)\*\*\*')
 _BOLD_RE = re.compile(r'\*\*(.+?)\*\*')
 _ITALIC_STAR_RE = re.compile(r'\*(.+?)\*')
-_ITALIC_UNDERSCORE_RE = re.compile(r'_(.+?)_')
+# Word boundaries keep the underscores in snake_case names literal.
+_ITALIC_UNDERSCORE_RE = re.compile(r'(?<!\w)_(.+?)_(?!\w)')
+_YOUTUBE_ID_RE = re.compile(r'[A-Za-z0-9_-]{11}')
 _LINK_TOKEN_RE = re.compile(r'\[([^\]]+)\]\(\x00URL(\d+)\x00\)')
 _CODE_TOKEN_RE = re.compile(r'\x00CODE(\d+)\x00')
 
@@ -181,13 +204,18 @@ def inline(text):
 
     text = _LINK_RE.sub(_store_url, text)
 
-    # Bold before italic so **x** is not eaten by the single-* rule.
+    # Bold before italic so **x** is not eaten by the single-* rule, and the
+    # triple form before both so ***x*** nests correctly.
+    text = _BOLD_ITALIC_RE.sub(r'<strong><em>\1</em></strong>', text)
     text = _BOLD_RE.sub(r'<strong>\1</strong>', text)
     text = _ITALIC_STAR_RE.sub(r'<em>\1</em>', text)
     text = _ITALIC_UNDERSCORE_RE.sub(r'<em>\1</em>', text)
 
     def _assemble_link(match):
         url = url_tokens[int(match.group(2))]
+        if not is_safe_url(url):
+            # A disallowed scheme stays visible as plain text so the author spots it.
+            return f'[{match.group(1)}]({url})'
         return f'<a href="{url}">{match.group(1)}</a>'
 
     text = _LINK_TOKEN_RE.sub(_assemble_link, text)
@@ -205,6 +233,8 @@ def _directive_image(params, meta, base_path):
     src = params.get("src")
     if src is None:
         raise MarkdownError("directive 'image' requires a 'src' parameter")
+    if not is_safe_url(src):
+        raise MarkdownError(f"directive 'image' has a disallowed URL scheme: src={src!r}")
 
     alt = params.get("alt")
     if alt is None:
@@ -217,12 +247,12 @@ def _directive_image(params, meta, base_path):
 
     width = params.get("width")
     height = params.get("height")
-    width_attr = f' width="{width}"' if width else ""
-    height_attr = f' height="{height}"' if height else ""
+    width_attr = f' width="{_escape_html(width)}"' if width else ""
+    height_attr = f' height="{_escape_html(height)}"' if height else ""
 
     lines = ['<figure class="md-figure">']
     lines.append(
-        f'    <img src="{src}" alt="{_escape_html(alt)}" loading="lazy"{width_attr}{height_attr}>'
+        f'    <img src="{_escape_html(src)}" alt="{_escape_html(alt)}" loading="lazy"{width_attr}{height_attr}>'
     )
     caption = params.get("caption")
     if caption is not None:
@@ -235,12 +265,14 @@ def _directive_youtube(params, meta, base_path):
     video_id = params.get("id")
     if video_id is None:
         raise MarkdownError("directive 'youtube' requires an 'id' parameter")
+    if not _YOUTUBE_ID_RE.fullmatch(video_id):
+        raise MarkdownError(f"directive 'youtube' id must be an 11-character YouTube id, got {video_id!r}")
 
     meta["needs_video_js"] = True
     title = _escape_html(params.get("title", ""))
 
     lines = [
-        f'<div class="video-placeholder" data-video-id="{video_id}" data-video-title="{title}">',
+        f'<div class="video-placeholder" data-video-id="{_escape_html(video_id)}" data-video-title="{title}">',
         '    <div class="overlay">',
         "        <p>We don't use cookies, but YouTube does. To watch this video, you accept that YouTube may set cookies on your device.</p>",
         '        <button type="button" class="video-consent">I accept</button>',

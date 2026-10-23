@@ -254,12 +254,14 @@ Front matter is a flat `key: value` block between `---` fences, with literal tri
 
 ### Markdown syntax
 
-Headings (`##` to `######`; a body `#` becomes `##` because the title is the only `<h1>`), paragraphs, `**bold**`, `*italic*` or `_italic_`, `[text](url)`, `` `inline code` ``, `-`/`*` and `1.` lists, `>` blockquotes, `---` rules, and ```` ``` ```` fenced code blocks. Raw HTML is escaped. Nested lists and multi-paragraph list items are not supported.
+Headings (`##` to `######`; a body `#` becomes `##` because the title is the only `<h1>`), paragraphs, `**bold**`, `*italic*` or `_italic_`, `***both***`, `[text](url)`, `` `inline code` ``, `-`/`*` and `1.` lists, `>` blockquotes, `---` rules, and ```` ``` ```` fenced code blocks. Raw HTML is escaped. Underscores inside a word (`snake_case`) stay literal. Nested lists and multi-paragraph list items are not supported.
+
+Links and image sources accept only `http`, `https`, `mailto`, relative, and `#` URLs. A link with any other scheme renders as plain text, and an image or `github` URL with one is a build error.
 
 Directives sit on their own line as `[[name key="value"]]`:
 
 - `[[image src="foo.png" alt="..." caption="..." width="..." height="..."]]`: a `<figure>`, with `src` resolved relative to the post URL.
-- `[[youtube id="VIDEO_ID" title="..."]]`: a click-to-load video embed (see below).
+- `[[youtube id="VIDEO_ID" title="..."]]`: a click-to-load video embed (see below). An id that is not 11 characters of letters, digits, `_`, or `-` is a build error.
 - `[[github repo="owner/name"]]`, `[[github url="https://..."]]`, or a bare `[[github]]`: the repository panel.
 
 An unknown or mistyped directive is a build error.
@@ -268,13 +270,15 @@ An unknown or mistyped directive is a build error.
 
 Publish dates and body hashes live in `tools/components/data/tangents_dates.json`, which is committed because publish dates cannot be re-derived. A post is published on its first build, or on its `published` date. "Last updated" changes only when the rendered body changes, so editing `summary`, `tags`, or `title` alone does not bump it. Dates render as `13 July 2026`.
 
+An unreadable `tangents_dates.json` stops the build instead of being overwritten; restore it from git. An unreadable `sitemap_dates.json` only warns and restarts every lastmod. Post pages do not depend on the dates file, so after editing it by hand, run a `force` build.
+
 ### Pagination, tags, feed
 
 List pages hold 10 posts, newest first (`/tangents/`, `/tangents/2/`, and so on). Each tag gets its own paginated set at `/tangents/tag/<slug>/`. Two tag spellings that slugify to the same value (`Solar2D` and `solar2d`) are a build error. The feed at `/tangents/feed.xml` carries the newest 20 posts and is linked from every post.
 
 ### YouTube consent
 
-`[[youtube]]` renders a thumbnail placeholder, not an iframe. `js/video-consent.js`, loaded only on pages that need it, swaps in a `youtube-nocookie.com` iframe after the visitor clicks "I accept". Consent is stored in `localStorage` (`videosAccepted`), so the site sets no cookie and requests nothing from `youtube-nocookie.com` before consent. The thumbnail itself comes from `img.youtube.com` before consent.
+`[[youtube]]` renders a thumbnail placeholder, not an iframe. `js/video-consent.js`, loaded only on pages that need it, swaps in a `youtube-nocookie.com` iframe after the visitor clicks "I accept". Consent is stored in `localStorage` (`videosAccepted`), so the site sets no cookie and requests nothing from `youtube-nocookie.com` before consent. When site storage is blocked, the button still loads the videos, and consent lasts until the page reloads. The thumbnail itself comes from `img.youtube.com` before consent.
 
 ### Social share images
 
@@ -292,8 +296,8 @@ A demo or standalone page whose card is missing falls back to the frontpage card
 The `socialImage` key in a post overrides the default:
 
 - Absent or `auto`: generate the card.
-- `<filename>`: use the committed `tangents/<slug>/<filename>` as is; 1200x630 is recommended. A missing file warns and falls back to the generated card.
-- `<slug>-social.png`, the generated name, is a build error.
+- `<filename>`: use the committed `tangents/<slug>/<filename>` as is; 1200x630 is recommended. The page declares no `og:image:width`/`height` for it. A missing file warns and falls back to the generated card.
+- `<slug>-social.png`, the generated name in any letter case, is a build error.
 
 Generated cards are committed. A card regenerates only when the generator script, its kind and text, `social_cards.json`, or the logo and font assets change, tracked in `tools/components/data/social_images.json`. Deleting a post or demo prunes its generated card; a custom `socialImage` file is never pruned.
 

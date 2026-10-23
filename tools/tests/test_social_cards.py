@@ -7,12 +7,14 @@ repo's committed cards and manifest are never touched.
 """
 
 import io
+import json
 import os
 import re
 import shutil
 import sys
 import tempfile
 import unittest
+from datetime import date
 from unittest import mock
 
 # Make the tools importable regardless of the CWD the tests are run from.
@@ -293,8 +295,8 @@ class TestRender(TempRootMixin, unittest.TestCase):
                 gen.resolve_and_generate([], demos=[])
 
 
-class TestBuilderWiring(TempRootMixin, unittest.TestCase):
-    """Builders point each page at its card; writes are captured, never made."""
+class CaptureBuildsMixin(TempRootMixin):
+    """Run page builders with their writes captured, never made."""
 
     def setUp(self):
         super().setUp()
@@ -319,6 +321,10 @@ class TestBuilderWiring(TempRootMixin, unittest.TestCase):
         match = re.search(r'<meta (?:property|name)="' + re.escape(prop) + r'" content="([^"]*)">',
                           self.written[rel])
         return match.group(1) if match else None
+
+
+class TestBuilderWiring(CaptureBuildsMixin, unittest.TestCase):
+    """Builders point each page at its card."""
 
     def build_frontpage(self):
         update_website.build_frontpage(self.base, "", "", "", "<p>Hi</p>", {}, {})
@@ -391,6 +397,111 @@ class TestBuilderWiring(TempRootMixin, unittest.TestCase):
         self.assertEqual(self.meta(rel, "og:image:alt"), "XeduR - Pseudorandom Number Generator")
         self.assertEqual(self.meta(rel, "og:image:height"), "630")
         self.assertIn(card, update_website._NEW_OUTPUTS[rel])
+
+
+class TestPostPages(CaptureBuildsMixin, unittest.TestCase):
+    """Tangents post pages: card size, JSON-LD escaping, and dependencies."""
+
+    def build_post(self, title="A Post", og_image_size=(1200, 630), social_image=None):
+        post = {
+            "slug": "a-post",
+            "title": title,
+            "summary": "Summary.",
+            "tags": [],
+            "published": date(2026, 7, 1),
+            "updated": None,
+            "body_html": "<p>Body.</p>",
+            "needs_video_js": False,
+            "social_image": social_image,
+            "og_image": f"{SITE}/tangents/a-post/a-post-social.png",
+            "og_image_size": og_image_size,
+        }
+        update_website.build_tangents_posts(self.base, "", "",
+                                            update_website.load_file("tangents-post.html"), [post])
+        return self.written["tangents/a-post/index.html"]
+
+    def test_generated_card_declares_its_size(self):
+        self.build_post()
+        self.assertEqual(self.meta("tangents/a-post/index.html", "og:image:width"), "1200")
+        self.assertEqual(self.meta("tangents/a-post/index.html", "og:image:height"), "630")
+
+    def test_custom_image_declares_no_size(self):
+        self.build_post(og_image_size=(0, 0), social_image="custom.png")
+        self.assertIsNone(self.meta("tangents/a-post/index.html", "og:image:width"))
+        self.assertIsNone(self.meta("tangents/a-post/index.html", "og:image:height"))
+
+    def test_json_ld_survives_script_close_in_title(self):
+        title = "Escaping </script> & <b> in HTML"
+        page = self.build_post(title=title)
+        start = page.index('<script type="application/ld+json">') + len('<script type="application/ld+json">')
+        end = page.index("</script>", start)
+        data = json.loads(page[start:end])
+        self.assertEqual(data["headline"], title)
+        self.assertNotIn("<", page[start:end])
+
+    def test_post_does_not_depend_on_the_shared_dates_file(self):
+        self.build_post()
+        deps = update_website._NEW_OUTPUTS["tangents/a-post/index.html"]
+        self.assertNotIn(update_website._rel(update_website.TANGENTS_DATES_FILE), deps)
+
+
+class TestPostCardNames(TempRootMixin, unittest.TestCase):
+    def test_reserved_name_is_case_insensitive(self):
+        for name in ("my-post-Social.png", "MY-POST-SOCIAL.PNG"):
+            with self.subTest(name=name):
+                with self.assertRaises(gen.SocialImageError):
+                    gen.resolve_and_generate(
+                        [{"slug": "my-post", "title": "T", "socialImage": name}], prune=False)
+
+    def test_cli_rejects_malformed_slug(self):
+        source_dir = os.path.join(self.root, "posts")
+        os.makedirs(source_dir)
+        with open(os.path.join(source_dir, "Bad_Name.md"), "w", encoding="utf-8") as f:
+            f.write("---\ntitle: T\nsummary: S\n---\nBody.\n")
+        with mock.patch.object(gen, "TANGENTS_SRC_DIR", source_dir):
+            with self.assertRaises(ValueError):
+                gen._load_posts_from_disk()
+
+
+class TestJsonDataFiles(unittest.TestCase):
+    def setUp(self):
+        self.root = tempfile.mkdtemp(prefix="json-data-test-")
+        self.path = os.path.join(self.root, "dates.json")
+
+    def tearDown(self):
+        shutil.rmtree(self.root)
+
+    def write_raw(self, text):
+        with open(self.path, "w", encoding="utf-8") as f:
+            f.write(text)
+
+    def test_missing_file_reads_empty(self):
+        self.assertEqual(update_website.read_json_file(self.path, required=True), {})
+
+    def test_corrupt_required_file_raises_and_stays_intact(self):
+        self.write_raw('{"a-post": {"published": "2026-')
+        with self.assertRaises(ValueError):
+            update_website.read_json_file(self.path, required=True)
+        with open(self.path, encoding="utf-8") as f:
+            self.assertEqual(f.read(), '{"a-post": {"published": "2026-')
+
+    def test_corrupt_optional_file_warns_and_reads_empty(self):
+        self.write_raw("{")
+        with mock.patch.object(update_website, "log_warning") as warn:
+            self.assertEqual(update_website.read_json_file(self.path, required=False), {})
+        warn.assert_called_once()
+
+    def test_write_round_trips_and_leaves_no_temp_file(self):
+        update_website.write_json_file(self.path, {"b": 1, "a": 2}, indent=4, sort_keys=True)
+        with open(self.path, encoding="utf-8") as f:
+            self.assertEqual(f.read(), '{\n    "a": 2,\n    "b": 1\n}\n')
+        self.assertEqual(os.listdir(self.root), ["dates.json"])
+
+    def test_unchanged_write_leaves_the_file_alone(self):
+        update_website.write_json_file(self.path, {"a": 1}, indent=4)
+        os.utime(self.path, (1, 1))
+        update_website.write_json_file(self.path, {"a": 1}, indent=4)
+        self.assertEqual(os.stat(self.path).st_mtime, 1)
 
 
 if __name__ == "__main__":

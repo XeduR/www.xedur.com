@@ -15,8 +15,22 @@ const title = escapeAttr(rawTitle);
 placeholder.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + videoId + '?rel=0" title="' + title + '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>';
 });
 }
-function acceptVideos() {
+function readConsent() {
+try {
+return localStorage.getItem("videosAccepted") === "true";
+} catch (error) {
+return false;
+}
+}
+function storeConsent() {
+try {
 localStorage.setItem("videosAccepted", "true");
+} catch (error) {
+console.warn("Video consent could not be saved:", error);
+}
+}
+function acceptVideos() {
+storeConsent();
 loadVideos();
 }
 document.addEventListener("DOMContentLoaded", () => {
@@ -36,7 +50,7 @@ if (button) {
 button.addEventListener("click", acceptVideos);
 }
 });
-if (localStorage.getItem("videosAccepted") === "true") {
+if (readConsent()) {
 loadVideos();
 }
 });

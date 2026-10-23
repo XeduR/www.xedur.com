@@ -238,6 +238,19 @@ class TestInlineParser(unittest.TestCase):
         self.assertEqual(inline("**x**"), "<strong>x</strong>")
         self.assertNotIn("<em>", inline("**x**"))
 
+    def test_triple_star_nests_strong_around_em(self):
+        self.assertEqual(inline("***bi***"), "<strong><em>bi</em></strong>")
+
+    def test_intra_word_underscores_stay_literal(self):
+        self.assertEqual(inline("MAX_VALUE and MIN_VALUE"), "MAX_VALUE and MIN_VALUE")
+        self.assertEqual(inline("call snake_case_name()"), "call snake_case_name()")
+
+    def test_underscore_emphasis_may_contain_underscores(self):
+        self.assertEqual(inline("_foo_bar_"), "<em>foo_bar</em>")
+
+    def test_underscore_emphasis_next_to_punctuation(self):
+        self.assertEqual(inline("(_soft_)."), "(<em>soft</em>).")
+
     def test_bold_and_italic_mixed(self):
         self.assertEqual(
             inline("**bold** and *soft*"),
@@ -297,6 +310,44 @@ class TestLinkProtection(unittest.TestCase):
         self.assertEqual(html, '<a href="http://x.com/a_b"><strong>b</strong></a>')
 
 
+    def test_url_special_chars_are_entity_escaped(self):
+        # Escaping must run before URLs are captured, or a raw '"' reaches href.
+        html = inline('[x](http://e.com?a="b&c=<d>)')
+        self.assertEqual(
+            html, '<a href="http://e.com?a=&quot;b&amp;c=&lt;d&gt;">x</a>'
+        )
+
+
+class TestUrlSchemes(unittest.TestCase):
+    def test_allowed_links_render(self):
+        for url in ("http://e.com", "https://e.com/a", "mailto:me@e.com",
+                    "../page/", "page.html", "/abs/path", "#section", "?q=1"):
+            with self.subTest(url=url):
+                self.assertEqual(inline(f"[x]({url})"), f'<a href="{url}">x</a>')
+
+    def test_scheme_check_is_case_insensitive(self):
+        self.assertEqual(inline("[x](HTTPS://e.com)"), '<a href="HTTPS://e.com">x</a>')
+
+    def test_disallowed_links_render_as_plain_text(self):
+        for url in ("javascript:alert(1)", "JavaScript:alert(1)", "data:text/html,hi",
+                    "vbscript:x", " javascript:alert(1)", "java\tscript:alert(1)"):
+            with self.subTest(url=url):
+                html = inline(f"[x]({url})")
+                self.assertNotIn("<a", html)
+                self.assertTrue(html.startswith("[x]("), html)
+
+    def test_colon_after_path_is_relative(self):
+        self.assertEqual(inline("[x](a/b:c)"), '<a href="a/b:c">x</a>')
+
+    def test_disallowed_image_src_raises(self):
+        with self.assertRaises(MarkdownError):
+            render_markdown('[[image src="javascript:alert(1)" alt="a"]]')
+
+    def test_https_image_src_allowed(self):
+        html, _ = render_markdown('[[image src="https://e.com/a.png" alt="a"]]')
+        self.assertIn('src="https://e.com/a.png"', html)
+
+
 class TestImageDirective(unittest.TestCase):
     def test_full(self):
         html, meta = render_markdown(
@@ -328,6 +379,15 @@ class TestImageDirective(unittest.TestCase):
         html, _ = render_markdown('[[image src="x.jpg" alt="a" caption="a & <b>"]]')
         self.assertIn("<figcaption>a &amp; &lt;b&gt;</figcaption>", html)
 
+    def test_src_width_height_are_escaped(self):
+        html, meta = render_markdown(
+            '[[image src="a.png?x=1&y=2" alt="a" width="1<2" height="3>4"]]'
+        )
+        self.assertIn('src="a.png?x=1&amp;y=2"', html)
+        self.assertIn('width="1&lt;2"', html)
+        self.assertIn('height="3&gt;4"', html)
+        self.assertEqual(meta["images"], ["a.png?x=1&y=2"])
+
     def test_missing_src_raises(self):
         with self.assertRaises(MarkdownError):
             render_markdown('[[image alt="no source"]]')
@@ -340,9 +400,9 @@ class TestImageDirective(unittest.TestCase):
 
 class TestYoutubeDirective(unittest.TestCase):
     def test_output_and_flag(self):
-        html, meta = render_markdown('[[youtube id="abc123" title="My Video"]]')
+        html, meta = render_markdown('[[youtube id="abcDEF12_-x" title="My Video"]]')
         expected = (
-            '<div class="video-placeholder" data-video-id="abc123" '
+            '<div class="video-placeholder" data-video-id="abcDEF12_-x" '
             'data-video-title="My Video">\n'
             '    <div class="overlay">\n'
             "        <p>We don't use cookies, but YouTube does. To watch this "
@@ -355,16 +415,22 @@ class TestYoutubeDirective(unittest.TestCase):
         self.assertIs(meta["needs_video_js"], True)
 
     def test_title_optional_defaults_empty(self):
-        html, _ = render_markdown('[[youtube id="abc123"]]')
+        html, _ = render_markdown('[[youtube id="abcDEF12_-x"]]')
         self.assertIn('data-video-title=""', html)
 
     def test_title_is_escaped(self):
-        html, _ = render_markdown('[[youtube id="abc" title="a & <b>"]]')
+        html, _ = render_markdown('[[youtube id="abcDEF12_-x" title="a & <b>"]]')
         self.assertIn('data-video-title="a &amp; &lt;b&gt;"', html)
 
     def test_missing_id_raises(self):
         with self.assertRaises(MarkdownError):
             render_markdown('[[youtube title="no id"]]')
+
+    def test_invalid_ids_raise(self):
+        for video_id in ("abc", "abcDEF12_-xy", "abcDEF12'-x", "abcDEF12&-x", "abcDEF12 -x"):
+            with self.subTest(video_id=video_id):
+                with self.assertRaises(MarkdownError):
+                    render_markdown(f'[[youtube id="{video_id}"]]')
 
     def test_flag_defaults_false_without_youtube(self):
         _, meta = render_markdown("just prose")
@@ -492,7 +558,7 @@ class TestIntegration(unittest.TestCase):
             "\n"
             '[[image src="pic.png" alt="a picture"]]\n'
             "\n"
-            '[[youtube id="vid123"]]\n'
+            '[[youtube id="abcDEF12_-x"]]\n'
             "\n"
             "```lua\n"
             "local x = 1 < 2\n"
@@ -508,7 +574,7 @@ class TestIntegration(unittest.TestCase):
         self.assertIn("<ul>\n<li>first</li>\n<li>second</li>\n</ul>", html)
         self.assertIn("<blockquote><p>a quote</p></blockquote>", html)
         self.assertIn('<figure class="md-figure">', html)
-        self.assertIn('data-video-id="vid123"', html)
+        self.assertIn('data-video-id="abcDEF12_-x"', html)
         self.assertIn('<pre><code class="language-lua">', html)
         self.assertIn("local x = 1 &lt; 2", html)
 

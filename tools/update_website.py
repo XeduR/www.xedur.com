@@ -147,6 +147,41 @@ BUILD_LOG_KEEP = 30
 BUILD_LOG_EVENTS = [] # [(level, message)], level in {"info", "warning", "error"}
 
 
+def read_json_file(path, *, required):
+    """Load a committed JSON data file; a missing file is an empty dict.
+
+    A corrupt file raises when required (its contents cannot be re-derived, so
+    the build must not overwrite it), and otherwise warns and reads as empty.
+    """
+    if not os.path.exists(path):
+        return {}
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError) as error:
+        rel = os.path.relpath(path, ROOT_DIR)
+        if required:
+            raise ValueError(f"{rel} is unreadable ({error}); restore it from git before building") from error
+        log_warning(f"{rel} is unreadable ({error}); starting from an empty record")
+        return {}
+
+
+def write_json_file(path, data, **dump_options):
+    """Write JSON through a temporary file so an interrupted build never truncates it.
+
+    An unchanged file is left untouched.
+    """
+    text = json.dumps(data, **dump_options) + "\n"
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            if f.read() == text:
+                return
+    temp_path = path + ".tmp"
+    with open(temp_path, "w", encoding="utf-8") as f:
+        f.write(text)
+    os.replace(temp_path, path)
+
+
 def log_info(message):
     print(f"  {message}")
     BUILD_LOG_EVENTS.append(("info", message))
@@ -485,9 +520,7 @@ def save_build_cache():
         "app_listings": _NEW_APP_LISTINGS,
         "minify": MINIFY,
     }
-    with open(BUILD_CACHE_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, sort_keys=True)
-        f.write("\n")
+    write_json_file(BUILD_CACHE_FILE, data, indent=2, sort_keys=True)
 
 
 def _is_generated_output(rel):
@@ -793,6 +826,23 @@ def generate_social_tags(seo, url="", og_type="website", published=None, modifie
     return "\n".join(og_lines) + "\n\n" + "\n".join(twitter_lines)
 
 
+def ld_json_script_tag(data):
+    """Wrap JSON-LD in its script element.
+
+    The \\u escapes keep author text such as "</script>" from closing the element
+    early, and parse back to the same JSON values.
+    """
+    text = json.dumps(data, indent=4, ensure_ascii=False)
+    text = text.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
+    return '<script type="application/ld+json">\n' + text + "\n</script>"
+
+
+def generated_card_size():
+    """(width, height) of every generated social card."""
+    canvas = generate_social_images.load_card_config()["canvas"]
+    return canvas["width"], canvas["height"]
+
+
 def social_card_image(card_rel=None):
     """Return (url, width, height) for a page's og:image.
 
@@ -801,8 +851,7 @@ def social_card_image(card_rel=None):
     """
     rel = generate_social_images.existing_card(card_rel)
     if rel:
-        canvas = generate_social_images.load_card_config()["canvas"]
-        return f"{SITE_BASE_URL}/{rel}", canvas["width"], canvas["height"]
+        return (f"{SITE_BASE_URL}/{rel}", *generated_card_size())
     default = (load_json("frontpage.json").get("seo") or {}).get("ogImage", "")
     return default, 0, 0
 
@@ -971,11 +1020,7 @@ def build_frontpage(base_template, navbar_html, footer_html,
             },
         ],
     }
-    ld_json_script = (
-        '<script type="application/ld+json">\n'
-        + json.dumps(ld_json, indent=4, ensure_ascii=False)
-        + '\n</script>'
-    )
+    ld_json_script = ld_json_script_tag(ld_json)
 
     page = wrap_in_base(
         base_template, navbar_html, footer_html,
@@ -1061,6 +1106,8 @@ def build_demo_pages(base_template, navbar_html, footer_html,
 
             app_dir = os.path.join(demo_dir, "app")
             app_files = sorted(os.listdir(app_dir)) if os.path.isdir(app_dir) else []
+            # The loader is this build's own output, not an app file.
+            app_files = [name for name in app_files if name != "index.html"]
             listing = ",".join(app_files)
             app_key = f"demo/{folder}/app/"
             listing_changed = listing != _PREV_APP_LISTINGS.get(app_key)
@@ -1372,10 +1419,7 @@ def load_tangents_posts():
     (committed, since they cannot be re-derived).  "Last updated" bumps only when
     the rendered body's hash changes, so editing summary/tags/title alone does not.
     """
-    dates_map = {}
-    if os.path.exists(TANGENTS_DATES_FILE):
-        with open(TANGENTS_DATES_FILE, "r", encoding="utf-8") as f:
-            dates_map = json.load(f)
+    dates_map = read_json_file(TANGENTS_DATES_FILE, required=True)
 
     if os.path.isdir(TANGENTS_SRC_DIR):
         md_files = sorted(f for f in os.listdir(TANGENTS_SRC_DIR) if f.endswith(".md"))
@@ -1449,9 +1493,7 @@ def load_tangents_posts():
     # Newest first; same-day ties break by slug descending (deterministic).
     posts.sort(key=lambda p: (p["published"], p["slug"]), reverse=True)
 
-    with open(TANGENTS_DATES_FILE, "w", encoding="utf-8") as f:
-        json.dump(dates_map, f, indent=4, sort_keys=True)
-        f.write("\n")
+    write_json_file(TANGENTS_DATES_FILE, dates_map, indent=4, sort_keys=True)
 
     return posts
 
@@ -1460,7 +1502,6 @@ def build_tangents_posts(base_template, navbar_html, footer_html, post_template,
     """Write tangents/<slug>/index.html for every post, with Prev/Next nav and SEO."""
     total = len(posts)
     post_tpl_rel = _rel(os.path.join(TEMPLATES_DIR, "tangents-post.html"))
-    dates_rel = _rel(TANGENTS_DATES_FILE)
     for i, post in enumerate(posts):
         slug = post["slug"]
         page_rel = f"tangents/{slug}/index.html"
@@ -1470,7 +1511,7 @@ def build_tangents_posts(base_template, navbar_html, footer_html, post_template,
         # depends on their sources too. A neighbour retitle changes that dep's
         # hash; a neighbour added or removed changes the dependency set, which
         # should_build detects even though the dropped path leaves dep_rels.
-        deps = [md_rel, post_tpl_rel, dates_rel]
+        deps = [md_rel, post_tpl_rel]
         if i > 0:
             deps.append(_rel(os.path.join(TANGENTS_SRC_DIR, f"{posts[i - 1]['slug']}.md")))
         if i < total - 1:
@@ -1517,6 +1558,7 @@ def build_tangents_posts(base_template, navbar_html, footer_html, post_template,
         body = replace_indented(body, "{{postNav}}", "\n".join(nav_links))
 
         og_image = post["og_image"]
+        image_width, image_height = post["og_image_size"]
         seo = {
             "ogTitle": title,
             "ogDescription": post["summary"],
@@ -1526,7 +1568,7 @@ def build_tangents_posts(base_template, navbar_html, footer_html, post_template,
         og_tags = generate_social_tags(
             seo, url=canonical, og_type="article",
             published=published, modified=(updated or published),
-            image_width=1200, image_height=630,
+            image_width=image_width, image_height=image_height,
         )
 
         # BlogPosting reuses the canonical Person entity on erantanen.com.
@@ -1549,11 +1591,7 @@ def build_tangents_posts(base_template, navbar_html, footer_html, post_template,
         }
         if og_image:
             ld["image"] = og_image
-        ld_script = (
-            '<script type="application/ld+json">\n'
-            + json.dumps(ld, indent=4, ensure_ascii=False)
-            + "\n</script>"
-        )
+        ld_script = ld_json_script_tag(ld)
 
         extra_head_parts = [
             ld_script,
@@ -1580,6 +1618,7 @@ def build_tangents_list_pages(base_template, navbar_html, footer_html,
                               list_template, item_template, posts, tangents_card_url):
     """Build the paginated index and one paginated page set per tag."""
     tag_counts = collect_tangents_tags(posts)
+    card_width, card_height = generated_card_size()
 
     def render_item(post):
         row = item_template
@@ -1639,7 +1678,7 @@ def build_tangents_list_pages(base_template, navbar_html, footer_html,
                 "ogImageAlt": "XeduR - Tangents",
             }
             og_tags = generate_social_tags(
-                seo, url=canonical, image_width=1200, image_height=630
+                seo, url=canonical, image_width=card_width, image_height=card_height
             )
 
             page = wrap_in_base(
@@ -1745,10 +1784,7 @@ def check_demo_assets(manifests, demos_by_stem):
     Any demo whose assets were modified after its stored sitemap date is
     added to CHANGED_FILES so that build_sitemap bumps the lastmod.
     """
-    existing_dates = {}
-    if os.path.exists(SITEMAP_DATES_FILE):
-        with open(SITEMAP_DATES_FILE, "r", encoding="utf-8") as f:
-            existing_dates = json.load(f)
+    existing_dates = read_json_file(SITEMAP_DATES_FILE, required=False)
 
     for cat_name in CATEGORIES:
         if cat_name not in manifests:
@@ -1896,11 +1932,7 @@ def build_sitemap(site_paths, tangents_lastmod=None):
     tangents_lastmod = tangents_lastmod or {}
     today = date.today().isoformat()
 
-    # Load previously stored dates (if any).
-    existing_dates = {}
-    if os.path.exists(SITEMAP_DATES_FILE):
-        with open(SITEMAP_DATES_FILE, "r", encoding="utf-8") as f:
-            existing_dates = json.load(f)
+    existing_dates = read_json_file(SITEMAP_DATES_FILE, required=False)
 
     # Determine the lastmod date for every sitemap path.
     updated_dates = {}
@@ -1922,9 +1954,7 @@ def build_sitemap(site_paths, tangents_lastmod=None):
             updated_dates[path] = today
 
     # Persist the updated dates for the next build.
-    with open(SITEMAP_DATES_FILE, "w", encoding="utf-8") as f:
-        json.dump(updated_dates, f, indent=4)
-        f.write("\n")
+    write_json_file(SITEMAP_DATES_FILE, updated_dates, indent=4)
 
     # Generate sitemap.xml.
     lines = ['<?xml version="1.0" encoding="UTF-8"?>']
@@ -2019,7 +2049,9 @@ def main():
         url = params.get("url") or (f"https://github.com/{repo}" if repo else None)
         if not url:
             return repo_private.rstrip("\n")
-        return repo_public.replace("{{repository}}", url).rstrip("\n")
+        if not markdown_engine.is_safe_url(url):
+            raise markdown_engine.MarkdownError(f"directive 'github' has a disallowed URL scheme: url={url!r}")
+        return repo_public.replace("{{repository}}", escape_html(url)).rstrip("\n")
 
     markdown_engine.register_directive("github", _github_directive)
 
@@ -2041,8 +2073,12 @@ def main():
         force=FORCE,
         demos=social_card_demos(demos_by_stem),
     )
+    # A custom image's size is unknown, so only generated cards declare one.
+    custom_slugs = {slug for slug, _ in social["custom"]}
+    card_size = generated_card_size()
     for p in tangents_posts:
         p["og_image"] = f"{SITE_BASE_URL}/{social['og_image'][p['slug']]}"
+        p["og_image_size"] = (0, 0) if p["slug"] in custom_slugs else card_size
     tangents_card_url = f"{SITE_BASE_URL}/{social['index_card']}"
     for warning in social["warnings"]:
         log_warning(warning)
