@@ -1,75 +1,97 @@
 /* Scoped styles for the Pseudorandom Number Generator standalone page */
-.rng-standalone h1 {
-    text-align: center;
-    color: white;
-    padding-top: 20px;
+.rng-standalone {
+    max-width: calc(1000px + 2 * var(--page-gutter));
 }
 
 .rng-standalone p {
-    font-family: 'Roboto', sans-serif;
-    text-align: justify;
-    font-weight: 300;
+    color: var(--muted);
+}
+
+.rng-standalone p b {
+    color: var(--text);
 }
 
 .rng-standalone .source {
-    padding-bottom: 20px;
-    text-align: center;
+    padding-bottom: 24px;
 }
 
 .rng-standalone .description {
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+}
+
+.rng-standalone input {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    padding: 10px 12px;
+    width: 220px;
+    max-width: 100%;
+    margin-right: 8px;
+    transition: border-color var(--motion);
+}
+
+.rng-standalone input:hover,
+.rng-standalone input:focus {
+    border-color: var(--accent);
 }
 
 .rng-standalone button {
-    width: 80px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: var(--label-tracking);
+    border-radius: var(--radius);
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: background-color var(--motion);
+}
+
+.rng-standalone button:hover {
+    background: var(--accent-pressed);
 }
 
 .rng-standalone #wrapper {
-    max-width: 1000px;
     width: 100%;
     display: block;
     margin: 0 auto;
 }
 
 .rng-standalone #content {
-    margin: 0 auto;
-    padding-left: 10px;
-    padding-right: 20px;
-    float: left;
-    width: 49%;
+    margin: 0 auto 24px;
+    width: 100%;
+    max-width: 600px;
 }
 
 .rng-standalone #canvas {
-    float: right;
     display: block;
     margin: 0 auto;
-    max-width: 480px;
-    height: 580px;
-    max-height: 580px;
-}
-
-.rng-standalone #line {
-    background: #FCBA04;
-    height: 2px;
-    margin: 10px auto;
-    width: 50px;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
 }
 
 .rng-standalone #line2 {
-    background: white;
-    height: 2px;
-    margin: 20px 0px;
-    width: 50px;
+    background: var(--line);
+    height: 1px;
+    margin: 24px 0;
 }
 
-@media only screen and (max-width: 1020px) {
-    .rng-standalone #canvas {
-        float: none;
-    }
+@media screen and (min-width: 1020px) {
     .rng-standalone #content {
-        width: 90%;
-        max-width: 600px;
-        margin-bottom: 20px;
-        float: none;
+        float: left;
+        width: 49%;
+        margin: 0;
+        padding-right: 20px;
+    }
+
+    .rng-standalone #canvas {
+        float: right;
     }
 }

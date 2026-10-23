@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (target) {
                     event.preventDefault();
                     var hash = this.hash;
-                    target.scrollIntoView({ behavior: "smooth" });
+                    target.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
                     history.pushState(null, "", hash);
                 }
             }
@@ -34,7 +34,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
     document.querySelectorAll(".item").forEach(function(item) {
         item.addEventListener("click", function(event) {
-            if (window.innerWidth < 420) {
+            // The mobile nav is only displayed below the CSS breakpoint.
+            if (getComputedStyle(document.getElementById("mobile-nav")).display !== "none") {
                 toggleMobileNav(event);
             }
         });

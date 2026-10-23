@@ -1,14 +1,19 @@
 <div class="content after-header">
-    <div class="center tangents-list">
-        <h1 class="title-tangents">{{listHeading}}</h1>
-        <p class="tangents-intro">{{listIntro}}</p>
+    <section class="band page-band">
+        <div class="center tangents-list">
+            <h1 class="title-tangents">{{listHeading}}</h1>
+            <p class="tangents-intro">{{listIntro}}</p>
 
+            <nav class="tag-filter" aria-label="Filter by tag">
+                {{tagFilter}}
+            </nav>
+        </div>
+    </section>
+
+    <div class="center tangents-list">
         <!-- Temporary placeholder until Tangents gets real posts; remove this image and its CSS then. -->
         <img class="tangents-placeholder" src="{{basePath}}img/tangents-under-construction.png" width="512" height="512" alt="Under construction">
 
-        <nav class="tag-filter" aria-label="Filter by tag">
-            {{tagFilter}}
-        </nav>
         <ul class="post-list">
         {{postItems}}
         </ul>

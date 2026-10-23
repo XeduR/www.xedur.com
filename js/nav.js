@@ -7,7 +7,7 @@ var target = document.querySelector(this.hash);
 if (target) {
 event.preventDefault();
 var hash = this.hash;
-target.scrollIntoView({ behavior: "smooth" });
+target.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
 history.pushState(null, "", hash);
 }
 }
@@ -29,7 +29,7 @@ toggleMobileNav(event);
 });
 document.querySelectorAll(".item").forEach(function(item) {
 item.addEventListener("click", function(event) {
-if (window.innerWidth < 420) {
+if (getComputedStyle(document.getElementById("mobile-nav")).display !== "none") {
 toggleMobileNav(event);
 }
 });

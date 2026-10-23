@@ -204,7 +204,8 @@ def minify_css(text):
     """Remove CSS comments and collapse whitespace for a smaller file."""
     text = re.sub(r'/\*.*?\*/', '', text, flags=re.DOTALL)
     text = re.sub(r'\s+', ' ', text)
-    text = re.sub(r'\s*([{}:;,>~+])\s*', r'\1', text)
+    # '+' keeps its spaces: calc() requires whitespace around + and -.
+    text = re.sub(r'\s*([{}:;,>~])\s*', r'\1', text)
     text = re.sub(r';\s*}', '}', text)
     return text.strip()
 
@@ -313,7 +314,7 @@ def load_json(filename):
 def load_demo_data():
     """Return (manifests, demos_by_stem).
 
-    manifests[cat] = {sectionTitle, sectionDescription, demos: [stem, ...]}
+    manifests[cat] = {sectionIndex, band, sectionTitle, sectionDescription, demos: [stem, ...]}
     demos_by_stem[stem] = parsed front-matter dict for tools/demos/<stem>.md
     """
     manifests, demos_by_stem = {}, {}
@@ -690,10 +691,22 @@ def generate_section(category_name, manifest, demos_by_stem, card_template, sect
 
     html = section_template
     html = html.replace("{{sectionId}}", category_name)
+    html = html.replace("{{sectionIndex}}", manifest.get("sectionIndex", ""))
+    html = html.replace("{{sectionBand}}", " band" if manifest.get("band") else "")
     html = html.replace("{{sectionTitle}}", manifest.get("sectionTitle", ""))
     html = html.replace("{{sectionDescription}}", manifest.get("sectionDescription", ""))
     html = replace_indented(html, "{{sectionCards}}", cards_html.rstrip('\n'))
     return html.rstrip('\n')
+
+
+# A paragraph holding only bold text that ends in a colon ("**How to play:**")
+# is a label for the content below it, not emphasis.
+MICRO_LABEL_RE = re.compile(r"<p><strong>([^<]*:)</strong></p>")
+
+
+def mark_micro_labels(body_html):
+    """Turn label-only bold paragraphs in a rendered markdown body into micro-labels."""
+    return MICRO_LABEL_RE.sub(r'<p class="micro-label">\1</p>', body_html)
 
 
 def generate_social_tags(seo, url="", og_type="website", published=None, modified=None,
@@ -1000,6 +1013,7 @@ def build_demo_pages(base_template, navbar_html, footer_html,
 
             if build_page:
                 body_html, meta = markdown_engine.render_markdown(demo["_body"], base_path="../../")
+                body_html = mark_micro_labels(body_html)
                 for w in meta["warnings"]:
                     log_warning(f"{stem}.md: {w}")
 

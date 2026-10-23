@@ -1,9 +1,14 @@
 <div class="content after-header">
+    <section class="band page-band">
+        <div class="center tangents-post">
+            <a class="back-link" href="{{basePath}}tangents/"><span aria-hidden="true">&#8249;</span> Tangents</a>
+            <h1 class="title-tangent">{{postTitle}}</h1>
+            <p class="post-dates">{{postDates}}</p>
+            {{postTags}}
+        </div>
+    </section>
+
     <div class="center tangents-post">
-        <a class="back-link" href="{{basePath}}tangents/"><span aria-hidden="true">&#8249;</span> Tangents</a>
-        <h1 class="title-tangent">{{postTitle}}</h1>
-        <p class="post-dates">{{postDates}}</p>
-        {{postTags}}
         <article class="tangent-body">
         {{postBody}}
         </article>

@@ -1,16 +1,14 @@
 <script src="{{basePath}}js/detectMobile.js"></script>
 <script src="{{basePath}}js/loadDemo.js"></script>
 <div class="content after-header">
-    <div class="center">
+    <div class="center demo-page">
 
-        <a href="{{basePath}}">
-            <div class="icon">
-                <div class="icon-center">
-                    <p style="margin-bottom:6px;">&#8249;</p>
-                </div>
-            </div>
-        </a>
-        <h1 class="title-demo">{{demoTitle}}<a class="heading-link" href="" aria-label="Copy link to page"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h1>
+        <div class="demo-head">
+            <a class="back-icon" href="{{basePath}}" aria-label="Back to the front page">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+            </a>
+            <h1 class="title-demo">{{demoTitle}}<a class="heading-link" href="" aria-label="Copy link to page"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></h1>
+        </div>
 
         <div class="demo-body">
         {{demoBody}}

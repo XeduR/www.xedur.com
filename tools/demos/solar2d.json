@@ -1,4 +1,5 @@
 {
+    "sectionIndex": "03",
     "sectionTitle": "Widgets, libraries and other unassorted things for Solar2D",
     "sectionDescription": "These projects range from individual tables or concepts to more complex functions and systems. Essentially, these projects come in all shapes and sizes, but I either didn't consider them big enough or distinct enough to turn them into plugins.",
     "demos": [
