@@ -1,0 +1,99 @@
+{
+    "canvas": {
+        "width": 1200,
+        "height": 630
+    },
+
+    "colors": {
+        "background": "#0E0E0E",
+        "line": "#2A2A2A",
+        "text": "#FFFFFF",
+        "muted": "#8A8A8A",
+        "accent": "#FCBA04"
+    },
+
+    "fonts": {
+        "display": "SpaceGrotesk-Bold.ttf",
+        "body": "Inter-Regular.ttf",
+        "bodyStrong": "Inter-SemiBold.ttf"
+    },
+
+    "logo": "img/xedur.png",
+
+    "text": {
+        "siteName": "XeduR",
+        "tagline": "Code Portfolio",
+        "footer": "www.xedur.com",
+        "tangentsLabel": "Tangents",
+        "ellipsis": "..."
+    },
+
+    "styles": {
+        "heading": {
+            "font": "display",
+            "uppercase": true,
+            "tracking": -0.02,
+            "lineHeight": 0.95,
+            "color": "text"
+        },
+
+        "section": {
+            "font": "display",
+            "uppercase": true,
+            "tracking": -0.02,
+            "lineHeight": 1.0,
+            "color": "text"
+        },
+
+        "label": {
+            "font": "display",
+            "uppercase": true,
+            "tracking": 0.06,
+            "lineHeight": 1.0,
+            "color": "accent"
+        },
+
+        "lead": {
+            "font": "body",
+            "uppercase": false,
+            "tracking": 0,
+            "lineHeight": 1.6,
+            "color": "muted"
+        },
+
+        "footer": {
+            "font": "body",
+            "uppercase": false,
+            "tracking": 0,
+            "lineHeight": 1.6,
+            "color": "muted"
+        },
+
+        "name": {
+            "font": "bodyStrong",
+            "uppercase": false,
+            "tracking": 0,
+            "lineHeight": 1.6,
+            "color": "text"
+        }
+    },
+
+    "layout": {
+        "padding": 72,
+        "ruleWidth": 2,
+        "ruleGap": 36,
+        "logoSize": 232,
+        "columnGap": 24,
+        "headingSize": 132,
+        "taglineSize": 40,
+        "taglineGap": 36,
+        "footerSize": 30,
+        "labelSize": 24,
+        "labelGap": 24,
+        "sectionSizes": [88],
+        "nameSizes": [60, 54, 48, 44],
+        "nameMaxLines": 2,
+        "postTitleSizes": [56, 50, 44, 40, 36],
+        "postTitleMaxLines": 2
+    }
+}

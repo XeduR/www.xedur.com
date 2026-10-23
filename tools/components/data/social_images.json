@@ -1,8 +1,80 @@
 {
   "images": {
+    "demo/autotile/autotile-social.png": {
+      "generator": "0f16edde669ede497a04c24a935dec16874355038061625d522c1ab0de8edefb",
+      "inputs": "1fc8b63690fe5799b64cad60facebffa319b1e0efb4f9f544762673999d5b8c1"
+    },
+    "demo/break-the-loop/break-the-loop-social.png": {
+      "generator": "0f16edde669ede497a04c24a935dec16874355038061625d522c1ab0de8edefb",
+      "inputs": "6aebc60459a86f3398d8697d511d4772b19bc1d677d87b84ae9bf7131440b19e"
+    },
+    "demo/full-steam-ahead/full-steam-ahead-social.png": {
+      "generator": "0f16edde669ede497a04c24a935dec16874355038061625d522c1ab0de8edefb",
+      "inputs": "7926b978202ce6d68f5e9ed886443dd9a76f84fd2130fd8693a475a7251d6266"
+    },
+    "demo/gone-diggin/gone-diggin-social.png": {
+      "generator": "0f16edde669ede497a04c24a935dec16874355038061625d522c1ab0de8edefb",
+      "inputs": "193db9c90be1eba52a3da00b6e7ab32da5012b85cba7ac0076fb17b8fa7fdb3c"
+    },
+    "demo/grav-o-delivery/grav-o-delivery-social.png": {
+      "generator": "0f16edde669ede497a04c24a935dec16874355038061625d522c1ab0de8edefb",
+      "inputs": "5b9c5b61ffa9dc2f26fe5c7000b38f573f8a516cbe612598541d97a3f7547877"
+    },
+    "demo/last-stand/last-stand-social.png": {
+      "generator": "0f16edde669ede497a04c24a935dec16874355038061625d522c1ab0de8edefb",
+      "inputs": "392cec033b3cbc8fd41fc986396e8b4c6fa45e08d6f52919bf73f6df6dfd2dbe"
+    },
+    "demo/morph/morph-social.png": {
+      "generator": "0f16edde669ede497a04c24a935dec16874355038061625d522c1ab0de8edefb",
+      "inputs": "d17de3b7dae95ea787bc52e09df1338a5cecfbbfd51fe8062011b459fda2a70e"
+    },
+    "demo/performance-meter/performance-meter-social.png": {
+      "generator": "0f16edde669ede497a04c24a935dec16874355038061625d522c1ab0de8edefb",
+      "inputs": "8b9ca40a8ac92c663007292b6eb9aabfea578a538c4e88d25f95c97ae7b89390"
+    },
+    "demo/print-to-display/print-to-display-social.png": {
+      "generator": "0f16edde669ede497a04c24a935dec16874355038061625d522c1ab0de8edefb",
+      "inputs": "6f6bab14e7756bc14a46a7c79797f388d55ad3653535f43fa0fdce708024ef58"
+    },
+    "demo/progress-ring/progress-ring-social.png": {
+      "generator": "0f16edde669ede497a04c24a935dec16874355038061625d522c1ab0de8edefb",
+      "inputs": "8d3806b0a981985a9585326e0535ae590cbbc6740c0f331ef529cecab3095702"
+    },
+    "demo/pseudorandom-number-generator/pseudorandom-number-generator-social.png": {
+      "generator": "0f16edde669ede497a04c24a935dec16874355038061625d522c1ab0de8edefb",
+      "inputs": "c6dbf65f57e4622b59e7e0cf7b033fdf0e14f6a8f2ae115bc6adf034e27b4b71"
+    },
+    "demo/the-dark/the-dark-social.png": {
+      "generator": "0f16edde669ede497a04c24a935dec16874355038061625d522c1ab0de8edefb",
+      "inputs": "0b7ba2df2d4143dcbe5d5483694c42ee1df00289ea352044af8544b8e7c21a5e"
+    },
+    "demo/the-hunt-for-red-april/the-hunt-for-red-april-social.png": {
+      "generator": "0f16edde669ede497a04c24a935dec16874355038061625d522c1ab0de8edefb",
+      "inputs": "0fa2b92a79805e4d8144e53318912c895bcb9b906b89fc4fe9d22775e34c0b44"
+    },
+    "demo/uranium-236/uranium-236-social.png": {
+      "generator": "0f16edde669ede497a04c24a935dec16874355038061625d522c1ab0de8edefb",
+      "inputs": "b9723443f60f96693e23b1e1a53d7b27e9ff66cb09edf3833faf6c688f8aeddc"
+    },
+    "demo/verify-domain/verify-domain-social.png": {
+      "generator": "0f16edde669ede497a04c24a935dec16874355038061625d522c1ab0de8edefb",
+      "inputs": "96eb678f75e95fba37cea7877fab40d84fe4ccb61972348bca7934eb90d91409"
+    },
+    "demo/weaver/weaver-social.png": {
+      "generator": "0f16edde669ede497a04c24a935dec16874355038061625d522c1ab0de8edefb",
+      "inputs": "7cfbeb8220c220f3e23f72b7e9bdddae5eb3f0e912ee443262d82ad429d125cb"
+    },
+    "demo/xperiment/xperiment-social.png": {
+      "generator": "0f16edde669ede497a04c24a935dec16874355038061625d522c1ab0de8edefb",
+      "inputs": "bc460c92f76ab80cc2c9b9b3a5f3a54d2adc8d5398aa4d6b91c49e55e33de061"
+    },
+    "img/xedur-social.png": {
+      "generator": "0f16edde669ede497a04c24a935dec16874355038061625d522c1ab0de8edefb",
+      "inputs": "1515dd0a7a99b83bf4e898cee1963f41405cc5c1d193d58c73ffd0f15830ac94"
+    },
     "tangents/tangents-social.png": {
-      "generator": "4ed6a3347379491103b50d62713f3584d225322eca2d671e49929b47137b87aa",
-      "inputs": "10e83e485dd46ab4e1b0807710ac113053e287d16742a3a1635d5f7ee7b9da11"
+      "generator": "0f16edde669ede497a04c24a935dec16874355038061625d522c1ab0de8edefb",
+      "inputs": "e6174010ee65dde7fc1540d6a8011e05c9c15213df3fe8df81dbc7174429daf4"
     }
   },
   "version": 1

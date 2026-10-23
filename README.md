@@ -30,7 +30,7 @@ www.xedur.com/
 └── tools/                      # Build system
     ├── update_website.py       # Site build script
     ├── markdown_engine.py      # Markdown + front-matter renderer
-    ├── generate_social_images.py  # Tangents social cards
+    ├── generate_social_images.py  # Social share cards
     ├── html5_build_patcher.py  # Solar2D HTML5 post-build patcher
     ├── css/styles.css          # Stylesheet, inlined into every page
     ├── js/                     # JS source (copied to root js/)
@@ -73,9 +73,11 @@ The committed site is built with `min`. A plain run rewrites every page and `js/
 | `tangents/feed.xml` | Atom 1.0 feed of the newest posts |
 | `tangents/<slug>/<slug>-social.png` | Auto-generated 1200x630 social card (unless `socialImage` names a custom file) |
 | `tangents/tangents-social.png` | Generic social card for the index, pagination, and tag pages |
+| `img/xedur-social.png` | Frontpage social card, shared by the 404 page |
+| `demo/<folder>/<folder>-social.png` | Social card for each demo page, standalone pages included |
 | `js/*.js` | Copied from `tools/js/` (minified with `min`) |
 
-The build never touches `img/`, `fonts/`, or the app binaries inside `demo/` folders; those are managed by hand. CSS lives in `tools/css/styles.css` and is inlined into every page, so there is no root `css/` folder. A sitemap entry gets today's date only when its page's content changed.
+Apart from the generated social cards listed above, the build never touches `img/` or `fonts/`, and in `demo/<folder>/` it writes only the pages and the card, never the hand-managed screenshots, app binaries, or assets. CSS lives in `tools/css/styles.css` and is inlined into every page, so there is no root `css/` folder. A sitemap entry gets today's date only when its page's content changed.
 
 ### Incremental builds and caching
 
@@ -218,7 +220,7 @@ It patches the `.bin` and the generated `index.html`:
 
 ### SEO overrides
 
-A regular demo's meta description defaults to `descriptionShort`, and its social tags default to `ogTitle` = `XeduR - <title>`, `ogDescription` = `descriptionShort`, and `ogImageAlt` = `Screenshot of <title>`. Override any of them with front-matter keys:
+A regular demo's meta description defaults to `descriptionShort`, and its social tags default to `ogTitle` = `XeduR - <title>`, `ogDescription` = `descriptionShort`, and `ogImageAlt` = `XeduR - <title>`. Override any of them with front-matter keys:
 
 ```
 metaDescription: Custom meta description.
@@ -227,7 +229,7 @@ ogDescription: Description for social media shares
 ogImageAlt: Alt text for the preview image
 ```
 
-`ogImage` is always `demo/<folder>/<folder>-large.jpg`. Keywords fall back to the site-wide defaults.
+`ogImage` is the demo's generated social card (see Social share images). Keywords fall back to the site-wide defaults.
 
 ## Tangents (writing system)
 
@@ -276,22 +278,31 @@ List pages hold 10 posts, newest first (`/tangents/`, `/tangents/2/`, and so on)
 
 ### Social share images
 
-Every post page gets a branded 1200x630 card (the X mark, a "Tangents" label, and the post title) at `tangents/<slug>/<slug>-social.png`. One generic card at `tangents/tangents-social.png` serves the index, pagination, and tag pages.
+Every page shares a branded 1200x630 card: the "XeduR" heading and the X mark at the top, and a band under a hairline at the bottom that names the page.
 
-The `socialImage` key overrides the default:
+- Post pages: `tangents/<slug>/<slug>-social.png`, with a "Tangents" label above the post title.
+- Tangents index, pagination, and tag pages: one generic card at `tangents/tangents-social.png`.
+- Frontpage and 404: `img/xedur-social.png`, with the tagline under the heading and the site address in the band.
+- Demo pages, standalone ones included: `demo/<folder>/<folder>-social.png`, with the demo title in the band. External demos have no page and no card.
+
+Colours, fonts, text, sizes, and layout numbers live in `tools/components/data/social_cards.json`. Its text metrics echo `tools/css/styles.css` (display tracking, label tracking, and each echoed element's line-height), and `tools/tests/test_social_cards.py` fails when the two drift apart.
+
+A demo or standalone page whose card is missing falls back to the frontpage card, then to `seo.ogImage` in `frontpage.json`. Its `og:image:alt` is "XeduR - <title>" unless the demo's front matter sets `ogImageAlt`.
+
+The `socialImage` key in a post overrides the default:
 
 - Absent or `auto`: generate the card.
 - `<filename>`: use the committed `tangents/<slug>/<filename>` as is; 1200x630 is recommended. A missing file warns and falls back to the generated card.
 - `<slug>-social.png`, the generated name, is a build error.
 
-Generated cards are committed. A card regenerates only when the generator script, the post title, or the logo and font assets change, tracked in `tools/components/data/social_images.json`. Deleting a post prunes its generated card; a custom `socialImage` file is never pruned.
+Generated cards are committed. A card regenerates only when the generator script, its kind and text, `social_cards.json`, or the logo and font assets change, tracked in `tools/components/data/social_images.json`. Deleting a post or demo prunes its generated card; a custom `socialImage` file is never pruned.
 
-Rendering needs [Pillow](https://python-pillow.github.io/), which is imported only when a card actually renders, so an up-to-date build never loads it. A needed render without Pillow fails the build with a clear message. Card text uses the Roboto files in `tools/components/fonts/`.
+Rendering needs [Pillow](https://python-pillow.github.io/), which is imported only when a card actually renders, so an up-to-date build never loads it. A needed render without Pillow fails the build with a clear message. Card text uses the Space Grotesk and Inter files in `tools/components/fonts/`.
 
 The generator also runs on its own while iterating on the card design:
 
 ```bash
-python generate_social_images.py              # every non-draft post + the generic card
+python generate_social_images.py              # every card: posts, generic, frontpage, demos
 python generate_social_images.py force        # regenerate everything (writes only what changed)
 python generate_social_images.py <slug> ...   # only the named posts
 ```

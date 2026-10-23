@@ -116,11 +116,13 @@ GENERATED_OUTPUT_PATTERNS = [
     re.compile(r"^demo/[^/]+/app/index\.html$"),
     re.compile(r"^tangents/feed\.xml$"),
     re.compile(r"^tangents/(?:[^/]+/)*index\.html$"),
-    # Auto-generated social cards (per-post and the generic index card). Custom
-    # socialImage files never match these and are never recorded, so pruning
-    # cannot touch them.
+    # Auto-generated social cards (per-post, the generic index card, the frontpage
+    # card, and per-demo cards). Custom socialImage files never match these and
+    # are never recorded, so pruning cannot touch them.
     re.compile(r"^tangents/[^/]+/[^/]+-social\.png$"),
     re.compile(r"^tangents/tangents-social\.png$"),
+    re.compile(r"^img/xedur-social\.png$"),
+    re.compile(r"^demo/([^/]+)/\1-social\.png$"),
 ]
 
 # Loaded from the previous manifest by load_build_cache(); read by should_build().
@@ -646,6 +648,31 @@ def is_standalone(demo):
     return demo.get("type") == "standalone"
 
 
+def load_standalone_config(folder):
+    """Parsed tools/standalone/<folder>/config.json, or {} when it is absent."""
+    config_path = os.path.join(STANDALONE_DIR, folder, "config.json")
+    if not os.path.exists(config_path):
+        return {}
+    with open(config_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def demo_page_title(demo):
+    """The title a demo page shows; a standalone config.json title wins over front matter."""
+    if is_standalone(demo):
+        return load_standalone_config(demo["folder"]).get("title", demo.get("title", ""))
+    return demo.get("title", "")
+
+
+def social_card_demos(demos_by_stem):
+    """Card inputs for every demo with a page on the site; external demos have none."""
+    return [
+        {"folder": demo["folder"], "title": demo_page_title(demo)}
+        for _, demo in sorted(demos_by_stem.items())
+        if not is_external(demo)
+    ]
+
+
 def generate_card(demo, card_template):
     """Generate a single project card from the card template."""
     if is_external(demo):
@@ -715,8 +742,8 @@ def generate_social_tags(seo, url="", og_type="website", published=None, modifie
 
     og_type defaults to "website" so existing callers are unchanged; posts pass
     "article" with published/modified dates to emit the article:* time tags.
-    image_width/image_height, when both set, add og:image:width/height (Tangents
-    pages, whose card is 1200x630); the Twitter mirror has no dimension tags.
+    image_width/image_height, when both set, add og:image:width/height (pages
+    whose image is a generated card); the Twitter mirror has no dimension tags.
     """
     if not seo:
         return ""
@@ -764,6 +791,20 @@ def generate_social_tags(seo, url="", og_type="website", published=None, modifie
         twitter_lines.append(f'<meta name="twitter:image:alt" content="{og_image_alt}">')
 
     return "\n".join(og_lines) + "\n\n" + "\n".join(twitter_lines)
+
+
+def social_card_image(card_rel=None):
+    """Return (url, width, height) for a page's og:image.
+
+    Falls back from the page's own card to the frontpage card, then to the static
+    frontpage.json image, whose size is unknown and so is declared as 0x0.
+    """
+    rel = generate_social_images.existing_card(card_rel)
+    if rel:
+        canvas = generate_social_images.load_card_config()["canvas"]
+        return f"{SITE_BASE_URL}/{rel}", canvas["width"], canvas["height"]
+    default = (load_json("frontpage.json").get("seo") or {}).get("ogImage", "")
+    return default, 0, 0
 
 
 def wrap_in_base(base_template, navbar_html, footer_html, body_content,
@@ -892,8 +933,12 @@ def build_frontpage(base_template, navbar_html, footer_html,
     page_title = frontpage_data.get("pageTitle", "")
     meta_desc = frontpage_data.get("metaDescription", "")
     meta_kw = frontpage_data.get("metaKeywords", DEFAULT_KEYWORDS)
+    frontpage_seo = dict(frontpage_data.get("seo") or {})
+    og_image, image_width, image_height = social_card_image()
+    frontpage_seo["ogImage"] = og_image
     og_tags = generate_social_tags(
-        frontpage_data.get("seo"), url=f"{SITE_BASE_URL}/"
+        frontpage_seo, url=f"{SITE_BASE_URL}/",
+        image_width=image_width, image_height=image_height,
     )
 
     # JSON-LD: WebSite for xedur.com referencing the canonical Person on erantanen.com.
@@ -954,14 +999,26 @@ def build_404(base_template, navbar_html, footer_html, four04_template,
     paths_json = json.dumps(valid_paths) if valid_paths else "[]"
     body = body.replace("{{validPaths}}", paths_json)
 
+    # The 404 shares the frontpage card and its alt text.
+    meta_desc = (
+        "This is the 404 page for XeduR.com. "
+        "If you are seeing this, then you are lost."
+    )
+    og_image, image_width, image_height = social_card_image()
+    seo = {
+        "ogTitle": "XeduR - 404",
+        "ogDescription": meta_desc,
+        "ogImage": og_image,
+        "ogImageAlt": (load_json("frontpage.json").get("seo") or {}).get("ogImageAlt", "XeduR"),
+    }
+    og_tags = generate_social_tags(seo, image_width=image_width, image_height=image_height)
+
     page = wrap_in_base(
         base_template, navbar_html, footer_html,
         body_content=body,
         page_title="XeduR - 404",
-        meta_description=(
-            "This is the 404 page for XeduR.com. "
-            "If you are seeing this, then you are lost."
-        ),
+        meta_description=meta_desc,
+        og_tags=og_tags,
         base_path="/",
         extra_head='<meta name="robots" content="noindex">',
     )
@@ -998,7 +1055,8 @@ def build_demo_pages(base_template, navbar_html, footer_html,
             # transiently missing binary must not leave a live page unrecorded,
             # or prune_orphans would delete it over a build hiccup.
             page_rel = f"demo/{folder}/index.html"
-            page_deps = [md_rel, demo_tpl_rel, repo_public_rel, repo_private_rel]
+            card_rel = generate_social_images.demo_card_rel(folder)
+            page_deps = [md_rel, demo_tpl_rel, repo_public_rel, repo_private_rel, card_rel]
             build_page = should_build(page_rel, page_deps)
 
             app_dir = os.path.join(demo_dir, "app")
@@ -1024,15 +1082,19 @@ def build_demo_pages(base_template, navbar_html, footer_html,
                 body = replace_indented(body, "{{demoBody}}", body_html)
 
                 # SEO from flat front-matter keys (nested seo object retired).
+                og_image, image_width, image_height = social_card_image(card_rel)
                 demo_seo = {
                     "ogTitle": demo.get("ogTitle", f"XeduR - {title}"),
                     "ogDescription": demo.get("ogDescription", desc_short),
-                    "ogImage": f"{SITE_BASE_URL}/demo/{folder}/{folder}-large.jpg",
-                    "ogImageAlt": demo.get("ogImageAlt", f"Screenshot of {title}"),
+                    "ogImage": og_image,
+                    "ogImageAlt": demo.get("ogImageAlt", f"XeduR - {title}"),
                 }
                 meta_desc = demo.get("metaDescription") or desc_short
                 demo_url = f"{SITE_BASE_URL}/demo/{folder}/"
-                og_tags = generate_social_tags(demo_seo, url=demo_url)
+                og_tags = generate_social_tags(
+                    demo_seo, url=demo_url,
+                    image_width=image_width, image_height=image_height,
+                )
 
                 # Wrap in base template
                 page = wrap_in_base(
@@ -1122,11 +1184,13 @@ def build_standalone_pages(base_template, navbar_html, footer_html, manifests, d
             # Record and decide before the source-folder check so a temporarily
             # missing tools/standalone/<folder>/ never gets the live page pruned.
             page_rel = f"demo/{folder}/index.html"
+            card_rel = generate_social_images.demo_card_rel(folder)
             deps = [
                 _rel(os.path.join(DEMOS_DIR, f"{stem}.md")),
                 _rel(os.path.join(standalone_dir, "content.html")),
                 _rel(os.path.join(standalone_dir, "head.html")),
                 _rel(os.path.join(standalone_dir, "config.json")),
+                card_rel,
             ]
             build = should_build(page_rel, deps)
 
@@ -1139,7 +1203,6 @@ def build_standalone_pages(base_template, navbar_html, footer_html, manifests, d
             # Load standalone project files
             content_path = os.path.join(standalone_dir, "content.html")
             head_path = os.path.join(standalone_dir, "head.html")
-            config_path = os.path.join(standalone_dir, "config.json")
 
             with open(content_path, "r", encoding="utf-8") as f:
                 body_content = f.read()
@@ -1149,20 +1212,22 @@ def build_standalone_pages(base_template, navbar_html, footer_html, manifests, d
                 with open(head_path, "r", encoding="utf-8") as f:
                     extra_head = f.read()
 
-            config = {}
-            if os.path.exists(config_path):
-                with open(config_path, "r", encoding="utf-8") as f:
-                    config = json.load(f)
-
-            title = config.get("title", demo.get("title", ""))
+            config = load_standalone_config(folder)
+            title = demo_page_title(demo)
             meta_desc = config.get("metaDescription", demo.get("descriptionShort", ""))
             meta_keywords = config.get("metaKeywords", DEFAULT_KEYWORDS)
 
             demo_url = f"{SITE_BASE_URL}/demo/{folder}/"
             standalone_seo = dict(config.get("seo", {}))
-            standalone_seo["ogImage"] = f"{SITE_BASE_URL}/demo/{folder}/{folder}-large.jpg"
-            standalone_seo.setdefault("ogImageAlt", f"Screenshot of {title}")
-            og_tags = generate_social_tags(standalone_seo, url=demo_url)
+            og_image, image_width, image_height = social_card_image(card_rel)
+            standalone_seo["ogImage"] = og_image
+            standalone_seo["ogImageAlt"] = (
+                demo.get("ogImageAlt") or standalone_seo.get("ogImageAlt") or f"XeduR - {title}"
+            )
+            og_tags = generate_social_tags(
+                standalone_seo, url=demo_url,
+                image_width=image_width, image_height=image_height,
+            )
 
             # The output lives at demo/<folder>/index.html, which is 2 levels
             # below site root, same as regular demo pages.
@@ -1965,7 +2030,8 @@ def main():
     # the sitemap and 404 fuzzy matcher can enumerate the post/tag/pagination pages.
     tangents_posts = load_tangents_posts()
 
-    # Resolve each post's social card (custom-or-generated) and the generic card.
+    # Resolve each post's social card (custom-or-generated), the generic card, the
+    # frontpage card, and one card per demo page.
     # The generator manages its own regeneration through a committed hash manifest,
     # so it is not a GLOBAL_SOURCES entry; force flows through so a forced build
     # also refreshes every card (its byte-compare keeps identical output write-free).
@@ -1973,14 +2039,15 @@ def main():
         [{"slug": p["slug"], "title": p["title"], "socialImage": p["social_image"]}
          for p in tangents_posts],
         force=FORCE,
+        demos=social_card_demos(demos_by_stem),
     )
     for p in tangents_posts:
         p["og_image"] = f"{SITE_BASE_URL}/{social['og_image'][p['slug']]}"
     tangents_card_url = f"{SITE_BASE_URL}/{social['index_card']}"
     for warning in social["warnings"]:
         log_warning(warning)
-    # Record auto-generated cards (generated or skipped) so a deleted post's card
-    # is pruned like its page. Custom images are never recorded, so the prune
+    # Record auto-generated cards (generated or skipped) so a deleted post's or
+    # demo's card is pruned like its page. Custom images are never recorded, so the prune
     # guard leaves them untouched.
     for rel in social["generated"]:
         record_output(rel)

@@ -1,27 +1,9 @@
 #!/usr/bin/env python3
 """
-Social share card generator for www.xedur.com Tangents posts.
-
-Renders a branded 1200x630 Open Graph / Twitter card per post (X mark, the
-"Tangents" label, and the post title) plus one generic card for the index,
-pagination, and tag pages. A card is regenerated only when the generator
-script, the post title, or the logo/font assets change; the pair of SHA-256
-hashes that gates this lives in the committed manifest
-components/data/social_images.json.
-
-Importable by update_website.py (same directory, like markdown_engine) and
-runnable standalone. Pillow is imported lazily inside the render path only, so a
-fully up-to-date build never imports it.
-
-Vendored fonts (components/fonts/, part of the card-input hash):
-    Roboto v3.016, hinted/static (full glyph coverage for arbitrary titles).
-    Source: https://github.com/googlefonts/roboto-3-classic/releases/download/v3.016/Roboto_v3.016.zip
-    License: SIL Open Font License 1.1 (components/fonts/Roboto-OFL.txt).
-    Roboto-Regular.ttf sha256 9f300202f482ad59f8b13bc3131a295744d14fd530fa3765a0a11ec87264d203
-    Roboto-Bold.ttf    sha256 44f13e570a8b3fc42240abfcb3d72fe298f3dd6a25db0c78d0c2495dbd0e9121
+Social share cards (posts, Tangents, frontpage, demos) for www.xedur.com.
 
 Usage:
-    python generate_social_images.py              # every non-draft post + generic card
+    python generate_social_images.py              # every card: posts, generic, frontpage, demos
     python generate_social_images.py force        # regenerate everything
     python generate_social_images.py <slug> ...   # only the named posts (manifest kept)
 """
@@ -31,6 +13,7 @@ import os
 import sys
 import json
 import hashlib
+from dataclasses import dataclass
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(SCRIPT_DIR)
@@ -40,44 +23,15 @@ FONTS_DIR = os.path.join(COMPONENTS_DIR, "fonts")
 TANGENTS_SRC_DIR = os.path.join(SCRIPT_DIR, "tangents")
 
 MANIFEST_FILE = os.path.join(DATA_DIR, "social_images.json")
-
-# Card assets.
-LOGO_FILE = os.path.join(ROOT_DIR, "img", "xedur.png")
-FONT_REGULAR = os.path.join(FONTS_DIR, "Roboto-Regular.ttf")
-FONT_BOLD = os.path.join(FONTS_DIR, "Roboto-Bold.ttf")
+CONFIG_FILE = os.path.join(DATA_DIR, "social_cards.json")
 
 # Absolute path to this script, hashed to invalidate every card on a script edit.
 _SELF_PATH = os.path.abspath(__file__)
 
-# Card contract (see task-4 spec). These are hashed into every card's inputs, so
-# changing any of them regenerates all cards.
-CARD_WIDTH = 1200
-CARD_HEIGHT = 630
-CARD_LABEL = "Tangents"
 INDEX_CARD_REL = "tangents/tangents-social.png"
+FRONTPAGE_CARD_REL = "img/xedur-social.png"
 
-# Palette from the site stylesheet (tools/css/styles.css): background #0E0E0E,
-# accent gold #FCBA04, white text; the URL line uses a muted gray.
-BACKGROUND_COLOR = (14, 14, 14)
-ACCENT_COLOR = (252, 186, 4)
-TEXT_COLOR = (255, 255, 255)
-MUTED_COLOR = (138, 138, 138)
-
-# Layout, in pixels. Tuned so the title block never collides with the mark and
-# every line stays inside the card bounds (verified against long/Nordic titles).
-PADDING = 80
-LOGO_SIZE = 360
-LABEL_SIZE = 46
-LABEL_Y = 92
-TITLE_Y = 192
-TITLE_GAP = 48
-MAX_TITLE_LINES = 3
-LINE_SPACING = 1.18
-FOOTER_SIZE = 32
-FOOTER_TEXT = "www.xedur.com"
-GENERIC_LABEL_SIZE = 88
-GENERIC_GAP = 44
-ELLIPSIS = "..."
+CARD_KINDS = ("post", "tangents", "frontpage", "demo")
 
 
 class SocialImageError(Exception):
@@ -119,19 +73,34 @@ def _generator_hash():
     return hashlib.sha256(_read_bytes(_SELF_PATH)).hexdigest()
 
 
-def _inputs_hash(title):
-    """SHA-256 over a card's content inputs (dimensions, label, title, assets).
+def load_card_config() -> dict:
+    """Parse the card config: colours, fonts, text, and layout numbers."""
+    return json.loads(_read_bytes(CONFIG_FILE).decode("utf-8"))
 
-    The generic card hashes with an empty title. The byte sequence is fixed by
-    the task-4 spec so the manifest stays comparable across runs.
+
+def _font_path(config: dict, role: str) -> str:
+    return os.path.join(FONTS_DIR, config["fonts"][role])
+
+
+def _logo_path(config: dict) -> str:
+    return os.path.join(ROOT_DIR, config["logo"].replace("/", os.sep))
+
+
+def _inputs_hash(kind: str, text: str) -> str:
+    """SHA-256 over a card's content inputs (dimensions, kind, text, config, assets).
+
+    The site-wide cards hash with empty text.
     """
+    config = load_card_config()
+    canvas = config["canvas"]
     h = hashlib.sha256()
-    h.update(f"{CARD_WIDTH}x{CARD_HEIGHT}\x00{CARD_LABEL}\x00{title}\x00".encode("utf-8"))
-    h.update(_read_bytes(LOGO_FILE))
+    h.update(f"{canvas['width']}x{canvas['height']}\x00{kind}\x00{text}\x00".encode("utf-8"))
+    h.update(_read_bytes(CONFIG_FILE))
     h.update(b"\x00")
-    h.update(_read_bytes(FONT_BOLD))
-    h.update(b"\x00")
-    h.update(_read_bytes(FONT_REGULAR))
+    h.update(_read_bytes(_logo_path(config)))
+    for role in sorted(config["fonts"]):
+        h.update(b"\x00")
+        h.update(_read_bytes(_font_path(config, role)))
     return h.hexdigest()
 
 
@@ -171,21 +140,81 @@ def _save_manifest(images):
 # ------------------------------------------------------------------------------------
 # Rendering (Pillow, imported lazily)
 
-def _title_font_size(title):
-    """Step the title size down as the title grows, per the spec's rough bands."""
-    length = len(title)
-    if length <= 40:
-        return 72
-    if length <= 70:
-        return 60
-    return 50
+@dataclass(frozen=True)
+class TextStyle:
+    """One text role at one size, with the CSS metrics the site applies to it."""
+
+    font: object
+    size: int
+    tracking: float
+    advance: int
+    color: tuple[int, int, int]
+    uppercase: bool
+
+    def prepare(self, text: str) -> str:
+        return text.upper() if self.uppercase else text
 
 
-def _wrap_lines(draw, text, font, max_width, max_lines):
+_FONT_CACHE = {}
+
+
+def _hex_color(value: str) -> tuple[int, int, int]:
+    value = value.lstrip("#")
+    return tuple(int(value[i:i + 2], 16) for i in (0, 2, 4))
+
+
+def _load_font(path: str, size: int):
+    key = (path, size)
+    if key not in _FONT_CACHE:
+        from PIL import ImageFont
+
+        _FONT_CACHE[key] = ImageFont.truetype(path, size)
+    return _FONT_CACHE[key]
+
+
+def make_style(config: dict, name: str, size: int) -> TextStyle:
+    """Build a text role from the config; tracking is em-relative and the line
+    advance is round(size * line-height), as the browser lays it out."""
+    spec = config["styles"][name]
+    return TextStyle(
+        font=_load_font(_font_path(config, spec["font"]), size),
+        size=size,
+        tracking=spec["tracking"] * size,
+        advance=round(size * spec["lineHeight"]),
+        color=_hex_color(config["colors"][spec["color"]]),
+        uppercase=spec["uppercase"],
+    )
+
+
+def tracked_width(text: str, style: TextStyle) -> float:
+    """Width of a run as draw_tracked lays it out, so measure and draw always agree."""
+    if not text:
+        return 0.0
+    return style.font.getlength(text) + style.tracking * (len(text) - 1)
+
+
+def draw_tracked(draw, x: float, baseline: float, text: str, style: TextStyle) -> float:
+    """Draw a run glyph by glyph, as a whole-string draw cannot space interior
+    glyphs the way CSS letter-spacing does. Each glyph sits at its pen position
+    in the kerned whole run (the run through it, minus its own advance), plus the
+    tracking, because the browser keeps kerning under letter-spacing. Returns the
+    x where the run ends."""
+    for i, ch in enumerate(text):
+        offset = style.font.getlength(text[:i + 1]) - style.font.getlength(ch) + style.tracking * i
+        draw.text((x + offset, baseline), ch, font=style.font, fill=style.color, anchor="ls")
+    return x + tracked_width(text, style)
+
+
+def cap_height(style: TextStyle) -> int:
+    return -style.font.getbbox("H", anchor="ls")[1]
+
+
+def wrap_lines(text: str, style: TextStyle, max_width: float,
+               max_lines: int) -> tuple[list[str], bool]:
     """Greedily wrap text into at most max_lines lines within max_width pixels.
 
     Returns (lines, overflowed). A single word wider than max_width still takes
-    its own line; it is ellipsized later if it is the overflowing last line.
+    its own line; fit_text ellipsizes it.
     """
     words = text.split()
     lines = []
@@ -194,27 +223,87 @@ def _wrap_lines(draw, text, font, max_width, max_lines):
     while i < n and len(lines) < max_lines:
         line = words[i]
         i += 1
-        while i < n and draw.textlength(f"{line} {words[i]}", font=font) <= max_width:
+        while i < n and tracked_width(f"{line} {words[i]}", style) <= max_width:
             line = f"{line} {words[i]}"
             i += 1
         lines.append(line)
     return lines, i < n
 
 
-def _ellipsize(draw, text, font, max_width):
-    """Trim text so text + '...' fits within max_width pixels."""
-    if draw.textlength(text + ELLIPSIS, font=font) <= max_width:
-        return text + ELLIPSIS
+def ellipsize(text: str, style: TextStyle, max_width: float, ellipsis: str) -> str:
+    """Trim text so text + ellipsis fits within max_width pixels."""
+    if tracked_width(text + ellipsis, style) <= max_width:
+        return text + ellipsis
     trimmed = text
-    while trimmed and draw.textlength(trimmed + ELLIPSIS, font=font) > max_width:
+    while trimmed and tracked_width(trimmed + ellipsis, style) > max_width:
         trimmed = trimmed[:-1]
-    return (trimmed.rstrip() + ELLIPSIS) if trimmed.strip() else ELLIPSIS
+    return (trimmed.rstrip() + ellipsis) if trimmed.strip() else ellipsis
 
 
-def _render_card(title, generic):
-    """Render a card to PNG bytes. Imports Pillow lazily and fails loudly if absent."""
+def fit_text(config: dict, style_name: str, text: str, sizes: list[int], max_width: float,
+             max_lines: int) -> tuple[TextStyle, list[str]]:
+    """Pick the largest size whose wrap fits; the smallest size ellipsizes what still overflows."""
+    for size in sizes:
+        style = make_style(config, style_name, size)
+        lines, overflowed = wrap_lines(style.prepare(text), style, max_width, max_lines)
+        if not overflowed and all(tracked_width(line, style) <= max_width for line in lines):
+            return style, lines
+
+    ellipsis = style.prepare(config["text"]["ellipsis"])
+    for i, line in enumerate(lines):
+        last = i == len(lines) - 1
+        if tracked_width(line, style) > max_width or (last and overflowed):
+            lines[i] = ellipsize(line, style, max_width, ellipsis)
+    return style, lines
+
+
+def block_height(lines: list[str], style: TextStyle) -> int:
+    """Distance from the first line's cap top to the last line's baseline."""
+    return cap_height(style) + style.advance * (len(lines) - 1)
+
+
+def draw_block(draw, x: float, cap_top: float, lines: list[str], style: TextStyle) -> float:
+    """Draw lines with the first cap top at cap_top; returns the last baseline."""
+    baseline = cap_top + cap_height(style)
+    for i, line in enumerate(lines):
+        if i:
+            baseline += style.advance
+        draw_tracked(draw, x, baseline, line, style)
+    return baseline
+
+
+def _draw_rule(draw, config: dict, x: int, y: int, width: int, thickness: int) -> None:
+    color = _hex_color(config["colors"]["line"])
+    draw.rectangle([x, y, x + width - 1, y + thickness - 1], fill=color)
+
+
+def _load_logo(config: dict, size: int):
+    """The mark cropped to its visible pixels and scaled to fit a size x size box,
+    so it aligns to the padding by ink rather than by the PNG's transparent margin."""
+    from PIL import Image
+
+    logo = Image.open(_logo_path(config)).convert("RGBA")
+    logo = logo.crop(logo.getbbox())
+    scale = size / max(logo.width, logo.height)
+    target = (round(logo.width * scale), round(logo.height * scale))
+    return logo.resize(target, Image.Resampling.LANCZOS)
+
+
+def _single_line(text: str, style: TextStyle, max_width: float, ellipsis: str) -> str:
+    if tracked_width(text, style) <= max_width:
+        return text
+    return ellipsize(text, style, max_width, ellipsis)
+
+
+def render_card(kind: str, text: str = "", config: dict | None = None) -> bytes:
+    """Render one card to PNG bytes.
+
+    kind is one of CARD_KINDS; text is the post title or demo name and is unused
+    by the frontpage and generic Tangents cards. Imports Pillow lazily and fails
+    loudly if it is absent.
+    """
     try:
-        from PIL import Image, ImageDraw, ImageFont
+        from PIL import Image, ImageDraw
     except ImportError as exc:
         raise SocialImageError(
             "Pillow is required to render a social card but is not installed. "
@@ -222,80 +311,90 @@ def _render_card(title, generic):
             "or commit a custom image and name it via the post's socialImage key."
         ) from exc
 
-    card = Image.new("RGBA", (CARD_WIDTH, CARD_HEIGHT), BACKGROUND_COLOR + (255,))
+    if kind not in CARD_KINDS:
+        raise SocialImageError(f"unknown card kind {kind!r}")
+
+    config = config if config is not None else load_card_config()
+    size = (config["canvas"]["width"], config["canvas"]["height"])
+    card = Image.new("RGB", size, _hex_color(config["colors"]["background"]))
     draw = ImageDraw.Draw(card)
+    _draw_card(card, draw, config, kind, text)
 
-    logo = Image.open(LOGO_FILE).convert("RGBA")
-    logo = logo.resize((LOGO_SIZE, LOGO_SIZE), Image.Resampling.LANCZOS)
-
-    if generic:
-        _draw_generic(card, draw, logo, ImageFont)
-    else:
-        _draw_post(card, draw, logo, ImageFont, title)
-
-    # Flatten onto the opaque background and encode. Pillow's default PNG encode
-    # writes no timestamp chunk, so identical inputs produce identical bytes.
+    # Pillow's default PNG encode writes no timestamp chunk, so identical inputs
+    # produce identical bytes.
     buffer = io.BytesIO()
-    card.convert("RGB").save(buffer, format="PNG")
+    card.save(buffer, format="PNG")
     return buffer.getvalue()
 
 
-def _draw_post(card, draw, logo, image_font, title):
-    """Post card: mark on the right, label + wrapped title on the left, URL below."""
-    logo_x = CARD_WIDTH - PADDING - LOGO_SIZE
-    logo_y = (CARD_HEIGHT - LOGO_SIZE) // 2
-    card.alpha_composite(logo, (logo_x, logo_y))
+def _draw_card(card, draw, config: dict, kind: str, text: str) -> None:
+    """Site heading top-left, mark top-right, then a hairline over the page's
+    band across the full width at the bottom."""
+    spec = config["layout"]
+    labels = config["text"]
+    ellipsis = labels["ellipsis"]
+    width, height = card.size
+    padding = spec["padding"]
+    content_width = width - 2 * padding
 
-    label_font = image_font.truetype(FONT_REGULAR, LABEL_SIZE)
-    draw.text((PADDING, LABEL_Y), CARD_LABEL, font=label_font, fill=ACCENT_COLOR, anchor="la")
+    logo = _load_logo(config, spec["logoSize"])
+    card.paste(logo, (width - padding - logo.width, padding), logo)
 
-    title_font = image_font.truetype(FONT_BOLD, _title_font_size(title))
-    text_max_width = logo_x - TITLE_GAP - PADDING
-    lines, overflowed = _wrap_lines(draw, title, title_font, text_max_width, MAX_TITLE_LINES)
-    if lines and (overflowed or draw.textlength(lines[-1], font=title_font) > text_max_width):
-        lines[-1] = _ellipsize(draw, lines[-1], title_font, text_max_width)
+    heading = make_style(config, "heading", spec["headingSize"])
+    heading_baseline = draw_block(draw, padding, padding, [heading.prepare(labels["siteName"])], heading)
 
-    line_height = round(_title_font_size(title) * LINE_SPACING)
-    y = TITLE_Y
-    for line in lines:
-        draw.text((PADDING, y), line, font=title_font, fill=TEXT_COLOR, anchor="la")
-        y += line_height
+    if kind == "frontpage" and labels["tagline"]:
+        lead = make_style(config, "lead", spec["taglineSize"])
+        column_width = content_width - logo.width - spec["columnGap"]
+        tagline = _single_line(labels["tagline"], lead, column_width, ellipsis)
+        draw_block(draw, padding, heading_baseline + spec["taglineGap"], [tagline], lead)
 
-    footer_font = image_font.truetype(FONT_REGULAR, FOOTER_SIZE)
-    draw.text((PADDING, CARD_HEIGHT - PADDING), FOOTER_TEXT, font=footer_font,
-              fill=MUTED_COLOR, anchor="lb")
+    if kind == "frontpage":
+        style = make_style(config, "footer", spec["footerSize"])
+        lines = [_single_line(labels["footer"], style, content_width, ellipsis)]
+    elif kind == "tangents":
+        style, lines = fit_text(config, "section", labels["tangentsLabel"], spec["sectionSizes"],
+                                content_width, 1)
+    elif kind == "post":
+        style, lines = fit_text(config, "name", text, spec["postTitleSizes"], content_width,
+                                spec["postTitleMaxLines"])
+    else:
+        style, lines = fit_text(config, "name", text, spec["nameSizes"], content_width,
+                                spec["nameMaxLines"])
 
+    band_top = height - padding - block_height(lines, style)
+    draw_block(draw, padding, band_top, lines, style)
 
-def _draw_generic(card, draw, logo, image_font):
-    """Generic card: mark and "Tangents" label centered as one vertical composition.
+    if kind == "post":
+        label = make_style(config, "label", spec["labelSize"])
+        band_top -= spec["labelGap"] + cap_height(label)
+        draw_block(draw, padding, band_top, [label.prepare(labels["tangentsLabel"])], label)
 
-    No URL line here (unlike the post cards): a centered footer would collide
-    with the centered label, and the spec describes this card as just the
-    centered mark plus label.
-    """
-    label_font = image_font.truetype(FONT_REGULAR, GENERIC_LABEL_SIZE)
-    ascent, descent = label_font.getmetrics()
-    label_h = ascent + descent
-
-    composition_h = LOGO_SIZE + GENERIC_GAP + label_h
-    top = (CARD_HEIGHT - composition_h) // 2
-
-    logo_x = (CARD_WIDTH - LOGO_SIZE) // 2
-    card.alpha_composite(logo, (logo_x, top))
-
-    label_cy = top + LOGO_SIZE + GENERIC_GAP + label_h // 2
-    draw.text((CARD_WIDTH // 2, label_cy), CARD_LABEL, font=label_font,
-              fill=ACCENT_COLOR, anchor="mm")
+    _draw_rule(draw, config, padding, band_top - spec["ruleGap"] - spec["ruleWidth"],
+               content_width, spec["ruleWidth"])
 
 
 # ------------------------------------------------------------------------------------
 # Resolution and generation
 
-def _process_auto_target(rel_path, title, gen_hash, prev_images, new_images, result,
-                         force, generic):
+def demo_card_rel(folder: str) -> str:
+    """Repo-relative path of a demo page's generated card."""
+    return f"demo/{folder}/{generated_name(folder)}"
+
+
+def existing_card(card_rel: str | None) -> str | None:
+    """The page's own card if it is on disk, else the frontpage card, else None."""
+    for rel in (card_rel, FRONTPAGE_CARD_REL):
+        if rel and os.path.isfile(os.path.join(ROOT_DIR, rel.replace("/", os.sep))):
+            return rel
+    return None
+
+
+def _process_auto_target(rel_path: str, kind: str, text: str, gen_hash: str, prev_images: dict,
+                         new_images: dict, result: dict, force: bool) -> None:
     """Skip or render one auto-generated card, updating the manifest and result."""
     abs_path = os.path.join(ROOT_DIR, rel_path.replace("/", os.sep))
-    inputs_hash = _inputs_hash(title)
+    inputs_hash = _inputs_hash(kind, text)
 
     # Record the fresh hashes whether or not we render: the manifest reflects the
     # current inputs even when the bytes turn out identical.
@@ -310,7 +409,7 @@ def _process_auto_target(rel_path, title, gen_hash, prev_images, new_images, res
 
     # Render, then byte-compare before writing so a forced or cross-version rerun
     # that produces identical bytes causes no git churn.
-    data = _render_card(title, generic=generic)
+    data = render_card(kind, text)
     existing = _read_bytes(abs_path, required=False) if os.path.isfile(abs_path) else None
     if existing != data:
         os.makedirs(os.path.dirname(abs_path), exist_ok=True)
@@ -322,23 +421,26 @@ def _process_auto_target(rel_path, title, gen_hash, prev_images, new_images, res
     print(f"  Generated: {rel_path}")
 
 
-def resolve_and_generate(posts, force=False, prune=True):
+def resolve_and_generate(posts, force=False, prune=True, demos=()):
     """Resolve every post's social image and generate what is missing or stale.
 
     posts: [{"slug": str, "title": str, "socialImage": str_or_None}, ...]
            (non-draft posts only; the caller filters).
+    demos: [{"folder": str, "title": str}, ...], the title as the demo page shows
+           it (update_website.social_card_demos); rendered on full runs only.
     force: regenerate even when the manifest says up to date.
     prune: drop manifest entries not touched this run. True marks a full run
-           (update_website.py, and the CLI with no slug filter): the generic card
-           is processed and untouched entries are dropped. False marks a
+           (update_website.py, and the CLI with no slug filter): the generic,
+           frontpage, and demo cards are processed and untouched entries are
+           dropped. False marks a
            slug-filtered CLI run: only the named posts are touched and every
            other manifest entry survives.
 
     Returns a dict with og_image (slug -> repo-relative POSIX path), index_card,
     and the generated / skipped / custom / warnings lists.
 
-    Raises SocialImageError on a reserved-name socialImage value, a missing
-    logo/font asset, or a needed render with Pillow unavailable.
+    Raises SocialImageError on a reserved-name socialImage value, a demo without a
+    title, a missing logo/font asset, or a needed render with Pillow unavailable.
     """
     prev_images = _load_manifest()
     new_images = {}
@@ -385,14 +487,21 @@ def resolve_and_generate(posts, force=False, prune=True):
             result["warnings"].append(warning)
 
         result["og_image"][slug] = auto_rel
-        _process_auto_target(auto_rel, title, gen_hash, prev_images, new_images,
-                             result, force, generic=False)
+        _process_auto_target(auto_rel, "post", title, gen_hash, prev_images, new_images,
+                             result, force)
 
-    # The generic card is a full-run concern only; a slug-filtered run leaves it
-    # (and its surviving manifest entry) alone.
+    # The site-wide cards are a full-run concern only; a slug-filtered run leaves
+    # them (and their surviving manifest entries) alone.
     if prune:
-        _process_auto_target(INDEX_CARD_REL, "", gen_hash, prev_images, new_images,
-                             result, force, generic=True)
+        _process_auto_target(INDEX_CARD_REL, "tangents", "", gen_hash, prev_images, new_images,
+                             result, force)
+        _process_auto_target(FRONTPAGE_CARD_REL, "frontpage", "", gen_hash, prev_images,
+                             new_images, result, force)
+        for demo in demos:
+            if not demo["title"].strip():
+                raise SocialImageError(f"demo/{demo['folder']}: a demo page needs a title for its social card")
+            _process_auto_target(demo_card_rel(demo["folder"]), "demo", demo["title"], gen_hash,
+                                 prev_images, new_images, result, force)
 
     if prune:
         images = new_images
@@ -434,6 +543,14 @@ def _load_posts_from_disk():
     return posts
 
 
+def _load_demos_from_disk() -> list[dict]:
+    """Card inputs for every hosted demo, read the way the site build reads them."""
+    import update_website
+
+    _, demos_by_stem = update_website.load_demo_data()
+    return update_website.social_card_demos(demos_by_stem)
+
+
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     force = "force" in argv
@@ -447,7 +564,8 @@ def main(argv=None):
             print(f"  WARNING: no non-draft post named {slug!r}")
         posts = [p for p in posts if p["slug"] in wanted]
 
-    result = resolve_and_generate(posts, force=force, prune=not slugs)
+    demos = [] if slugs else _load_demos_from_disk()
+    result = resolve_and_generate(posts, force=force, prune=not slugs, demos=demos)
 
     for warning in result["warnings"]:
         print(f"  WARNING: {warning}")
