@@ -50,6 +50,12 @@
 
     /* Duration of hover and toggle transitions; zero under reduced motion. */
     --motion: 0.15s;
+
+    /* Length of the flash that marks the contact panel when a Contact link lands on it. */
+    --flash: 1.2s;
+
+    /* Panel background at the peak of that flash. */
+    --accent-wash: color-mix(in srgb, var(--accent) 16%, var(--bg));
 }
 
 * {
@@ -301,6 +307,74 @@ h2:hover .heading-link,
     color: var(--muted);
     max-width: 840px;
     margin-top: 16px;
+}
+
+
+/* Contact panel flash. Keyframes without 0% and 100% start and end on the element's own colours. */
+.contact-flash {
+    animation: contact-flash-panel var(--flash) ease-out;
+}
+
+.contact-flash h2 {
+    animation: contact-flash-heading var(--flash) ease-out;
+}
+
+.contact-flash .section-head {
+    animation: contact-flash-rule var(--flash) ease-out;
+}
+
+@keyframes contact-flash-panel {
+    12% {
+        background-color: var(--accent-wash);
+    }
+}
+
+@keyframes contact-flash-heading {
+    12% {
+        color: var(--accent);
+    }
+}
+
+@keyframes contact-flash-rule {
+    12% {
+        border-bottom-color: var(--accent);
+    }
+}
+
+/* With motion allowed, the gold rule draws across under the heading instead of lighting up in place. */
+@media (prefers-reduced-motion: no-preference) {
+    .contact-flash .section-head {
+        position: relative;
+        animation: none;
+    }
+
+    .contact-flash .section-head::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -1px;
+        height: 2px;
+        background: var(--accent);
+        transform-origin: left;
+        animation: contact-flash-sweep var(--flash) ease-out forwards;
+    }
+}
+
+@keyframes contact-flash-sweep {
+    0% {
+        transform: scaleX(0);
+    }
+
+    30% {
+        transform: scaleX(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scaleX(1);
+        opacity: 0;
+    }
 }
 
 
