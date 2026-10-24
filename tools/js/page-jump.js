@@ -50,5 +50,13 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         input.addEventListener("blur", commit);
+
+        // A page restored from the back/forward cache keeps the jump state it left with.
+        window.addEventListener("pageshow", (event) => {
+            if (event.persisted) {
+                leaving = false;
+                restore();
+            }
+        });
     });
 });

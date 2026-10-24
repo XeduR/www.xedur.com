@@ -169,7 +169,8 @@ def parse_front_matter(text: str, *, source: str = "<string>") -> tuple[dict, st
 # Inline parser
 
 _INLINE_CODE_RE = re.compile(r'`([^`]+)`')
-_LINK_RE = re.compile(r'\[([^\]]+)\]\(([^)]+)\)')
+# The URL may hold one level of balanced parentheses, as Wikipedia and MDN URLs do.
+_LINK_RE = re.compile(r'\[([^\]]+)\]\(((?:[^()]|\([^()]*\))+)\)')
 _BOLD_ITALIC_RE = re.compile(r'\*\*\*(.+?)\*\*\*')
 _BOLD_RE = re.compile(r'\*\*(.+?)\*\*')
 _ITALIC_STAR_RE = re.compile(r'\*(.+?)\*')

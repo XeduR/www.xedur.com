@@ -309,6 +309,28 @@ class TestLinkProtection(unittest.TestCase):
         html = inline("[**b**](http://x.com/a_b)")
         self.assertEqual(html, '<a href="http://x.com/a_b"><strong>b</strong></a>')
 
+    def test_url_with_parentheses_stays_whole(self):
+        html = inline("[Lua](https://en.wikipedia.org/wiki/Lua_(programming_language))")
+        self.assertEqual(
+            html, '<a href="https://en.wikipedia.org/wiki/Lua_(programming_language)">Lua</a>'
+        )
+
+    def test_url_ending_in_a_parenthesis_followed_by_text(self):
+        html = inline("See [Lua](https://e.com/Lua_(language)) (a language) now.")
+        self.assertEqual(
+            html, 'See <a href="https://e.com/Lua_(language)">Lua</a> (a language) now.'
+        )
+
+    def test_link_inside_a_parenthetical_leaves_the_closing_parenthesis(self):
+        html = inline("(see [docs](https://e.com/a_(b)))")
+        self.assertEqual(html, '(see <a href="https://e.com/a_(b)">docs</a>)')
+
+    def test_nesting_beyond_one_level_is_left_as_plain_text(self):
+        text = "[x](https://e.com/a_(b_(c)))"
+        html = inline(text)
+        self.assertNotIn("<a", html)
+        self.assertEqual(html, text)
+
 
     def test_url_special_chars_are_entity_escaped(self):
         # Escaping must run before URLs are captured, or a raw '"' reaches href.
@@ -335,6 +357,9 @@ class TestUrlSchemes(unittest.TestCase):
                 html = inline(f"[x]({url})")
                 self.assertNotIn("<a", html)
                 self.assertTrue(html.startswith("[x]("), html)
+
+    def test_disallowed_link_with_parentheses_renders_whole_as_plain_text(self):
+        self.assertEqual(inline("[x](javascript:alert(1)) now"), "[x](javascript:alert(1)) now")
 
     def test_colon_after_path_is_relative(self):
         self.assertEqual(inline("[x](a/b:c)"), '<a href="a/b:c">x</a>')

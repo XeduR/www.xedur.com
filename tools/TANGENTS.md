@@ -47,7 +47,7 @@ draft:
 - Editing only `title`, `summary`, or `tags` does not count as an update; changing the body does.
 - Tags that differ only by case or punctuation (`Solar2D` and `solar2d`) stop the build, because they would share one tag page.
 - Tag page addresses keep only the letters a to z and digits, so a tag like `Ääkköset` gets a mangled address. Stick to ASCII tag names.
-- `socialImage` takes a bare file name, never a path. 1200x630 is the recommended size.
+- `socialImage` takes a bare file name, never a path, using only letters, digits, `-`, `_`, and `.`, and not starting with `.`. Any other name stops the build. 1200x630 is the recommended size.
 
 ## Feature image
 
@@ -77,6 +77,7 @@ Inline formatting:
 | `[link text](https://example.com)` | a link |
 
 - Formatting works inside a word (`un**believ**able`) and inside link text.
+- Link addresses may contain one level of parentheses, as in `[Lua](https://en.wikipedia.org/wiki/Lua_(programming_language))`. Deeper nesting leaves the whole link as plain text.
 - Underscores inside a word stay as they are, so `snake_case_name` needs no escaping.
 - Anything inside backticks stays literal: `` `**not bold**` ``.
 - HTML tags and entities are shown as typed, never interpreted.

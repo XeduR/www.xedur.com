@@ -456,6 +456,22 @@ class TestPostCardNames(TempRootMixin, unittest.TestCase):
                     gen.resolve_and_generate(
                         [{"slug": "my-post", "title": "T", "socialImage": name}], prune=False)
 
+    def test_unsafe_filename_characters_are_rejected(self):
+        for name in ("card#2.png", "Screenshot 1.png", "a/b.png", "a\\b.png", "..", ".hidden.png",
+                     "card?.png", "kärtti.png", "card.png\n"):
+            with self.subTest(name=name):
+                with self.assertRaisesRegex(gen.SocialImageError, "letters, digits"):
+                    gen.resolve_and_generate(
+                        [{"slug": "my-post", "title": "T", "socialImage": name}], prune=False)
+
+    def test_safe_custom_filename_is_used(self):
+        for name in ("Card_2-final.v1.png", "a"):
+            with self.subTest(name=name):
+                self.touch(f"tangents/my-post/{name}")
+                result = gen.resolve_and_generate(
+                    [{"slug": "my-post", "title": "T", "socialImage": name}], prune=False)
+                self.assertEqual(result["og_image"]["my-post"], f"tangents/my-post/{name}")
+
     def test_cli_rejects_malformed_slug(self):
         source_dir = os.path.join(self.root, "posts")
         os.makedirs(source_dir)

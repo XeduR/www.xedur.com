@@ -11,7 +11,7 @@ var drawing = false;
 var entries = [];
 // Width of each histogram bucket (maps [0,1) range to pixel columns)
 var unit = 1/(mapSize-borders);
-var entryCount = mapSize*mapSize;
+var entryCount = (mapSize-borders)*(canvas.height-borders-mapStartY);
 var y;
 var randomMethod;
 

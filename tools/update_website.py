@@ -1002,6 +1002,12 @@ def collect_site_paths(manifests, demos_by_stem, include_hashes=False, tangents_
 
 CONTACT_TEMPLATE_REL = _rel(os.path.join(TEMPLATES_DIR, "contact.html"))
 
+# The [[github]] directive inlines these, so any page that may use it depends on both.
+REPO_PANEL_TEMPLATE_RELS = [
+    _rel(os.path.join(TEMPLATES_DIR, "repo-panel.html")),
+    _rel(os.path.join(TEMPLATES_DIR, "repo-panel-private.html")),
+]
+
 
 def contact_section(center_class):
     """The frontpage contact panel, without its section number, as a closing page section."""
@@ -1138,8 +1144,6 @@ def build_demo_pages(base_template, navbar_html, footer_html,
                      demo_template, iframe_template, manifests, demos_by_stem):
     """Build individual demo pages for all non-external demos."""
     demo_tpl_rel = _rel(os.path.join(TEMPLATES_DIR, "demo.html"))
-    repo_public_rel = _rel(os.path.join(TEMPLATES_DIR, "repo-panel.html"))
-    repo_private_rel = _rel(os.path.join(TEMPLATES_DIR, "repo-panel-private.html"))
     iframe_tpl_rel = _rel(os.path.join(TEMPLATES_DIR, "iframe.html"))
     contact_html = contact_section("demo-page")
 
@@ -1165,7 +1169,7 @@ def build_demo_pages(base_template, navbar_html, footer_html,
             # or prune_orphans would delete it over a build hiccup.
             page_rel = f"demo/{folder}/index.html"
             card_rel = generate_social_images.demo_card_rel(folder)
-            page_deps = [md_rel, demo_tpl_rel, repo_public_rel, repo_private_rel, card_rel, CONTACT_TEMPLATE_REL]
+            page_deps = [md_rel, demo_tpl_rel, *REPO_PANEL_TEMPLATE_RELS, card_rel, CONTACT_TEMPLATE_REL]
             build_page = should_build(page_rel, page_deps)
 
             app_dir = os.path.join(demo_dir, "app")
@@ -1649,7 +1653,7 @@ def build_tangents_posts(base_template, navbar_html, footer_html, post_template,
         # depends on their sources too. A neighbour retitle changes that dep's
         # hash; a neighbour added or removed changes the dependency set, which
         # should_build detects even though the dropped path leaves dep_rels.
-        deps = [md_rel, post_tpl_rel, CONTACT_TEMPLATE_REL]
+        deps = [md_rel, post_tpl_rel, *REPO_PANEL_TEMPLATE_RELS, CONTACT_TEMPLATE_REL]
         if i > 0:
             deps.append(_rel(os.path.join(TANGENTS_SRC_DIR, f"{posts[i - 1]['slug']}.md")))
         if i < total - 1:

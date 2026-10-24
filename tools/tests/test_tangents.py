@@ -327,6 +327,57 @@ class TestPostPage(BuildCaptureMixin, unittest.TestCase):
         self.assertIn('<a class="back-button" href="../../tangents/">', self.page())
 
 
+class TestPostRebuild(BuildCaptureMixin, unittest.TestCase):
+    """Drive should_build's incremental path with a cache that matches every dep."""
+
+    def setUp(self):
+        super().setUp()
+        self.page_rel = "tangents/a-post/index.html"
+        self.page_abs = os.path.join(update_website.ROOT_DIR, "tangents", "a-post", "index.html")
+        real_exists = os.path.exists
+        self.cache_patches = [
+            mock.patch.dict(update_website._PREV_OUTPUTS, clear=True),
+            mock.patch.dict(update_website._PREV_SOURCES, clear=True),
+            mock.patch.dict(update_website._NEW_OUTPUTS, clear=True),
+            mock.patch.dict(update_website._HASH_CACHE, clear=True),
+            mock.patch.object(update_website, "SKIPPED_PAGES", 0),
+            mock.patch.object(update_website, "GLOBAL_DIRTY", False),
+            mock.patch.object(update_website, "CACHE_MISSING", False),
+            mock.patch("os.path.exists", lambda path: path == self.page_abs or real_exists(path)),
+        ]
+        for patch in self.cache_patches:
+            patch.start()
+
+    def tearDown(self):
+        for patch in self.cache_patches:
+            patch.stop()
+        super().tearDown()
+
+    def github_post(self):
+        return self.post(body_html='<p>Body.</p><div class="repo-panel">old panel</div>')
+
+    def build_against_matching_cache(self, stale_dep=None):
+        self.build_posts([self.github_post()])
+        deps = update_website._NEW_OUTPUTS[self.page_rel]
+        update_website._PREV_OUTPUTS[self.page_rel] = list(deps)
+        for dep in deps:
+            update_website._PREV_SOURCES[dep] = update_website.source_hash(dep)
+        if stale_dep:
+            update_website._PREV_SOURCES[stale_dep] = "hash-before-the-edit"
+        self.written.clear()
+        with mock.patch.object(update_website, "FORCE", False):
+            self.build_posts([self.github_post()])
+        return self.page_rel in self.written
+
+    def test_unchanged_sources_skip_the_post(self):
+        self.assertFalse(self.build_against_matching_cache())
+
+    def test_repo_panel_template_edit_rebuilds_a_post_using_the_github_directive(self):
+        for template_rel in update_website.REPO_PANEL_TEMPLATE_RELS:
+            with self.subTest(template=template_rel):
+                self.assertTrue(self.build_against_matching_cache(stale_dep=template_rel))
+
+
 class TestListPage(BuildCaptureMixin, unittest.TestCase):
     def index(self, posts):
         self.build_lists(posts)

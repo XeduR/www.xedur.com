@@ -37,5 +37,11 @@ input.blur();
 }
 });
 input.addEventListener("blur", commit);
+window.addEventListener("pageshow", (event) => {
+if (event.persisted) {
+leaving = false;
+restore();
+}
+});
 });
 });

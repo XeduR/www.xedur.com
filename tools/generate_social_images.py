@@ -10,6 +10,7 @@ Usage:
 
 import io
 import os
+import re
 import sys
 import json
 import hashlib
@@ -32,6 +33,10 @@ INDEX_CARD_REL = "tangents/tangents-social.png"
 FRONTPAGE_CARD_REL = "img/xedur-social.png"
 
 CARD_KINDS = ("post", "tangents", "frontpage", "demo")
+
+# A custom socialImage reaches og:image verbatim, so it is limited to characters
+# that need no URL encoding, and a leading dot is barred.
+SOCIAL_IMAGE_RE = re.compile(r"^[A-Za-z0-9_-][A-Za-z0-9._-]*$")
 
 
 class SocialImageError(Exception):
@@ -439,8 +444,9 @@ def resolve_and_generate(posts, force=False, prune=True, demos=()):
     Returns a dict with og_image (slug -> repo-relative POSIX path), index_card,
     and the generated / skipped / custom / warnings lists.
 
-    Raises SocialImageError on a reserved-name socialImage value, a demo without a
-    title, a missing logo/font asset, or a needed render with Pillow unavailable.
+    Raises SocialImageError on a malformed or reserved-name socialImage value, a
+    demo without a title, a missing logo/font asset, or a needed render with
+    Pillow unavailable.
     """
     prev_images = _load_manifest()
     new_images = {}
@@ -463,10 +469,11 @@ def resolve_and_generate(posts, force=False, prune=True, demos=()):
         auto_rel = f"tangents/{slug}/{reserved}"
 
         if social_image and social_image != "auto":
-            if "/" in social_image or "\\" in social_image or ".." in social_image:
+            if not SOCIAL_IMAGE_RE.fullmatch(social_image):
                 raise SocialImageError(
                     f"tangents/{slug}: socialImage {social_image!r} must be a bare "
-                    f"filename inside tangents/{slug}/ (no '/', '\\', or '..')"
+                    f"filename inside tangents/{slug}/ using only letters, digits, "
+                    f"'-', '_', and '.', not starting with '.'"
                 )
             # Case-insensitive filesystems treat mypost-Social.png as the card itself.
             if social_image.lower() == reserved.lower():

@@ -1,7 +1,7 @@
 // Pseudorandom number generation using the linear congruential method.
 //
 // You can see the pseudorandom number generation in action over at:
-// https://www.xedur.com/demos/Pseudorandom%20Number%20Generator/
+// https://www.xedur.com/demo/pseudorandom-number-generator/
 //
 // A pure Lua implementation of this file is available at:
 // https://github.com/XeduR/Solar2D-Projects/blob/master/Pseudorandom%20Number%20Generator/rng.lua
