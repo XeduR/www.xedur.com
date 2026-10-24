@@ -184,12 +184,12 @@ class TestBlockParser(unittest.TestCase):
     def test_code_fence_with_language(self):
         html, _ = render_markdown("```python\ncode line\n```")
         self.assertEqual(
-            html, '<pre><code class="language-python">\ncode line\n</code></pre>'
+            html, '<pre tabindex="0"><code class="language-python">code line</code></pre>'
         )
 
     def test_code_fence_without_language(self):
         html, _ = render_markdown("```\ncode line\n```")
-        self.assertEqual(html, "<pre><code>\ncode line\n</code></pre>")
+        self.assertEqual(html, '<pre tabindex="0"><code>code line</code></pre>')
 
     def test_code_fence_isolates_inline_markup(self):
         html, _ = render_markdown("```\n*not bold* `x` [t](u) _no_\n```")
@@ -200,17 +200,17 @@ class TestBlockParser(unittest.TestCase):
 
     def test_code_fence_escapes_html_chars(self):
         html, _ = render_markdown("```\na < b & c > d\n```")
-        self.assertEqual(html, "<pre><code>\na &lt; b &amp; c &gt; d\n</code></pre>")
+        self.assertEqual(html, '<pre tabindex="0"><code>a &lt; b &amp; c &gt; d</code></pre>')
 
     def test_code_fence_preserves_indentation_and_blank_lines(self):
         html, _ = render_markdown("```\ndef f():\n\n    return 1\n```")
         self.assertEqual(
-            html, "<pre><code>\ndef f():\n\n    return 1\n</code></pre>"
+            html, '<pre tabindex="0"><code>def f():\n\n    return 1</code></pre>'
         )
 
     def test_unclosed_code_fence_auto_closes_with_warning(self):
         html, meta = render_markdown("```\nunterminated")
-        self.assertEqual(html, "<pre><code>\nunterminated\n</code></pre>")
+        self.assertEqual(html, '<pre tabindex="0"><code>unterminated</code></pre>')
         self.assertTrue(any("left open" in w for w in meta["warnings"]))
 
     def test_empty_body(self):
@@ -474,6 +474,139 @@ class TestGithubDirective(unittest.TestCase):
             render_markdown("[[github]]")
 
 
+class TestLineBreaks(unittest.TestCase):
+    def test_trailing_backslash_breaks_the_line(self):
+        html, _ = render_markdown("first\\\nsecond\nthird")
+        self.assertEqual(html, "<p>first<br>\nsecond third</p>")
+
+    def test_spaces_before_the_backslash_are_dropped(self):
+        html, _ = render_markdown("first   \\\nsecond")
+        self.assertEqual(html, "<p>first<br>\nsecond</p>")
+
+    def test_backslash_on_the_last_line_stays_literal(self):
+        html, _ = render_markdown("only line\\")
+        self.assertEqual(html, "<p>only line\\</p>")
+
+    def test_backslash_inside_a_line_stays_literal(self):
+        html, _ = render_markdown("a \\ b\nc")
+        self.assertEqual(html, "<p>a \\ b c</p>")
+
+    def test_blockquote_hard_break(self):
+        html, _ = render_markdown("> one\\\n> two")
+        self.assertEqual(html, "<blockquote><p>one<br>\ntwo</p></blockquote>")
+
+    def test_emphasis_spans_a_hard_break(self):
+        html, _ = render_markdown("**bold\\\nstill bold**")
+        self.assertEqual(html, "<p><strong>bold<br>\nstill bold</strong></p>")
+
+    def test_break_inside_inline_code_still_breaks(self):
+        html, _ = render_markdown("`a\\\nb`")
+        self.assertEqual(html, "<p><code>a<br>\nb</code></p>")
+
+    def test_list_item_backslash_stays_literal(self):
+        html, _ = render_markdown("- item\\\n- next")
+        self.assertIn("<li>item\\</li>", html)
+
+    def test_break_directive_sits_between_paragraphs(self):
+        html, _ = render_markdown("above\n\n[[break]]\n\nbelow")
+        self.assertEqual(html, "<p>above</p>\n<br>\n<p>below</p>")
+
+    def test_break_directive_closes_an_open_paragraph(self):
+        html, _ = render_markdown("above\n[[break]]\nbelow")
+        self.assertEqual(html, "<p>above</p>\n<br>\n<p>below</p>")
+
+    def test_repeated_break_directives_stack(self):
+        html, _ = render_markdown("a\n[[break]]\n[[break]]\nb")
+        self.assertEqual(html.count("<br>"), 2)
+
+    def test_extra_blank_lines_add_nothing(self):
+        html, _ = render_markdown("a\n\n\n\nb")
+        self.assertEqual(html, "<p>a</p>\n<p>b</p>")
+
+
+class TestCallout(unittest.TestCase):
+    def test_title_and_body(self):
+        html, _ = render_markdown('[[callout title="Gotcha!"]]\nBody text.\n[[/callout]]')
+        self.assertEqual(html, (
+            '<div class="md-callout" role="note">\n'
+            '<p class="md-callout-title">Gotcha!</p>\n'
+            "<p>Body text.</p>\n"
+            "</div>"
+        ))
+
+    def test_title_is_escaped_and_formatted(self):
+        html, _ = render_markdown('[[callout title="<b> & `code`"]]\nx\n[[/callout]]')
+        self.assertIn('<p class="md-callout-title">&lt;b&gt; &amp; <code>code</code></p>', html)
+
+    def test_no_title(self):
+        html, _ = render_markdown("[[callout]]\nBody.\n[[/callout]]")
+        self.assertEqual(html, '<div class="md-callout" role="note">\n<p>Body.</p>\n</div>')
+
+    def test_empty_callout(self):
+        html, _ = render_markdown('[[callout title="T"]]\n[[/callout]]')
+        self.assertEqual(html, '<div class="md-callout" role="note">\n<p class="md-callout-title">T</p>\n</div>')
+
+    def test_body_holds_blocks(self):
+        text = (
+            '[[callout title="T"]]\n'
+            "Para one.\n\n"
+            "- item\n\n"
+            "```lua\nlocal x = 1\n```\n"
+            "[[/callout]]"
+        )
+        html, _ = render_markdown(text)
+        self.assertIn("<p>Para one.</p>\n<ul>\n<li>item</li>\n</ul>\n<pre", html)
+        self.assertIn('<code class="language-lua">local x = 1</code></pre>\n</div>', html)
+
+    def test_closes_an_open_paragraph_and_text_follows(self):
+        html, _ = render_markdown("before\n[[callout]]\nin\n[[/callout]]\nafter")
+        self.assertEqual(html, (
+            "<p>before</p>\n"
+            '<div class="md-callout" role="note">\n<p>in</p>\n</div>\n'
+            "<p>after</p>"
+        ))
+
+    def test_close_inside_a_code_fence_does_not_end_the_callout(self):
+        text = "[[callout]]\n```\n[[/callout]]\n```\nstill inside\n[[/callout]]\nafter"
+        html, _ = render_markdown(text)
+        self.assertIn("<pre tabindex=\"0\"><code>[[/callout]]</code></pre>\n<p>still inside</p>\n</div>", html)
+        self.assertTrue(html.endswith("</div>\n<p>after</p>"))
+
+    def test_nested_callouts(self):
+        text = '[[callout title="Outer"]]\n[[callout title="Inner"]]\nin\n[[/callout]]\nouter tail\n[[/callout]]\nafter'
+        html, _ = render_markdown(text)
+        self.assertEqual(html.count('<div class="md-callout"'), 2)
+        self.assertIn("<p>in</p>\n</div>\n<p>outer tail</p>\n</div>\n<p>after</p>", html)
+
+    def test_directives_inside_share_meta(self):
+        text = '[[callout]]\n[[image src="a.png"]]\n[[youtube id="abcDEF12_-x"]]\n# Big\n[[/callout]]'
+        _, meta = render_markdown(text)
+        self.assertEqual(meta["images"], ["a.png"])
+        self.assertIs(meta["needs_video_js"], True)
+        self.assertEqual(len(meta["warnings"]), 2)
+
+    def test_unknown_directive_inside_raises(self):
+        with self.assertRaises(MarkdownError):
+            render_markdown("[[callout]]\n[[nope]]\n[[/callout]]")
+
+    def test_unclosed_callout_auto_closes_with_warning(self):
+        html, meta = render_markdown("[[callout]]\nbody")
+        self.assertEqual(html, '<div class="md-callout" role="note">\n<p>body</p>\n</div>')
+        self.assertTrue(any("callout" in w for w in meta["warnings"]))
+
+    def test_stray_close_raises(self):
+        with self.assertRaises(MarkdownError):
+            render_markdown("text\n[[/callout]]")
+
+    def test_malformed_params_raise(self):
+        with self.assertRaises(MarkdownError):
+            render_markdown("[[callout title=Note]]\nx\n[[/callout]]")
+
+    def test_close_inside_a_top_level_code_block_is_literal(self):
+        html, _ = render_markdown("```\n[[/callout]]\n```")
+        self.assertEqual(html, '<pre tabindex="0"><code>[[/callout]]</code></pre>')
+
+
 class TestDirectiveErrors(unittest.TestCase):
     def test_unknown_directive_raises(self):
         with self.assertRaises(MarkdownError):
@@ -518,7 +651,7 @@ class TestInputNormalization(unittest.TestCase):
         doc = "```\r\nline1\r\nline2\r\n```\r\n"
         html, _ = render_markdown(doc)
         self.assertNotIn("\r", html)
-        self.assertEqual(html, "<pre><code>\nline1\nline2\n</code></pre>")
+        self.assertEqual(html, '<pre tabindex="0"><code>line1\nline2</code></pre>')
 
     def test_lone_cr_is_normalized(self):
         doc = "para one\rpara two"
@@ -575,7 +708,7 @@ class TestIntegration(unittest.TestCase):
         self.assertIn("<blockquote><p>a quote</p></blockquote>", html)
         self.assertIn('<figure class="md-figure">', html)
         self.assertIn('data-video-id="abcDEF12_-x"', html)
-        self.assertIn('<pre><code class="language-lua">', html)
+        self.assertIn('<pre tabindex="0"><code class="language-lua">', html)
         self.assertIn("local x = 1 &lt; 2", html)
 
         self.assertIs(meta["needs_video_js"], True)

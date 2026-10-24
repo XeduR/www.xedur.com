@@ -1,7 +1,10 @@
 <div class="content after-header">
     <section class="band page-band">
         <div class="center tangents-post">
-            <a class="back-link" href="{{basePath}}tangents/"><span aria-hidden="true">&#8249;</span> Tangents</a>
+            <a class="back-button" href="{{basePath}}tangents/">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+                <span>Tangents</span>
+            </a>
             <h1 class="title-tangent">{{postTitle}}</h1>
             <p class="post-dates">{{postDates}}</p>
             {{postTags}}
@@ -10,10 +13,13 @@
 
     <div class="center tangents-post">
         <article class="tangent-body">
+        {{postFeature}}
         {{postBody}}
         </article>
         <nav class="post-nav" aria-label="Post navigation">
             {{postNav}}
         </nav>
     </div>
+
+    {{contactSection}}
 </div>

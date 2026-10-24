@@ -56,13 +56,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // CSS background images fire no error event, so probe with an Image()
         // to pick maxres when it exists and fall back to hq when it does not.
+        // A missing maxres is a 404 that still decodes as a 120x90 grey image.
+        const useHq = () => {
+            placeholder.style.backgroundImage = "url('https://img.youtube.com/vi/" + videoId + "/hqdefault.jpg')";
+        };
         const probe = new Image();
         probe.addEventListener("load", () => {
+            if (probe.naturalWidth <= 120) {
+                useHq();
+                return;
+            }
             placeholder.style.backgroundImage = "url('https://img.youtube.com/vi/" + videoId + "/maxresdefault.jpg')";
         });
-        probe.addEventListener("error", () => {
-            placeholder.style.backgroundImage = "url('https://img.youtube.com/vi/" + videoId + "/hqdefault.jpg')";
-        });
+        probe.addEventListener("error", useHq);
         probe.src = "https://img.youtube.com/vi/" + videoId + "/maxresdefault.jpg";
 
         const button = placeholder.querySelector(".video-consent");

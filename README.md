@@ -12,7 +12,10 @@ www.xedur.com/
 │   ├── nav.js                  # Navbar scroll and mobile toggle
 │   ├── loadDemo.js             # "Run the app" button handler
 │   ├── detectMobile.js         # Touch device detection
-│   └── video-consent.js        # Click-to-load YouTube embeds
+│   ├── video-consent.js        # Click-to-load YouTube embeds
+│   ├── page-jump.js            # Tangents page number field
+│   ├── image-fallback.js       # Placeholder for images that fail to load
+│   └── tag-filter.js           # Tangents tag sort menu and search
 ├── img/                        # Thumbnails and content images
 ├── fonts/                      # Site fonts
 ├── favicon.* + site.webmanifest  # Favicon set in the repo root (ico/svg/png + manifest)
@@ -36,6 +39,7 @@ www.xedur.com/
     ├── js/                     # JS source (copied to root js/)
     ├── demos/                  # Per-demo markdown + category manifests
     ├── tangents/               # Tangents post markdown sources
+    ├── TANGENTS.md             # Tangents authoring guide
     ├── components/
     │   ├── templates/          # HTML templates
     │   ├── data/               # Site JSON (frontpage, llms, sitemap, Tangents + social-image state)
@@ -109,7 +113,7 @@ A manifest holds:
 - An optional `"band": true`, which puts the section on the alternating full-bleed background.
 - `demos`, the ordered list of stems; that order is the display order on the homepage.
 
-The Roso Games and Contact sections are not manifests, so their numbers (02 and 05) and the Roso band live in `frontpage.html` and `contact.html`.
+The Roso Games and Contact sections are not manifests, so the Roso number (02) and band live in `frontpage.html` and the Contact number (05) is `contactSectionIndex` in `frontpage.json`.
 
 The file stem is the demo identity. For regular and standalone demos it must equal the front-matter `folder` and the `demo/<folder>/` directory. For external links it is any unique kebab-case id.
 
@@ -194,7 +198,7 @@ There is no body: the page comes from `tools/standalone/<folder>/`, and only `de
 
 ### Adding a standalone project
 
-1. Create `tools/standalone/<folder>/` with `content.html`, `config.json`, and optionally `head.html`.
+1. Create `tools/standalone/<folder>/` with `content.html`, `config.json`, and optionally `head.html`. End `content.html`'s outer `<div class="content after-header">` with a `{{contactSection}}` line for the contact panel.
 2. Add `<folder>-small.jpg` and `<folder>-large.jpg` to `demo/<folder>/`, plus any CSS or JS in `demo/<folder>/css/` and `demo/<folder>/js/`, referenced from `head.html` with the `{{basePath}}` prefix.
 3. Create `tools/demos/<folder>.md` with `type: standalone` and add `<folder>` to the manifest.
 4. Run the build.
@@ -237,44 +241,31 @@ Tangents is the markdown-written writing section at `/tangents/`: paginated list
 
 ### Writing a post
 
-1. Create `tools/tangents/<slug>.md` with front matter and a markdown body.
+1. Copy `tools/components/templates/new-tangent-post.md` to `tools/tangents/<slug>.md`, fill in the front matter, and write the markdown body.
 2. Commit any post images into `tangents/<slug>/` and reference them with `[[image src="foo.png" ...]]`; paths resolve relative to the post URL.
 3. Run the build.
 
-Front matter is a flat `key: value` block between `---` fences, with literal trimmed values and no quoting:
-
-| Key | Required | Purpose |
-|-----|----------|---------|
-| `title` | Yes | Page `<h1>`, `<title>`, list and feed title |
-| `summary` | Yes | List blurb, meta description, OG and feed summary |
-| `tags` | No | Comma list; drives the tag chips and tag pages |
-| `published` | No | `YYYY-MM-DD` to backdate; otherwise set on the first build |
-| `draft` | No | `true` leaves the post out of the build entirely |
-| `socialImage` | No | Custom social image filename in `tangents/<slug>/`; absent or `auto` generates a card |
-
-### Markdown syntax
-
-Headings (`##` to `######`; a body `#` becomes `##` because the title is the only `<h1>`), paragraphs, `**bold**`, `*italic*` or `_italic_`, `***both***`, `[text](url)`, `` `inline code` ``, `-`/`*` and `1.` lists, `>` blockquotes, `---` rules, and ```` ``` ```` fenced code blocks. Raw HTML is escaped. Underscores inside a word (`snake_case`) stay literal. Nested lists and multi-paragraph list items are not supported.
-
-Links and image sources accept only `http`, `https`, `mailto`, relative, and `#` URLs. A link with any other scheme renders as plain text, and an image or `github` URL with one is a build error.
-
-Directives sit on their own line as `[[name key="value"]]`:
-
-- `[[image src="foo.png" alt="..." caption="..." width="..." height="..."]]`: a `<figure>`, with `src` resolved relative to the post URL.
-- `[[youtube id="VIDEO_ID" title="..."]]`: a click-to-load video embed (see below). An id that is not 11 characters of letters, digits, `_`, or `-` is a build error.
-- `[[github repo="owner/name"]]`, `[[github url="https://..."]]`, or a bare `[[github]]`: the repository panel.
-
-An unknown or mistyped directive is a build error.
+[`tools/TANGENTS.md`](tools/TANGENTS.md) is the authoring guide: every front matter key, markdown feature, and directive (images, YouTube videos, repository panels, empty lines, callout boxes), with examples, plus what is not supported.
 
 ### Dates
 
-Publish dates and body hashes live in `tools/components/data/tangents_dates.json`, which is committed because publish dates cannot be re-derived. A post is published on its first build, or on its `published` date. "Last updated" changes only when the rendered body changes, so editing `summary`, `tags`, or `title` alone does not bump it. Dates render as `13 July 2026`.
+Publish dates and body hashes live in `tools/components/data/tangents_dates.json`, which is committed because publish dates cannot be re-derived. A post is published on its first build, or on its `published` date. Without an `updated` key, the updated date is the day the rendered body last changed, so editing `summary`, `tags`, or `title` alone does not bump it. An `updated` key overrides that date. Either shows as "Updated:" only when it is later than the publish date. Dates render as `13 July 2026`.
 
 An unreadable `tangents_dates.json` stops the build instead of being overwritten; restore it from git. An unreadable `sitemap_dates.json` only warns and restarts every lastmod. Post pages do not depend on the dates file, so after editing it by hand, run a `force` build.
 
+### Feature images and missing images
+
+A post's `featureImage` sits in an invisible 16:9 frame above the body, scaled to fit without cropping or a visible box around it, and the build puts a horizontal divider between it and the body. On list pages it becomes a thumbnail beside the row that links to the post like the title does. A relative path resolves against the post URL, so list pages rewrite it to reach the post folder.
+
+An image that fails to load, whether a feature image or an `[[image]]`, is swapped for a striped "Image unavailable" panel showing its alt text, by `js/image-fallback.js`. That script loads only on pages with images. A relative or root-relative image whose file is missing from the repo also logs a build warning; remote images are not checked at build time.
+
 ### Pagination, tags, feed
 
-List pages hold 10 posts, newest first (`/tangents/`, `/tangents/2/`, and so on). Each tag gets its own paginated set at `/tangents/tag/<slug>/`. Two tag spellings that slugify to the same value (`Solar2D` and `solar2d`) are a build error. The feed at `/tangents/feed.xml` carries the newest 20 posts and is linked from every post.
+The tag chips on list pages come with a "Sort by" menu (most or fewest tangents, A to Z, Z to A), a case-insensitive substring search, and a "Clear all" button that resets both and returns to the first index page, all from `js/tag-filter.js`. The choice is kept in `sessionStorage`, so it carries over to tag and pagination pages in the same tab. The current page's tag always stays visible. Without JavaScript the chips show most-used first.
+
+Post pages link the neighbouring posts as "Previous:" and "Next:", each limited to 46% of the column width.
+
+List pages hold 10 posts, newest first (`/tangents/`, `/tangents/2/`, and so on). Every list page ends with a pagination bar: "Newer posts" and "Older posts" links, faded at either end of the range, around a "Page N out of TOTAL" field. `js/page-jump.js` jumps to the typed page on Enter or when the field loses focus, clamps numbers past the last page to it, and restores the current number for anything that is not a positive integer. Each tag gets its own paginated set at `/tangents/tag/<slug>/`. Two tag spellings that slugify to the same value (`Solar2D` and `solar2d`) are a build error. The feed at `/tangents/feed.xml` carries the newest 20 posts and is linked from every post.
 
 ### YouTube consent
 
@@ -325,7 +316,7 @@ HTML templates live in `tools/components/templates/` and use `{{placeholder}}` t
 | `frontpage.html` | Homepage layout (intro, sections, Roso Games, contact) |
 | `section.html` | Homepage section with numbered heading, description, and card grid |
 | `card.html` | Project card |
-| `contact.html` | Contact section at the bottom of the homepage |
+| `contact.html` | Contact panel at the bottom of every page except the 404, numbered only on the homepage. The navbar's Contact link scrolls to the page's own panel, and the 404's goes to the homepage's |
 | `demo.html` | Demo page (rendered markdown body and the app embed) |
 | `demo-index.html` | List of all demos at `demo/` |
 | `iframe.html` | Solar2D HTML5 app loader with Zlib decompression and progress bar |
@@ -334,6 +325,7 @@ HTML templates live in `tools/components/templates/` and use `{{placeholder}}` t
 | `tangents-post.html` | Tangents post page |
 | `tangents-list.html` | Tangents index and tag pages |
 | `tangents-item.html` | One row in a Tangents list |
+| `new-tangent-post.md` | Front matter template to copy for a new post (not used by the build) |
 | `404.html` | Error page with the valid paths for fuzzy URL matching |
 
 ## Author

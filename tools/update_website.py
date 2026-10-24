@@ -16,6 +16,7 @@ import re
 import sys
 import json
 import hashlib
+import urllib.parse
 from datetime import date, datetime
 
 import markdown_engine
@@ -56,10 +57,35 @@ SITE_BASE_URL = "https://www.xedur.com"
 TANGENTS_SRC_DIR = os.path.join(SCRIPT_DIR, "tangents")
 TANGENTS_DATES_FILE = os.path.join(DATA_DIR, "tangents_dates.json")
 TANGENTS_PAGE_SIZE = 10
+# Longest summary shown anywhere: list rows cut there and add "...", and
+# meta/OG descriptions end at a word with an ellipsis within it.
+SUMMARY_MAX = 160
+# Sort menu, search field, and reset over the tag chips; hidden until js/tag-filter.js runs.
+TAG_TOOLS_HTML = (
+    '<div class="tag-tools" hidden>\n'
+    '<div class="tag-tool">\n'
+    '<label for="tag-sort">Sort by:</label>\n'
+    '<span class="select-wrap">\n'
+    '<select id="tag-sort">\n'
+    '<option value="count-desc">Most tangents</option>\n'
+    '<option value="count-asc">Fewest tangents</option>\n'
+    '<option value="name-asc">A to Z</option>\n'
+    '<option value="name-desc">Z to A</option>\n'
+    "</select>\n"
+    "</span>\n"
+    "</div>\n"
+    '<div class="tag-tool">\n'
+    '<label for="tag-search">Search:</label>\n'
+    '<input id="tag-search" type="search" autocomplete="off" spellcheck="false">\n'
+    "</div>\n"
+    '<button type="button" class="tag-reset">Clear all</button>\n'
+    "</div>"
+)
+IMAGE_FALLBACK_SCRIPT = '<script defer src="{{basePath}}js/image-fallback.js"></script>'
 FEED_MAX_ENTRIES = 20
 
-# Intro blurb on the Tangents index (site chrome; reword freely).
-TANGENTS_INTRO = "Occasional musings, tutorials, and half-formed ideas."
+# Intro blurb on the Tangents index, also its meta description.
+TANGENTS_INTRO = "Occasional musings, tutorials, half-formed ideas, and other pointless thoughts."
 
 # Locale-independent English month names for the "13 July 2026" date format.
 MONTHS = ["January", "February", "March", "April", "May", "June",
@@ -201,7 +227,7 @@ def log_error(message):
 # Minification and formatting helpers
 
 def minify_html(text):
-    """Remove HTML comments and collapse whitespace, preserving script/style blocks."""
+    """Remove HTML comments and collapse whitespace, preserving script, style, and pre blocks."""
     text = re.sub(r'<!--.*?-->', '', text, flags=re.DOTALL)
 
     # Extract <script> and <style> blocks so HTML whitespace collapsing
@@ -216,8 +242,11 @@ def minify_html(text):
                   flags=re.DOTALL | re.IGNORECASE)
     text = re.sub(r'<style[^>]*>.*?</style>', _extract, text,
                   flags=re.DOTALL | re.IGNORECASE)
+    # <pre> whitespace is rendered, so its blocks are restored verbatim.
+    text = re.sub(r'<pre\b[^>]*>.*?</pre>', _extract, text,
+                  flags=re.DOTALL | re.IGNORECASE)
 
-    # Minify HTML (outside script/style blocks).
+    # Minify HTML (outside the extracted blocks).
     text = re.sub(r'>\s+<', '><', text)
     text = re.sub(r'\s+', ' ', text)
 
@@ -298,6 +327,16 @@ def indent_block(text, spaces):
     return '\n'.join(prefix + line if line.strip() else line for line in lines)
 
 
+_PRE_TAG_RE = re.compile(r'<(/?)pre\b', re.IGNORECASE)
+
+
+def _ends_inside_pre(line, in_pre):
+    """Return whether a <pre> is still open after this line."""
+    for match in _PRE_TAG_RE.finditer(line):
+        in_pre = match.group(1) == ""
+    return in_pre
+
+
 def replace_indented(template, tag, content):
     """Replace a template tag, indenting all content lines to match the tag's position.
 
@@ -319,14 +358,19 @@ def replace_indented(template, tag, content):
     if not indent_str:
         return template.replace(tag, content)
 
-    # Apply that indentation to every content line after the first.
+    # Apply that indentation to every content line after the first, except
+    # lines inside a <pre>, whose whitespace is rendered.
     content_lines = content.split('\n')
     indented_lines = [content_lines[0]]
+    in_pre = _ends_inside_pre(content_lines[0], False)
     for cline in content_lines[1:]:
-        if cline.strip():
+        if in_pre:
+            indented_lines.append(cline)
+        elif cline.strip():
             indented_lines.append(indent_str + cline)
         else:
             indented_lines.append("")
+        in_pre = _ends_inside_pre(cline, in_pre)
 
     return template.replace(tag, '\n'.join(indented_lines))
 
@@ -872,7 +916,9 @@ def wrap_in_base(base_template, navbar_html, footer_html, body_content,
     canonical_tag = f'<link rel="canonical" href="{canonical_url}">' if canonical_url else ""
     html = replace_indented(html, "{{canonicalURL}}", canonical_tag)
     html = replace_indented(html, "{{extraHead}}", extra_head)
-    html = replace_indented(html, "{{navbar}}", navbar_html)
+    # The Contact link stays on pages that carry their own contact panel.
+    contact_href = "#contact" if 'id="contact"' in body_content else "{{basePath}}#contact"
+    html = replace_indented(html, "{{navbar}}", navbar_html.replace("{{contactHref}}", contact_href))
     html = replace_indented(html, "{{bodyContent}}", decorate_links(body_content))
     html = replace_indented(html, "{{footer}}", footer_html)
     # Path prefix (inline, applied last, must be after all other replacements
@@ -954,6 +1000,22 @@ def collect_site_paths(manifests, demos_by_stem, include_hashes=False, tangents_
     return paths
 
 
+CONTACT_TEMPLATE_REL = _rel(os.path.join(TEMPLATES_DIR, "contact.html"))
+
+
+def contact_section(center_class):
+    """The frontpage contact panel, without its section number, as a closing page section."""
+    panel = load_file("contact.html").replace("{{contactIndex}}", "")
+    section = (
+        '<section class="section contact-section">\n'
+        '    <div class="center ' + center_class + '">\n'
+        "        {{contact}}\n"
+        "    </div>\n"
+        "</section>"
+    )
+    return replace_indented(section, "{{contact}}", panel)
+
+
 def build_frontpage(base_template, navbar_html, footer_html,
                     contact_html, frontpage_content, manifests, demos_by_stem):
     """Build index.html from frontpage.html and the demo manifests."""
@@ -963,7 +1025,9 @@ def build_frontpage(base_template, navbar_html, footer_html,
     content = frontpage_content
 
     # Replace snippet tags (indented to match their position in the template)
-    content = replace_indented(content, "{{contact}}", contact_html)
+    frontpage_data = load_json("frontpage.json")
+    section_index = '<span class="section-index" aria-hidden="true">' + frontpage_data["contactSectionIndex"] + "</span>"
+    content = replace_indented(content, "{{contact}}", contact_html.replace("{{contactIndex}}", section_index))
 
     # Replace category tags with generated section HTML
     for cat_name in CATEGORIES:
@@ -978,7 +1042,6 @@ def build_frontpage(base_template, navbar_html, footer_html,
             content = content.replace(tag, "")
 
     # Wrap in base template
-    frontpage_data = load_json("frontpage.json")
     page_title = frontpage_data.get("pageTitle", "")
     meta_desc = frontpage_data.get("metaDescription", "")
     meta_kw = frontpage_data.get("metaKeywords", DEFAULT_KEYWORDS)
@@ -1078,6 +1141,7 @@ def build_demo_pages(base_template, navbar_html, footer_html,
     repo_public_rel = _rel(os.path.join(TEMPLATES_DIR, "repo-panel.html"))
     repo_private_rel = _rel(os.path.join(TEMPLATES_DIR, "repo-panel-private.html"))
     iframe_tpl_rel = _rel(os.path.join(TEMPLATES_DIR, "iframe.html"))
+    contact_html = contact_section("demo-page")
 
     for cat_name in CATEGORIES:
         if cat_name not in manifests:
@@ -1101,7 +1165,7 @@ def build_demo_pages(base_template, navbar_html, footer_html,
             # or prune_orphans would delete it over a build hiccup.
             page_rel = f"demo/{folder}/index.html"
             card_rel = generate_social_images.demo_card_rel(folder)
-            page_deps = [md_rel, demo_tpl_rel, repo_public_rel, repo_private_rel, card_rel]
+            page_deps = [md_rel, demo_tpl_rel, repo_public_rel, repo_private_rel, card_rel, CONTACT_TEMPLATE_REL]
             build_page = should_build(page_rel, page_deps)
 
             app_dir = os.path.join(demo_dir, "app")
@@ -1127,6 +1191,7 @@ def build_demo_pages(base_template, navbar_html, footer_html,
                 body = body.replace("{{demoTitle}}", title)
                 body = body.replace("{{demoImage}}", f"{folder}-large.jpg")
                 body = replace_indented(body, "{{demoBody}}", body_html)
+                body = replace_indented(body, "{{contactSection}}", contact_html)
 
                 # SEO from flat front-matter keys (nested seo object retired).
                 og_image, image_width, image_height = social_card_image(card_rel)
@@ -1151,6 +1216,7 @@ def build_demo_pages(base_template, navbar_html, footer_html,
                     meta_description=meta_desc,
                     og_tags=og_tags,
                     base_path="../../",
+                    extra_head=IMAGE_FALLBACK_SCRIPT if meta["images"] else "",
                     canonical_url=demo_url,
                 )
 
@@ -1193,6 +1259,7 @@ def build_demo_index(base_template, navbar_html, footer_html,
                 items.append(f'<li><a href="{folder}/">{title}</a></li>')
 
     body = replace_indented(demo_index_template, "{{demoList}}", "\n".join(items))
+    body = replace_indented(body, "{{contactSection}}", contact_section("demo-index"))
 
     page = wrap_in_base(
         base_template, navbar_html, footer_html,
@@ -1238,6 +1305,7 @@ def build_standalone_pages(base_template, navbar_html, footer_html, manifests, d
                 _rel(os.path.join(standalone_dir, "head.html")),
                 _rel(os.path.join(standalone_dir, "config.json")),
                 card_rel,
+                CONTACT_TEMPLATE_REL,
             ]
             build = should_build(page_rel, deps)
 
@@ -1253,6 +1321,7 @@ def build_standalone_pages(base_template, navbar_html, footer_html, manifests, d
 
             with open(content_path, "r", encoding="utf-8") as f:
                 body_content = f.read()
+            body_content = replace_indented(body_content, "{{contactSection}}", contact_section("demo-page"))
 
             extra_head = ""
             if os.path.exists(head_path):
@@ -1317,6 +1386,43 @@ def escape_xml(text):
 def format_date(d):
     """Render a date as '13 July 2026' (locale-independent English month)."""
     return f"{d.day} {MONTHS[d.month - 1]} {d.year}"
+
+
+def truncate_description(text, limit=SUMMARY_MAX):
+    """Collapse whitespace and cut text to at most `limit` characters at a word break."""
+    text = " ".join(text.split())
+    if len(text) <= limit:
+        return text
+    cut = text[:limit - 1]
+    space = cut.rfind(" ")
+    if space > limit // 2:
+        cut = cut[:space]
+    return cut.rstrip(" ,.;:-") + "\u2026"
+
+
+def truncate_list_summary(text, limit=SUMMARY_MAX):
+    """Collapse whitespace and cut text after `limit` characters, adding '...'."""
+    text = " ".join(text.split())
+    if len(text) <= limit:
+        return text
+    return text[:limit].rstrip() + "..."
+
+
+def local_image_path(url, page_dir):
+    """Repo path a same-site image URL points at, or None for an external URL."""
+    parts = urllib.parse.urlsplit(url)
+    if parts.scheme or parts.netloc or not parts.path:
+        return None
+    path = urllib.parse.unquote(parts.path)
+    if path.startswith("/"):
+        return os.path.normpath(os.path.join(OUTPUT_DIR, path.lstrip("/")))
+    return os.path.normpath(os.path.join(OUTPUT_DIR, page_dir, path))
+
+
+def is_page_relative_url(url):
+    """True for a URL resolved against the page it sits on (no scheme, host, or leading '/')."""
+    parts = urllib.parse.urlsplit(url)
+    return not parts.scheme and not parts.netloc and not url.startswith("/")
 
 
 def base_path_for(url_dir):
@@ -1396,7 +1502,10 @@ def render_post_tags(tags):
             '<li><a class="tag-chip" href="{{basePath}}tangents/tag/' + tag_slug(label)
             + '/">' + escape_html(label) + "</a></li>"
         )
-    return '<ul class="tag-list">\n' + "\n".join(items) + "\n</ul>"
+    return (
+        '<div class="tag-group">\n<span class="tags-label">Tags:</span>\n'
+        '<ul class="tag-list">\n' + "\n".join(items) + "\n</ul>\n</div>"
+    )
 
 
 def render_inline_tags(tags):
@@ -1416,8 +1525,9 @@ def load_tangents_posts():
     """Parse tools/tangents/*.md into sorted post dicts and update the dates map.
 
     Publish dates are assigned on first sight and stored in tangents_dates.json
-    (committed, since they cannot be re-derived).  "Last updated" bumps only when
-    the rendered body's hash changes, so editing summary/tags/title alone does not.
+    (committed, since they cannot be re-derived).  The tracked updated date bumps
+    only when the rendered body's hash changes, so editing summary/tags/title alone
+    does not; a front-matter 'updated' date overrides it.
     """
     dates_map = read_json_file(TANGENTS_DATES_FILE, required=True)
 
@@ -1456,8 +1566,21 @@ def load_tangents_posts():
         for warning in meta["warnings"]:
             log_warning(f"tangents/{filename}: {warning}")
 
+        feature_image = front.get("featureImage")
+        if feature_image and not markdown_engine.is_safe_url(feature_image):
+            raise ValueError(
+                f"tangents/{filename}: 'featureImage' has a disallowed URL scheme: {feature_image!r}"
+            )
+
+        # A missing image only warns: the page shows a placeholder in its place.
+        for src in ([feature_image] if feature_image else []) + meta["images"]:
+            local_path = local_image_path(src, f"tangents/{slug}")
+            if local_path and not os.path.isfile(local_path):
+                log_warning(f"tangents/{filename}: image not found: {src!r}")
+
         content_hash = hashlib.sha256(body_html.encode("utf-8")).hexdigest()
         fm_published = front.get("published")  # date or None (front-matter override)
+        fm_updated = front.get("updated")
 
         entry = dates_map.get(slug)
         if entry is None:
@@ -1478,6 +1601,17 @@ def load_tangents_posts():
             "contentHash": content_hash,
         }
 
+        # A front-matter 'updated' overrides the tracked body-change date. Either
+        # is shown only when it is later than the publish date.
+        if fm_updated and fm_updated < published:
+            raise ValueError(
+                f"tangents/{filename}: 'updated' {fm_updated.isoformat()} is earlier "
+                f"than 'published' {published.isoformat()}"
+            )
+        updated = fm_updated or updated
+        if updated and updated <= published:
+            updated = None
+
         posts.append({
             "slug": slug,
             "title": title,
@@ -1487,7 +1621,10 @@ def load_tangents_posts():
             "updated": updated,
             "body_html": body_html,
             "needs_video_js": meta["needs_video_js"],
+            "has_images": bool(meta["images"]),
             "social_image": front.get("socialImage"),
+            "feature_image": feature_image,
+            "feature_image_alt": front.get("featureImageAlt", ""),
         })
 
     # Newest first; same-day ties break by slug descending (deterministic).
@@ -1502,6 +1639,7 @@ def build_tangents_posts(base_template, navbar_html, footer_html, post_template,
     """Write tangents/<slug>/index.html for every post, with Prev/Next nav and SEO."""
     total = len(posts)
     post_tpl_rel = _rel(os.path.join(TEMPLATES_DIR, "tangents-post.html"))
+    contact_html = contact_section("tangents-post")
     for i, post in enumerate(posts):
         slug = post["slug"]
         page_rel = f"tangents/{slug}/index.html"
@@ -1511,7 +1649,7 @@ def build_tangents_posts(base_template, navbar_html, footer_html, post_template,
         # depends on their sources too. A neighbour retitle changes that dep's
         # hash; a neighbour added or removed changes the dependency set, which
         # should_build detects even though the dropped path leaves dep_rels.
-        deps = [md_rel, post_tpl_rel]
+        deps = [md_rel, post_tpl_rel, CONTACT_TEMPLATE_REL]
         if i > 0:
             deps.append(_rel(os.path.join(TANGENTS_SRC_DIR, f"{posts[i - 1]['slug']}.md")))
         if i < total - 1:
@@ -1533,7 +1671,17 @@ def build_tangents_posts(base_template, navbar_html, footer_html, post_template,
 
         dates_str = f"Published: {format_date(published)}"
         if updated:
-            dates_str += f"<br>Last updated: {format_date(updated)}"
+            dates_str += f"<br>Updated: {format_date(updated)}"
+
+        feature_html = ""
+        if post["feature_image"]:
+            feature_html = (
+                '<figure class="feature-image">\n'
+                '    <img src="' + escape_html(post["feature_image"]) + '" alt="'
+                + escape_html(post["feature_image_alt"]) + '" fetchpriority="high">\n'
+                "</figure>\n"
+                "<hr>"
+            )
 
         # Previous = older (higher index), Next = newer (lower index); hide at ends.
         nav_links = []
@@ -1541,27 +1689,32 @@ def build_tangents_posts(base_template, navbar_html, footer_html, post_template,
             older = posts[i + 1]
             nav_links.append(
                 '<a class="nav-prev" href="{{basePath}}tangents/' + older["slug"]
-                + '/">Previous post: ' + escape_html(older["title"]) + "</a>"
+                + '/"><span class="nav-label">Previous: </span><span class="nav-title">'
+                + escape_html(older["title"]) + "</span></a>"
             )
         if i > 0:
             newer = posts[i - 1]
             nav_links.append(
                 '<a class="nav-next" href="{{basePath}}tangents/' + newer["slug"]
-                + '/">Next post: ' + escape_html(newer["title"]) + "</a>"
+                + '/"><span class="nav-label">Next: </span><span class="nav-title">'
+                + escape_html(newer["title"]) + "</span></a>"
             )
 
         body = post_template
         body = body.replace("{{postTitle}}", escape_html(title))
         body = body.replace("{{postDates}}", dates_str)
         body = replace_indented(body, "{{postTags}}", render_post_tags(post["tags"]))
+        body = replace_indented(body, "{{postFeature}}", feature_html)
         body = replace_indented(body, "{{postBody}}", post["body_html"])
         body = replace_indented(body, "{{postNav}}", "\n".join(nav_links))
+        body = replace_indented(body, "{{contactSection}}", contact_html)
 
         og_image = post["og_image"]
         image_width, image_height = post["og_image_size"]
+        description = truncate_description(post["summary"])
         seo = {
             "ogTitle": title,
-            "ogDescription": post["summary"],
+            "ogDescription": description,
             "ogImage": og_image,
             "ogImageAlt": title,
         }
@@ -1581,7 +1734,7 @@ def build_tangents_posts(base_template, navbar_html, footer_html, post_template,
             "@context": "https://schema.org",
             "@type": "BlogPosting",
             "headline": title,
-            "description": post["summary"],
+            "description": description,
             "datePublished": published.isoformat(),
             "dateModified": (updated or published).isoformat(),
             "url": canonical,
@@ -1600,12 +1753,14 @@ def build_tangents_posts(base_template, navbar_html, footer_html, post_template,
         ]
         if post["needs_video_js"]:
             extra_head_parts.append('<script defer src="{{basePath}}js/video-consent.js"></script>')
+        if post["feature_image"] or post["has_images"]:
+            extra_head_parts.append(IMAGE_FALLBACK_SCRIPT)
 
         page = wrap_in_base(
             base_template, navbar_html, footer_html,
             body_content=body,
             page_title=f"XeduR - {title}",
-            meta_description=post["summary"],
+            meta_description=description,
             og_tags=og_tags,
             base_path="../../",
             extra_head="\n".join(extra_head_parts),
@@ -1619,14 +1774,29 @@ def build_tangents_list_pages(base_template, navbar_html, footer_html,
     """Build the paginated index and one paginated page set per tag."""
     tag_counts = collect_tangents_tags(posts)
     card_width, card_height = generated_card_size()
+    contact_html = contact_section("tangents-list")
 
     def render_item(post):
+        image_html = ""
+        if post["feature_image"]:
+            src = post["feature_image"]
+            if is_page_relative_url(src):
+                src = "{{basePath}}tangents/" + post["slug"] + "/" + src
+            # The title link already names the post, so the image link is a
+            # mouse/touch shortcut kept out of the tab order and accessibility tree.
+            image_html = (
+                '<a class="post-item-image" href="{{basePath}}tangents/' + post["slug"]
+                + '/" tabindex="-1" aria-hidden="true"><img src="' + escape_html(src)
+                + '" alt="" loading="lazy"></a>'
+            )
         row = item_template
+        row = row.replace("{{itemClass}}", " has-image" if image_html else "")
+        row = replace_indented(row, "{{itemImage}}", image_html)
         row = row.replace("{{itemSlug}}", post["slug"])
         row = row.replace("{{itemTitle}}", escape_html(post["title"]))
         row = row.replace("{{itemDate}}", format_date(post["published"]))
         row = row.replace("{{itemTags}}", render_inline_tags(post["tags"]))
-        row = row.replace("{{itemSummary}}", escape_html(post["summary"]))
+        row = row.replace("{{itemSummary}}", escape_html(truncate_list_summary(post["summary"])))
         return row.rstrip("\n")
 
     def build_tag_filter(active_label):
@@ -1635,23 +1805,48 @@ def build_tangents_list_pages(base_template, navbar_html, footer_html,
         items = []
         all_active = ' class="active"' if active_label is None else ""
         items.append('<li><a' + all_active + ' href="{{basePath}}tangents/">All</a></li>')
-        for label in sorted(tag_counts):
+        # Most-used first matches the sort menu's default, so the order holds when the script runs.
+        for label in sorted(tag_counts, key=lambda name: (-tag_counts[name], name.casefold())):
             active = ' class="active"' if label == active_label else ""
             items.append(
-                '<li><a' + active + ' href="{{basePath}}tangents/tag/' + tag_slug(label)
+                '<li data-tag="' + escape_html(label) + '" data-count="' + str(tag_counts[label])
+                + '"><a' + active + ' href="{{basePath}}tangents/tag/' + tag_slug(label)
                 + '/">' + escape_html(label) + " (" + str(tag_counts[label]) + ")</a></li>"
             )
-        return '<ul class="tag-filter-list">\n' + "\n".join(items) + "\n</ul>"
+        return (
+            TAG_TOOLS_HTML + "\n"
+            '<span class="tags-label">Tags:</span>\n'
+            '<ul class="tag-filter-list">\n' + "\n".join(items) + "\n</ul>\n"
+            '<p class="tag-empty" hidden>No tags match the search.</p>'
+        )
+
+    def page_dir(url_prefix, page_no):
+        return url_prefix if page_no == 1 else f"{url_prefix}{page_no}/"
+
+    def nav_link(css_class, label, url_prefix, target_page, enabled):
+        # An end of the range keeps its link in place, faded, so the bar never shifts.
+        if not enabled:
+            return '<span class="' + css_class + ' nav-disabled" aria-disabled="true">' + label + "</span>"
+        return ('<a class="' + css_class + '" href="{{basePath}}' + page_dir(url_prefix, target_page)
+                + '">' + label + "</a>")
 
     def build_page_nav(url_prefix, page_no, n):
-        links = []
-        if page_no > 1:
-            newer_dir = url_prefix if page_no - 1 == 1 else f"{url_prefix}{page_no - 1}/"
-            links.append('<a class="nav-newer" href="{{basePath}}' + newer_dir + '">Newer posts</a>')
-        if page_no < n:
-            older_dir = f"{url_prefix}{page_no + 1}/"
-            links.append('<a class="nav-older" href="{{basePath}}' + older_dir + '">Older posts</a>')
-        return "\n".join(links)
+        page_jump = (
+            '<div class="page-jump">\n'
+            '<label for="page-jump-input">Page</label>\n'
+            '<input id="page-jump-input" class="page-jump-input" type="text" inputmode="numeric"'
+            ' autocomplete="off" size="3" value="' + str(page_no) + '"'
+            ' aria-describedby="page-jump-total"'
+            ' data-current="' + str(page_no) + '" data-total="' + str(n) + '"'
+            ' data-first="{{basePath}}' + url_prefix + '">\n'
+            '<span id="page-jump-total">out of ' + str(n) + "</span>\n"
+            "</div>"
+        )
+        return "\n".join([
+            nav_link("nav-newer", "Newer posts", url_prefix, page_no - 1, page_no > 1),
+            page_jump,
+            nav_link("nav-older", "Older posts", url_prefix, page_no + 1, page_no < n),
+        ])
 
     def build_paginated(subset, url_prefix, heading_html, intro, page_title_base,
                         meta_desc, active_label):
@@ -1659,10 +1854,15 @@ def build_tangents_list_pages(base_template, navbar_html, footer_html,
         n = len(pages)
         for idx, page_posts in enumerate(pages):
             page_no = idx + 1
-            url_dir = url_prefix if page_no == 1 else f"{url_prefix}{page_no}/"
+            url_dir = page_dir(url_prefix, page_no)
             base_path = base_path_for(url_dir)
             canonical = f"{SITE_BASE_URL}/{url_dir}"
             page_title = page_title_base if page_no == 1 else f"{page_title_base} (page {page_no})"
+            list_scripts = ['<script defer src="{{basePath}}js/page-jump.js"></script>']
+            if tag_counts:
+                list_scripts.append('<script defer src="{{basePath}}js/tag-filter.js"></script>')
+            if any(p["feature_image"] for p in page_posts):
+                list_scripts.append(IMAGE_FALLBACK_SCRIPT)
 
             body = list_template
             body = body.replace("{{listHeading}}", heading_html)
@@ -1670,6 +1870,7 @@ def build_tangents_list_pages(base_template, navbar_html, footer_html,
             body = replace_indented(body, "{{tagFilter}}", build_tag_filter(active_label))
             body = replace_indented(body, "{{postItems}}", "\n".join(render_item(p) for p in page_posts))
             body = replace_indented(body, "{{pageNav}}", build_page_nav(url_prefix, page_no, n))
+            body = replace_indented(body, "{{contactSection}}", contact_html)
 
             seo = {
                 "ogTitle": page_title,
@@ -1688,6 +1889,7 @@ def build_tangents_list_pages(base_template, navbar_html, footer_html,
                 meta_description=meta_desc,
                 og_tags=og_tags,
                 base_path=base_path,
+                extra_head="\n".join(list_scripts),
                 canonical_url=canonical,
             )
             write_file(os.path.join(OUTPUT_DIR, url_dir, "index.html"), page)

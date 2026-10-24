@@ -412,7 +412,10 @@ class TestPostPages(CaptureBuildsMixin, unittest.TestCase):
             "updated": None,
             "body_html": "<p>Body.</p>",
             "needs_video_js": False,
+            "has_images": False,
             "social_image": social_image,
+            "feature_image": None,
+            "feature_image_alt": "",
             "og_image": f"{SITE}/tangents/a-post/a-post-social.png",
             "og_image_size": og_image_size,
         }

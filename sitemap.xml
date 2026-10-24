@@ -74,6 +74,18 @@
     </url>
     <url>
         <loc>https://www.xedur.com/tangents/</loc>
-        <lastmod>2026-10-22</lastmod>
+        <lastmod>2026-10-24</lastmod>
+    </url>
+    <url>
+        <loc>https://www.xedur.com/tangents/initial-tests/</loc>
+        <lastmod>2026-10-24</lastmod>
+    </url>
+    <url>
+        <loc>https://www.xedur.com/tangents/tag/test/</loc>
+        <lastmod>2026-10-24</lastmod>
+    </url>
+    <url>
+        <loc>https://www.xedur.com/tangents/tag/website/</loc>
+        <lastmod>2026-10-24</lastmod>
     </url>
 </urlset>

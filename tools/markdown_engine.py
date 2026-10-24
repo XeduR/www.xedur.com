@@ -98,16 +98,16 @@ def _coerce_front_matter_value(key, value, source):
             return False
         raise FrontMatterError(f"{source}: 'draft' must be true or false, got {value!r}")
 
-    if key == "published":
+    if key in ("published", "updated"):
         if not _DATE_RE.match(value):
             raise FrontMatterError(
-                f"{source}: 'published' must be YYYY-MM-DD, got {value!r}"
+                f"{source}: '{key}' must be YYYY-MM-DD, got {value!r}"
             )
         try:
             return date.fromisoformat(value)
         except ValueError:
             raise FrontMatterError(
-                f"{source}: 'published' is not a real date: {value!r}"
+                f"{source}: '{key}' is not a real date: {value!r}"
             )
 
     return value
@@ -152,6 +152,8 @@ def parse_front_matter(text: str, *, source: str = "<string>") -> tuple[dict, st
             )
 
         key, value = line.split(":", 1)
+        if value.strip() == "":
+            continue  # A blank value leaves the key unset, so templates can list every key.
         front[key.strip()] = _coerce_front_matter_value(key.strip(), value.strip(), source)
 
     if not closed:
@@ -282,9 +284,14 @@ def _directive_youtube(params, meta, base_path):
     return "\n".join(lines)
 
 
+def _directive_break(params, meta, base_path):
+    return "<br>"
+
+
 # Built-in directives stay site-agnostic.  Site-coupled ones (github, and later
 # solar2d) are added by the caller via register_directive.
 DIRECTIVES = {
+    "break": _directive_break,
     "image": _directive_image,
     "youtube": _directive_youtube,
 }
@@ -358,6 +365,47 @@ def _fence_language(stripped):
     return match.group(0) if match else ""
 
 
+_HARD_BREAK = "\x00BR\x00"
+_CALLOUT_CLOSE = "[[/callout]]"
+
+
+def _inline_lines(lines):
+    """Join paragraph lines with spaces, turning a trailing backslash into a hard line break.
+
+    A backslash on the last line stays literal, as in CommonMark, because there
+    is no following line to break to.
+    """
+    joined = ""
+    for line in lines[:-1]:
+        if line.endswith("\\"):
+            joined += line[:-1].rstrip() + _HARD_BREAK
+        else:
+            joined += line + " "
+    joined += lines[-1]
+    return inline(joined).replace(_HARD_BREAK, "<br>\n")
+
+
+def _callout_name(stripped):
+    """Return the directive params string if the line opens a callout, else None."""
+    match = _DIRECTIVE_NAME_RE.match(stripped)
+    if match and match.group(1) == "callout":
+        return match.group(2).strip()
+    return None
+
+
+def _render_callout(params_str, lines, meta, base_path):
+    params = _parse_directive_params(params_str, "callout")
+    parts = ['<div class="md-callout" role="note">']
+    title = params.get("title")
+    if title:
+        parts.append(f'<p class="md-callout-title">{inline(title)}</p>')
+    body_html = _render_blocks(lines, meta, base_path)
+    if body_html:
+        parts.append(body_html)
+    parts.append("</div>")
+    return "\n".join(parts)
+
+
 def render_markdown(body: str, *, base_path: str = "") -> tuple[str, dict]:
     """Return (html, meta). meta collects flags like {'needs_video_js': bool,
     'needs_demo_js': bool, 'images': [src, ...]}. base_path is prefixed to
@@ -373,25 +421,59 @@ def render_markdown(body: str, *, base_path: str = "") -> tuple[str, dict]:
         "warnings": [],
     }
 
+    return _render_blocks(body.split("\n"), meta, base_path), meta
+
+
+def _render_blocks(lines, meta, base_path):
     output = []
     block = None       # None | 'p' | 'ul' | 'ol' | 'blockquote'
     accum = []         # p/blockquote: raw text lines; ul/ol: item text
     in_code = False
+    code_open = ""
+    code_lines = []
+
+    # A callout's body is captured raw and rendered recursively once it closes.
+    callout_params = None
+    callout_lines = []
+    callout_depth = 0
+    callout_in_code = False
+
+    def close_code():
+        # One output item, so no newline sits between <code> and the first line
+        # (only a newline right after <pre> is ignored by browsers).
+        output.append(code_open + "\n".join(code_lines) + "</code></pre>")
 
     def flush():
         nonlocal block, accum
         if block == "p":
-            output.append(f"<p>{inline(' '.join(accum))}</p>")
+            output.append(f"<p>{_inline_lines(accum)}</p>")
         elif block == "blockquote":
-            output.append(f"<blockquote><p>{inline(' '.join(accum))}</p></blockquote>")
+            output.append(f"<blockquote><p>{_inline_lines(accum)}</p></blockquote>")
         elif block in ("ul", "ol"):
             items = "\n".join(f"<li>{inline(item)}</li>" for item in accum)
             output.append(f"<{block}>\n{items}\n</{block}>")
         block = None
         accum = []
 
-    for raw_line in body.split("\n"):
+    for raw_line in lines:
         stripped = raw_line.strip()
+
+        # 0. Inside a callout: collect lines until its own closing line. Fences
+        # and nested callouts are tracked so their lines cannot close it early.
+        if callout_params is not None:
+            if stripped.startswith("```"):
+                callout_in_code = not callout_in_code
+            elif not callout_in_code:
+                if stripped == _CALLOUT_CLOSE:
+                    if callout_depth == 0:
+                        output.append(_render_callout(callout_params, callout_lines, meta, base_path))
+                        callout_params = None
+                        continue
+                    callout_depth -= 1
+                elif _callout_name(stripped) is not None:
+                    callout_depth += 1
+            callout_lines.append(raw_line)
+            continue
 
         # 1. Code fence toggle (checked in both directions before the body rule).
         if stripped.startswith("```"):
@@ -399,23 +481,31 @@ def render_markdown(body: str, *, base_path: str = "") -> tuple[str, dict]:
                 flush()
                 in_code = True
                 lang = _fence_language(stripped)
-                if lang:
-                    output.append(f'<pre><code class="language-{lang}">')
-                else:
-                    output.append("<pre><code>")
+                # tabindex lets keyboard users scroll a block wider than the page.
+                code_open = f'<pre tabindex="0"><code class="language-{lang}">' if lang else '<pre tabindex="0"><code>'
+                code_lines = []
             else:
-                output.append("</code></pre>")
+                close_code()
                 in_code = False
             continue
 
         # 2. Inside a code block: raw line escaped verbatim, no other processing.
         if in_code:
-            output.append(_escape_code(raw_line))
+            code_lines.append(_escape_code(raw_line))
             continue
 
-        # 3. Directive on its own line.
+        # 3. Directive on its own line; a callout opens a captured block instead.
         if stripped.startswith("[[") and stripped.endswith("]]"):
             flush()
+            if stripped == _CALLOUT_CLOSE:
+                raise MarkdownError("'[[/callout]]' has no opening '[[callout]]'")
+            params_str = _callout_name(stripped)
+            if params_str is not None:
+                callout_params = params_str
+                callout_lines = []
+                callout_depth = 0
+                callout_in_code = False
+                continue
             output.append(_render_directive(stripped, meta, base_path))
             continue
 
@@ -477,8 +567,13 @@ def render_markdown(body: str, *, base_path: str = "") -> tuple[str, dict]:
         accum.append(stripped)
 
     if in_code:
-        output.append("</code></pre>")
+        close_code()
         meta["warnings"].append("code fence left open at end of input; closed automatically")
 
     flush()
-    return "\n".join(output), meta
+
+    if callout_params is not None:
+        output.append(_render_callout(callout_params, callout_lines, meta, base_path))
+        meta["warnings"].append("callout left open at end of input; closed automatically")
+
+    return "\n".join(output)

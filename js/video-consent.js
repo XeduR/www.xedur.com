@@ -37,13 +37,18 @@ document.addEventListener("DOMContentLoaded", () => {
 const placeholders = document.querySelectorAll(".video-placeholder");
 placeholders.forEach((placeholder) => {
 const videoId = placeholder.getAttribute("data-video-id");
+const useHq = () => {
+placeholder.style.backgroundImage = "url('https://img.youtube.com/vi/" + videoId + "/hqdefault.jpg')";
+};
 const probe = new Image();
 probe.addEventListener("load", () => {
+if (probe.naturalWidth <= 120) {
+useHq();
+return;
+}
 placeholder.style.backgroundImage = "url('https://img.youtube.com/vi/" + videoId + "/maxresdefault.jpg')";
 });
-probe.addEventListener("error", () => {
-placeholder.style.backgroundImage = "url('https://img.youtube.com/vi/" + videoId + "/hqdefault.jpg')";
-});
+probe.addEventListener("error", useHq);
 probe.src = "https://img.youtube.com/vi/" + videoId + "/maxresdefault.jpg";
 const button = placeholder.querySelector(".video-consent");
 if (button) {
