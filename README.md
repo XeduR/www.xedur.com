@@ -87,14 +87,15 @@ Apart from the generated social cards listed above, the build never touches `img
 
 The builder regenerates only what changed and prunes output that no longer has a source.
 
-- Per-item pages (each demo page, its app loader, each Tangents post, and each copied `js/*.js`) are skipped when none of their sources changed.
+- Per-item pages (each demo page, each Tangents post, and each copied `js/*.js`) are skipped when none of their sources changed.
+- Each demo's app loader is generated every run, so a Solar2D build's own `index.html` copied into `demo/<folder>/app/` is replaced with the loader.
 - Change detection hashes each source file's bytes rather than reading modification times, so a fresh `git clone` does not force a rebuild.
 - Aggregate pages (`index.html`, `demo/index.html`, the Tangents list and tag pages, the feed, `404.html`, `sitemap.xml`, `llms.txt`) are regenerated every run. A byte-identical result is never written, so repeated runs cause no git churn.
 - A change to `base.html`, `navbar.html`, the navbar logo `img/xedur-code-portfolio.png`, `footer.html`, `tools/css/styles.css`, `update_website.py`, or `markdown_engine.py` rebuilds every per-item page, because each of them affects every page.
 - Switching between normal and `min` output also rebuilds every page.
 - A generated page whose source is gone (a deleted demo `.md`, a dropped manifest entry, a deleted post, a pagination page that no longer exists) is deleted, along with its now-empty directory.
 - Pruning only ever deletes paths that match a known generated-output pattern. Any other stale cache entry is logged as a warning and left alone, so a corrupted cache can never remove a manual asset such as `img/`, demo thumbnails, app binaries, or a custom `socialImage` file.
-- `force` rebuilds every page regardless of the cache, while pruning and the app-loader listing check keep working.
+- `force` rebuilds every page regardless of the cache, while pruning keeps working.
 
 The cache lives at `tools/.build_cache.json` (gitignored). Deleting it triggers one full rebuild with byte-identical output, and a corrupt cache is treated as absent. It also keeps each demo asset's size and modification time, so only changed assets are re-hashed for the sitemap check.
 

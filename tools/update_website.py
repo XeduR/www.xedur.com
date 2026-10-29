@@ -167,14 +167,12 @@ GENERATED_OUTPUT_PATTERNS = [
 # Loaded from the previous manifest by load_build_cache(); read by should_build().
 _PREV_SOURCES = {} # {rel_path: sha256}
 _PREV_OUTPUTS = {} # {rel_path: [dep, ...]}
-_PREV_APP_LISTINGS = {} # {app_dir_rel: "a.bin,b.data,..."}
 _PREV_ASSET_STATS = {} # {rel_path: [size, mtime_ns, sha256]}
 _PREV_MINIFY = False # MINIFY mode of the run that wrote the manifest
 
 # Accumulated during this run.
 _HASH_CACHE = {} # {abs_path: sha256} memoized for this run
 _NEW_OUTPUTS = {} # {rel_path: [dep, ...]}
-_NEW_APP_LISTINGS = {} # {app_dir_rel: listing}
 _NEW_ASSET_STATS = {} # {rel_path: [size, mtime_ns, sha256]}
 
 SKIPPED_PAGES = 0 # per-item pages skipped as up to date
@@ -528,12 +526,12 @@ def _file_sha256(abs_path):
 def load_build_cache():
     """Load the previous build manifest into module state.
 
-    Runs even under FORCE: pruning and the app-listing comparison need the
-    previous manifest either way. FORCE only bypasses the skip decisions, which
-    check it directly. A corrupt, unreadable, or structurally invalid cache is
-    treated as missing so a bad file never breaks the build.
+    Runs even under FORCE: pruning needs the previous manifest either way.
+    FORCE only bypasses the skip decisions, which check it directly. A corrupt,
+    unreadable, or structurally invalid cache is treated as missing so a bad
+    file never breaks the build.
     """
-    global _PREV_SOURCES, _PREV_OUTPUTS, _PREV_APP_LISTINGS, _PREV_ASSET_STATS, _PREV_MINIFY, CACHE_MISSING
+    global _PREV_SOURCES, _PREV_OUTPUTS, _PREV_ASSET_STATS, _PREV_MINIFY, CACHE_MISSING
     if not os.path.exists(BUILD_CACHE_FILE):
         CACHE_MISSING = True
         return
@@ -551,16 +549,14 @@ def load_build_cache():
 
     sources = data.get("sources")
     outputs = data.get("outputs")
-    listings = data.get("app_listings")
     asset_stats = data.get("asset_stats", {})
     if not (isinstance(sources, dict) and isinstance(outputs, dict)
-            and isinstance(listings, dict) and isinstance(asset_stats, dict)):
+            and isinstance(asset_stats, dict)):
         CACHE_MISSING = True
         return
 
     _PREV_SOURCES = sources
     _PREV_OUTPUTS = outputs
-    _PREV_APP_LISTINGS = listings
     _PREV_ASSET_STATS = asset_stats
     _PREV_MINIFY = bool(data.get("minify", False))
     CACHE_MISSING = False
@@ -580,13 +576,11 @@ def compute_global_dirty():
     return False
 
 
-def should_build(output_rel, dep_rels, extra_dirty=False):
+def should_build(output_rel, dep_rels):
     """Decide whether a per-item page must be regenerated.
 
     dep_rels: repo-relative POSIX source paths this output depends on. Do NOT
         include the global sources; GLOBAL_DIRTY covers those.
-    extra_dirty: caller-supplied dirtiness for inputs that are not hashable
-        source files (the app-listing comparison uses this).
     Always records the output and its deps in _NEW_OUTPUTS so pruning keeps the
     page alive even when the build is skipped. A change to the dependency SET
     itself (a dep added or removed since last run) also forces a rebuild; the
@@ -596,7 +590,7 @@ def should_build(output_rel, dep_rels, extra_dirty=False):
     """
     global SKIPPED_PAGES
     _NEW_OUTPUTS[output_rel] = list(dep_rels)
-    if GLOBAL_DIRTY or CACHE_MISSING or FORCE or extra_dirty:
+    if GLOBAL_DIRTY or CACHE_MISSING or FORCE:
         return True
     abs_out = os.path.join(ROOT_DIR, output_rel.replace("/", os.sep))
     if not os.path.exists(abs_out):
@@ -639,7 +633,6 @@ def save_build_cache():
         "version": 1,
         "sources": sources,
         "outputs": _NEW_OUTPUTS,
-        "app_listings": _NEW_APP_LISTINGS,
         "asset_stats": _NEW_ASSET_STATS,
         "minify": MINIFY,
     }
@@ -1229,7 +1222,6 @@ def build_demo_pages(base_template, navbar_html, footer_html,
                      demo_template, iframe_template, manifests, demos_by_stem):
     """Build individual demo pages for all non-external demos."""
     demo_tpl_rel = _rel(os.path.join(TEMPLATES_DIR, "demo.html"))
-    iframe_tpl_rel = _rel(os.path.join(TEMPLATES_DIR, "iframe.html"))
     contact_html = contact_section("demo-page")
 
     for cat_name in CATEGORIES:
@@ -1263,13 +1255,9 @@ def build_demo_pages(base_template, navbar_html, footer_html,
             app_files = sorted(os.listdir(app_dir)) if os.path.isdir(app_dir) else []
             # The loader is this build's own output, not an app file.
             app_files = [name for name in app_files if name != "index.html"]
-            listing = ",".join(app_files)
-            app_key = f"demo/{folder}/app/"
-            listing_changed = listing != _PREV_APP_LISTINGS.get(app_key)
-            _NEW_APP_LISTINGS[app_key] = listing
-            app_page_rel = f"demo/{folder}/app/index.html"
-            app_deps = [md_rel, iframe_tpl_rel]
-            build_app = should_build(app_page_rel, app_deps, extra_dirty=listing_changed)
+
+            # Built every run, because copying a Solar2D HTML5 build into app/ lays its own index.html over the loader.
+            record_output(f"demo/{folder}/app/index.html")
 
             if build_page:
                 body_html = mark_micro_labels(body_html)
@@ -1319,8 +1307,7 @@ def build_demo_pages(base_template, navbar_html, footer_html,
                 # Write demo page under demo/ subfolder
                 write_file(os.path.join(demo_dir, "index.html"), page)
 
-            # The app loader needs the .bin name, so scan even when the page is
-            # up to date; a missing binary is an error worth reporting each run.
+            # A missing binary is an error worth reporting each run.
             bin_files = [f for f in app_files if f.endswith(".bin")]
             if not bin_files:
                 log_error(f"No .bin file found in demo/{folder}/app/")
@@ -1330,12 +1317,10 @@ def build_demo_pages(base_template, navbar_html, footer_html,
 
             bin_name = bin_files[0].removesuffix(".bin")
 
-            if build_app:
-                # Create app/ subfolder with iframe loader
-                iframe_html = iframe_template.replace("{{demoTitle}}", escape_placeholders(title))
-                iframe_html = iframe_html.replace("{{demoBinName}}", bin_name)
-                iframe_html = iframe_html.replace("{{demoDescription}}", escape_placeholders(desc_short))
-                write_file(os.path.join(demo_dir, "app", "index.html"), iframe_html)
+            iframe_html = iframe_template.replace("{{demoTitle}}", escape_placeholders(title))
+            iframe_html = iframe_html.replace("{{demoBinName}}", bin_name)
+            iframe_html = iframe_html.replace("{{demoDescription}}", escape_placeholders(desc_short))
+            write_file(os.path.join(demo_dir, "app", "index.html"), iframe_html)
 
 
 def build_demo_index(base_template, navbar_html, footer_html,

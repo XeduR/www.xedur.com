@@ -904,8 +904,6 @@ class TestPlaceholdersInDemoText(FilledPageMixin, BuildCaptureMixin, unittest.Te
         open(os.path.join(self.root, "demo", "quoting", "app", "quoting.bin"), "wb").close()
         for patch in (
             mock.patch.object(update_website, "OUTPUT_DIR", self.root),
-            mock.patch.object(update_website, "_PREV_APP_LISTINGS", {}),
-            mock.patch.object(update_website, "_NEW_APP_LISTINGS", {}),
         ):
             patch.start()
             self.addCleanup(patch.stop)
