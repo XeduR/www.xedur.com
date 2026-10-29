@@ -15,7 +15,9 @@ import os
 import re
 import sys
 import json
+import base64
 import hashlib
+import struct
 import urllib.parse
 from datetime import date, datetime
 
@@ -42,6 +44,8 @@ CHANGED_FILES = set()
 
 # Persistent record of per-page lastmod dates so unchanged pages keep their old date.
 SITEMAP_DATES_FILE = os.path.join(SCRIPT_DIR, "components", "data", "sitemap_dates.json")
+# Key in sitemap_dates.json holding each demo's asset content hash; it cannot collide with a "/..." page path.
+SITEMAP_ASSET_HASHES_KEY = "demoAssetHashes"
 
 # Categories in display order (matches frontpage.html tag order)
 CATEGORIES = ["games", "solar2d", "other"]
@@ -52,6 +56,10 @@ DEFAULT_KEYWORDS = (
 )
 
 SITE_BASE_URL = "https://www.xedur.com"
+
+# Embedded in every page as a data URI so it paints with the first frame; as a
+# separate file it waits on cache revalidation (GitHub Pages sends max-age=600).
+NAV_LOGO_FILE = os.path.join(ROOT_DIR, "img", "xedur-code-portfolio.png")
 
 # Tangents writing system.
 TANGENTS_SRC_DIR = os.path.join(SCRIPT_DIR, "tangents")
@@ -82,6 +90,10 @@ TAG_TOOLS_HTML = (
     "</div>"
 )
 IMAGE_FALLBACK_SCRIPT = '<script defer src="{{basePath}}js/image-fallback.js"></script>'
+TANGENTS_FEED_LINK = (
+    '<link rel="alternate" type="application/atom+xml" '
+    'title="XeduR - Tangents" href="{{basePath}}tangents/feed.xml">'
+)
 FEED_MAX_ENTRIES = 20
 
 # Intro blurb on the Tangents index, also its meta description.
@@ -91,8 +103,8 @@ TANGENTS_INTRO = "Occasional musings, tutorials, half-formed ideas, and other po
 MONTHS = ["January", "February", "March", "April", "May", "June",
           "July", "August", "September", "October", "November", "December"]
 
-# Post slugs (file stems) must be lowercase kebab-case.
-TANGENT_SLUG_RE = re.compile(r"^[a-z0-9-]+$")
+# Post slugs (file stems) must be lowercase kebab-case; an all-digit slug would share tangents/N/ with list page N.
+TANGENT_SLUG_RE = re.compile(r"^(?![0-9]+$)[a-z0-9-]+$")
 
 # Inline SVG icons injected next to external and mailto links.
 LINK_ICON_SVG = (
@@ -122,6 +134,7 @@ BUILD_CACHE_FILE = os.path.join(SCRIPT_DIR, ".build_cache.json")
 GLOBAL_SOURCES = [
     "components/templates/base.html",
     "components/templates/navbar.html",
+    os.path.relpath(NAV_LOGO_FILE, SCRIPT_DIR),
     "components/templates/footer.html",
     "css/styles.css",
     "update_website.py",
@@ -155,12 +168,14 @@ GENERATED_OUTPUT_PATTERNS = [
 _PREV_SOURCES = {} # {rel_path: sha256}
 _PREV_OUTPUTS = {} # {rel_path: [dep, ...]}
 _PREV_APP_LISTINGS = {} # {app_dir_rel: "a.bin,b.data,..."}
+_PREV_ASSET_STATS = {} # {rel_path: [size, mtime_ns, sha256]}
 _PREV_MINIFY = False # MINIFY mode of the run that wrote the manifest
 
 # Accumulated during this run.
 _HASH_CACHE = {} # {abs_path: sha256} memoized for this run
 _NEW_OUTPUTS = {} # {rel_path: [dep, ...]}
 _NEW_APP_LISTINGS = {} # {app_dir_rel: listing}
+_NEW_ASSET_STATS = {} # {rel_path: [size, mtime_ns, sha256]}
 
 SKIPPED_PAGES = 0 # per-item pages skipped as up to date
 CACHE_MISSING = True # no prior cache existed (forces a full build)
@@ -247,14 +262,17 @@ def minify_html(text):
                   flags=re.DOTALL | re.IGNORECASE)
 
     # Minify HTML (outside the extracted blocks).
-    text = re.sub(r'>\s+<', '><', text)
     text = re.sub(r'\s+', ' ', text)
 
     # Minify and restore each extracted block.
     for i, block in enumerate(blocks):
         m = re.match(r'(<script[^>]*>)(.*?)(</script>)',
                      block, flags=re.DOTALL | re.IGNORECASE)
-        if m:
+        if m and 'ld+json' in m.group(1).lower():
+            # JSON is not JavaScript to the comment stripper; only its indentation goes.
+            body = '\n'.join(line.strip() for line in m.group(2).strip().split('\n'))
+            block = m.group(1) + body + m.group(3)
+        elif m:
             block = m.group(1) + minify_js(m.group(2)) + m.group(3)
         else:
             m = re.match(r'(<style[^>]*>)(.*?)(</style>)',
@@ -268,12 +286,61 @@ def minify_html(text):
 
 def minify_css(text):
     """Remove CSS comments and collapse whitespace for a smaller file."""
-    text = re.sub(r'/\*.*?\*/', '', text, flags=re.DOTALL)
+    text, notices = _strip_block_comments(text, line_comments=False)
     text = re.sub(r'\s+', ' ', text)
     # '+' keeps its spaces: calc() requires whitespace around + and -.
     text = re.sub(r'\s*([{}:;,>~])\s*', r'\1', text)
     text = re.sub(r';\s*}', '}', text)
-    return text.strip()
+    return _restore_notices(text.strip(), notices)
+
+
+def _strip_block_comments(text, line_comments):
+    """Remove /* */ comments outside string literals.
+
+    /*! and @license comments become placeholders so later whitespace passes
+    cannot touch them; _restore_notices puts them back verbatim.
+    """
+    out = []
+    notices = []
+    quote = None
+    i = 0
+    while i < len(text):
+        c = text[i]
+        if quote:
+            if c == '\\':
+                out.append(text[i:i + 2])
+                i += 2
+                continue
+            # Only template literals may span lines.
+            if c == quote or (c == '\n' and quote != '`'):
+                quote = None
+        elif c in '\'"`':
+            quote = c
+        elif line_comments and text.startswith('//', i):
+            end = text.find('\n', i)
+            end = len(text) if end == -1 else end
+            out.append(text[i:end])
+            i = end
+            continue
+        elif text.startswith('/*', i):
+            end = text.find('*/', i + 2)
+            end = len(text) if end == -1 else end + 2
+            comment = text[i:end]
+            if comment.startswith('/*!') or '@license' in comment:
+                out.append(f'\x00NOTICE{len(notices)}\x00')
+                notices.append(comment)
+            i = end
+            continue
+        out.append(c)
+        i += 1
+    return ''.join(out), notices
+
+
+def _restore_notices(text, notices):
+    """Put the comments _strip_block_comments kept back in place."""
+    for i, notice in enumerate(notices):
+        text = text.replace(f'\x00NOTICE{i}\x00', notice, 1)
+    return text
 
 
 def _strip_inline_comment(line):
@@ -302,7 +369,7 @@ def minify_js(text):
 
     Uses a conservative approach suitable for the simple scripts on this site.
     """
-    text = re.sub(r'/\*.*?\*/', '', text, flags=re.DOTALL)
+    text, notices = _strip_block_comments(text, line_comments=True)
     lines = []
     for line in text.split('\n'):
         stripped = line.strip()
@@ -317,7 +384,7 @@ def minify_js(text):
     # because JavaScript relies on them for automatic semicolon insertion
     # and this "homebaked no dependency minifier" isn't a proper minifier.
     text = re.sub(r'[^\S\n]+', ' ', text)
-    return text.strip()
+    return _restore_notices(text.strip(), notices)
 
 
 def indent_block(text, spaces):
@@ -385,6 +452,11 @@ def load_file(filename):
         return f.read()
 
 
+def nav_logo_data_uri():
+    with open(NAV_LOGO_FILE, "rb") as f:
+        return "data:image/png;base64," + base64.b64encode(f.read()).decode("ascii")
+
+
 def load_json(filename):
     """Read a JSON file from components/data/ and return the parsed object."""
     filepath = os.path.join(DATA_DIR, filename)
@@ -440,13 +512,17 @@ def source_hash(rel_path):
     if not os.path.isfile(abs_path):
         _HASH_CACHE[abs_path] = ""
         return ""
+    digest = _file_sha256(abs_path)
+    _HASH_CACHE[abs_path] = digest
+    return digest
+
+
+def _file_sha256(abs_path):
     h = hashlib.sha256()
     with open(abs_path, "rb") as f:
         for chunk in iter(lambda: f.read(65536), b""):
             h.update(chunk)
-    digest = h.hexdigest()
-    _HASH_CACHE[abs_path] = digest
-    return digest
+    return h.hexdigest()
 
 
 def load_build_cache():
@@ -457,7 +533,7 @@ def load_build_cache():
     check it directly. A corrupt, unreadable, or structurally invalid cache is
     treated as missing so a bad file never breaks the build.
     """
-    global _PREV_SOURCES, _PREV_OUTPUTS, _PREV_APP_LISTINGS, _PREV_MINIFY, CACHE_MISSING
+    global _PREV_SOURCES, _PREV_OUTPUTS, _PREV_APP_LISTINGS, _PREV_ASSET_STATS, _PREV_MINIFY, CACHE_MISSING
     if not os.path.exists(BUILD_CACHE_FILE):
         CACHE_MISSING = True
         return
@@ -476,14 +552,16 @@ def load_build_cache():
     sources = data.get("sources")
     outputs = data.get("outputs")
     listings = data.get("app_listings")
+    asset_stats = data.get("asset_stats", {})
     if not (isinstance(sources, dict) and isinstance(outputs, dict)
-            and isinstance(listings, dict)):
+            and isinstance(listings, dict) and isinstance(asset_stats, dict)):
         CACHE_MISSING = True
         return
 
     _PREV_SOURCES = sources
     _PREV_OUTPUTS = outputs
     _PREV_APP_LISTINGS = listings
+    _PREV_ASSET_STATS = asset_stats
     _PREV_MINIFY = bool(data.get("minify", False))
     CACHE_MISSING = False
 
@@ -562,6 +640,7 @@ def save_build_cache():
         "sources": sources,
         "outputs": _NEW_OUTPUTS,
         "app_listings": _NEW_APP_LISTINGS,
+        "asset_stats": _NEW_ASSET_STATS,
         "minify": MINIFY,
     }
     write_json_file(BUILD_CACHE_FILE, data, indent=2, sort_keys=True)
@@ -771,17 +850,17 @@ def generate_card(demo, card_template):
     title = demo.get("title", "")
     alt_text = f"Screenshot of {title}" if title else ""
     tech = demo.get("tech", "")
-    tech_html = f'<p class="tech"><b>Tech:</b> {tech}</p>' if tech else ""
+    tech_html = f'<p class="tech"><b>Tech:</b> {escape_placeholders(tech)}</p>' if tech else ""
 
     card = card_template
-    card = card.replace("{{cardHref}}", href)
+    card = card.replace("{{cardHref}}", escape_placeholders(href))
     card = card.replace("{{cardTarget}}", target)
-    card = card.replace("{{cardTitle}}", title)
-    card = card.replace("{{cardImage}}", image)
-    card = card.replace("{{cardAlt}}", alt_text)
+    card = card.replace("{{cardTitle}}", escape_placeholders(title))
+    card = card.replace("{{cardImage}}", escape_placeholders(image))
+    card = card.replace("{{cardAlt}}", escape_placeholders(alt_text))
     card = card.replace("{{cardWidth}}", img_width)
     card = card.replace("{{cardHeight}}", img_height)
-    card = card.replace("{{cardDescription}}", demo.get("descriptionShort", ""))
+    card = card.replace("{{cardDescription}}", escape_placeholders(demo.get("descriptionShort", "")))
     card = card.replace("{{cardTech}}", tech_html)
     card = card.replace("{{cardExternal}}", external_html)
     return card.rstrip('\n')
@@ -795,10 +874,10 @@ def generate_section(category_name, manifest, demos_by_stem, card_template, sect
 
     html = section_template
     html = html.replace("{{sectionId}}", category_name)
-    html = html.replace("{{sectionIndex}}", manifest.get("sectionIndex", ""))
+    html = html.replace("{{sectionIndex}}", escape_placeholders(manifest.get("sectionIndex", "")))
     html = html.replace("{{sectionBand}}", " band" if manifest.get("band") else "")
-    html = html.replace("{{sectionTitle}}", manifest.get("sectionTitle", ""))
-    html = html.replace("{{sectionDescription}}", manifest.get("sectionDescription", ""))
+    html = html.replace("{{sectionTitle}}", escape_placeholders(manifest.get("sectionTitle", "")))
+    html = html.replace("{{sectionDescription}}", escape_placeholders(manifest.get("sectionDescription", "")))
     html = replace_indented(html, "{{sectionCards}}", cards_html.rstrip('\n'))
     return html.rstrip('\n')
 
@@ -878,6 +957,8 @@ def ld_json_script_tag(data):
     """
     text = json.dumps(data, indent=4, ensure_ascii=False)
     text = text.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
+    # Structural braces are never adjacent in indented output, so this only reaches string values.
+    text = text.replace("{{", "\\u007b\\u007b")
     return '<script type="application/ld+json">\n' + text + "\n</script>"
 
 
@@ -905,10 +986,10 @@ def wrap_in_base(base_template, navbar_html, footer_html, body_content,
                  og_tags="", base_path="", extra_head="", canonical_url=""):
     """Wrap body content in the base HTML template."""
     html = base_template
-    # Inline tags (single-line values). meta_description and page_title carry
+    # Inline tags (single-line values). meta_keywords, meta_description, and page_title carry
     # author text into a content="..." attribute and <title>, so escape here
     # (callers pass raw values; single escaping is guaranteed).
-    html = html.replace("{{metaKeywords}}", meta_keywords)
+    html = html.replace("{{metaKeywords}}", escape_html(meta_keywords))
     html = html.replace("{{metaDescription}}", escape_html(meta_description))
     html = html.replace("{{pageTitle}}", escape_html(page_title))
     # Block tags (multi-line content that needs indentation)
@@ -918,7 +999,8 @@ def wrap_in_base(base_template, navbar_html, footer_html, body_content,
     html = replace_indented(html, "{{extraHead}}", extra_head)
     # The Contact link stays on pages that carry their own contact panel.
     contact_href = "#contact" if 'id="contact"' in body_content else "{{basePath}}#contact"
-    html = replace_indented(html, "{{navbar}}", navbar_html.replace("{{contactHref}}", contact_href))
+    navbar_html = navbar_html.replace("{{contactHref}}", contact_href).replace("{{navLogo}}", nav_logo_data_uri())
+    html = replace_indented(html, "{{navbar}}", navbar_html)
     html = replace_indented(html, "{{bodyContent}}", decorate_links(body_content))
     html = replace_indented(html, "{{footer}}", footer_html)
     # Path prefix (inline, applied last, must be after all other replacements
@@ -1032,7 +1114,10 @@ def build_frontpage(base_template, navbar_html, footer_html,
 
     # Replace snippet tags (indented to match their position in the template)
     frontpage_data = load_json("frontpage.json")
-    section_index = '<span class="section-index" aria-hidden="true">' + frontpage_data["contactSectionIndex"] + "</span>"
+    section_index = (
+        '<span class="section-index" aria-hidden="true">'
+        + escape_placeholders(frontpage_data["contactSectionIndex"]) + "</span>"
+    )
     content = replace_indented(content, "{{contact}}", contact_html.replace("{{contactIndex}}", section_index))
 
     # Replace category tags with generated section HTML
@@ -1169,7 +1254,9 @@ def build_demo_pages(base_template, navbar_html, footer_html,
             # or prune_orphans would delete it over a build hiccup.
             page_rel = f"demo/{folder}/index.html"
             card_rel = generate_social_images.demo_card_rel(folder)
-            page_deps = [md_rel, demo_tpl_rel, *REPO_PANEL_TEMPLATE_RELS, card_rel, CONTACT_TEMPLATE_REL]
+            # Rendered before the build decision because the body's local images are page deps.
+            body_html, meta, image_rels = render_page_markdown(demo["_body"], f"demo/{folder}", "../../", f"{stem}.md")
+            page_deps = [md_rel, demo_tpl_rel, *REPO_PANEL_TEMPLATE_RELS, card_rel, CONTACT_TEMPLATE_REL, *image_rels]
             build_page = should_build(page_rel, page_deps)
 
             app_dir = os.path.join(demo_dir, "app")
@@ -1185,15 +1272,15 @@ def build_demo_pages(base_template, navbar_html, footer_html,
             build_app = should_build(app_page_rel, app_deps, extra_dirty=listing_changed)
 
             if build_page:
-                body_html, meta = markdown_engine.render_markdown(demo["_body"], base_path="../../")
                 body_html = mark_micro_labels(body_html)
                 for w in meta["warnings"]:
                     log_warning(f"{stem}.md: {w}")
 
                 # Build demo page body from template
                 body = demo_template
-                body = body.replace("{{demoTitle}}", title)
-                body = body.replace("{{demoImage}}", f"{folder}-large.jpg")
+                body = body.replace("{{demoTitle}}", escape_placeholders(title))
+                hero_image = f"{folder}-large.jpg"
+                body = body.replace("{{demoImage}}", hero_image)
                 body = replace_indented(body, "{{demoBody}}", body_html)
                 body = replace_indented(body, "{{contactSection}}", contact_html)
 
@@ -1212,6 +1299,11 @@ def build_demo_pages(base_template, navbar_html, footer_html,
                     image_width=image_width, image_height=image_height,
                 )
 
+                # The hero is a CSS background, which the preload scanner cannot see.
+                extra_head_parts = [f'<link rel="preload" as="image" href="{hero_image}" fetchpriority="high">']
+                if meta["images"]:
+                    extra_head_parts.append(IMAGE_FALLBACK_SCRIPT)
+
                 # Wrap in base template
                 page = wrap_in_base(
                     base_template, navbar_html, footer_html,
@@ -1220,7 +1312,7 @@ def build_demo_pages(base_template, navbar_html, footer_html,
                     meta_description=meta_desc,
                     og_tags=og_tags,
                     base_path="../../",
-                    extra_head=IMAGE_FALLBACK_SCRIPT if meta["images"] else "",
+                    extra_head="\n".join(extra_head_parts),
                     canonical_url=demo_url,
                 )
 
@@ -1240,9 +1332,9 @@ def build_demo_pages(base_template, navbar_html, footer_html,
 
             if build_app:
                 # Create app/ subfolder with iframe loader
-                iframe_html = iframe_template.replace("{{demoTitle}}", title)
+                iframe_html = iframe_template.replace("{{demoTitle}}", escape_placeholders(title))
                 iframe_html = iframe_html.replace("{{demoBinName}}", bin_name)
-                iframe_html = iframe_html.replace("{{demoDescription}}", desc_short)
+                iframe_html = iframe_html.replace("{{demoDescription}}", escape_placeholders(desc_short))
                 write_file(os.path.join(demo_dir, "app", "index.html"), iframe_html)
 
 
@@ -1260,7 +1352,7 @@ def build_demo_index(base_template, navbar_html, footer_html,
             folder = demo.get("folder")
             title = demo.get("title", folder)
             if folder:
-                items.append(f'<li><a href="{folder}/">{title}</a></li>')
+                items.append(f'<li><a href="{folder}/">{escape_placeholders(title)}</a></li>')
 
     body = replace_indented(demo_index_template, "{{demoList}}", "\n".join(items))
     body = replace_indented(body, "{{contactSection}}", contact_section("demo-index"))
@@ -1370,13 +1462,18 @@ def build_standalone_pages(base_template, navbar_html, footer_html, manifests, d
 # ------------------------------------------------------------------------------------
 # Tangents (markdown-authored posts, paginated list/tag pages, Atom feed)
 
+def escape_placeholders(text):
+    """Encode "{{" so no template placeholder pass can match author text."""
+    return text.replace("{{", "&#123;&#123;")
+
+
 def escape_html(text):
     """Escape author text for safe use in HTML element and attribute contexts."""
     text = text.replace("&", "&amp;")
     text = text.replace("<", "&lt;")
     text = text.replace(">", "&gt;")
     text = text.replace('"', "&quot;")
-    return text
+    return escape_placeholders(text)
 
 
 def escape_xml(text):
@@ -1421,6 +1518,133 @@ def local_image_path(url, page_dir):
     if path.startswith("/"):
         return os.path.normpath(os.path.join(OUTPUT_DIR, path.lstrip("/")))
     return os.path.normpath(os.path.join(OUTPUT_DIR, page_dir, path))
+
+
+def case_matched_path(root, path):
+    """path with each name below root spelled as on disk, or None when a name has no match even ignoring case."""
+    parent = root
+    for name in os.path.relpath(path, root).split(os.sep):
+        if not os.path.isdir(parent):
+            return None
+        entries = os.listdir(parent)
+        if name not in entries:
+            name = next((entry for entry in entries if entry.lower() == name.lower()), None)
+            if name is None:
+                return None
+        parent = os.path.join(parent, name)
+    return parent
+
+
+def isfile_exact_case(root, path):
+    """os.path.isfile that also matches every name below root by letter case.
+
+    The Windows-backed /workspace mount ignores case and GitHub Pages does not.
+    """
+    return os.path.isfile(path) and case_matched_path(root, path) == os.path.join(root, os.path.relpath(path, root))
+
+
+# Every frame header (SOFn) marker: baseline, extended, progressive, lossless.
+JPEG_SOF_CODES = frozenset(range(0xC0, 0xD0)) - {0xC4, 0xC8, 0xCC}
+JPEG_APP1 = 0xE1
+EXIF_ORIENTATION_TAG = 0x0112
+
+# EXIF orientations that turn the stored image a quarter turn, so browsers swap its width and height.
+EXIF_QUARTER_TURNS = frozenset({5, 6, 7, 8})
+
+
+def _exif_orientation(payload):
+    """Orientation tag from an APP1 payload, or 1 when it is not Exif or has no tag."""
+    if payload[:6] != b"Exif\0\0":
+        return 1
+    tiff = payload[6:]
+    order = {b"II": "<", b"MM": ">"}.get(tiff[:2])
+    if order is None:
+        return 1
+    (offset,) = struct.unpack(order + "I", tiff[4:8])
+    (count,) = struct.unpack(order + "H", tiff[offset:offset + 2])
+    for index in range(count):
+        entry = offset + 2 + 12 * index
+        tag, _, _, value = struct.unpack(order + "HHIH", tiff[entry:entry + 10])
+        if tag == EXIF_ORIENTATION_TAG:
+            return value
+    return 1
+
+
+def _jpeg_size(f):
+    f.seek(2)
+    orientation = 1
+    while True:
+        segment = f.read(4)
+        if len(segment) < 4 or segment[0] != 0xFF:
+            raise ValueError("no JPEG frame header")
+        length = int.from_bytes(segment[2:4], "big")
+        if segment[1] in JPEG_SOF_CODES:
+            height, width = struct.unpack(">xHH", f.read(5))
+            return (height, width) if orientation in EXIF_QUARTER_TURNS else (width, height)
+        if segment[1] == JPEG_APP1:
+            orientation = _exif_orientation(f.read(length - 2))
+        else:
+            f.seek(length - 2, os.SEEK_CUR)
+
+
+def image_size(path):
+    """(width, height) from a PNG, GIF, WebP, or JPEG header, or None for any other file.
+
+    Reads only the header, so a build never needs Pillow for it. A cut-short or
+    damaged header raises struct.error or ValueError.
+    """
+    with open(path, "rb") as f:
+        head = f.read(30)
+        if head[:8] == b"\x89PNG\r\n\x1a\n":
+            return struct.unpack(">II", head[16:24])
+
+        if head[:6] in (b"GIF87a", b"GIF89a"):
+            return struct.unpack("<HH", head[6:10])
+
+        if head[:4] == b"RIFF" and head[8:12] == b"WEBP":
+            chunk = head[12:16]
+            if chunk == b"VP8 ":
+                width, height = struct.unpack("<HH", head[26:30])
+                return width & 0x3FFF, height & 0x3FFF
+            if chunk == b"VP8L":
+                (bits,) = struct.unpack("<I", head[21:25])
+                return (bits & 0x3FFF) + 1, ((bits >> 14) & 0x3FFF) + 1
+            if chunk == b"VP8X":
+                width_low, width_high, height_low, height_high = struct.unpack("<HBHB", head[24:30])
+                return width_low + (width_high << 16) + 1, height_low + (height_high << 16) + 1
+            return None
+
+        if head[:2] == b"\xff\xd8":
+            return _jpeg_size(f)
+    return None
+
+
+def render_page_markdown(body, page_dir, base_path, source):
+    """render_markdown with the intrinsic size of each local image the author gave no size.
+
+    Returns (html, meta, image_rels): image_rels are the looked-up images, which
+    the page depends on so a replaced image rebuilds it with its new size.
+    source names the markdown file in warnings.
+    """
+    image_rels = []
+
+    def local_size(src):
+        path = local_image_path(src, page_dir)
+        if path is None:
+            return None
+
+        # The on-disk spelling as the dep, so a letter-case rename changes the dep set and rebuilds the page.
+        image_rels.append(_rel(case_matched_path(OUTPUT_DIR, path) or path))
+        if not isfile_exact_case(OUTPUT_DIR, path):
+            return None
+        try:
+            return image_size(path)
+        except (struct.error, ValueError):
+            log_warning(f"{source}: image size unreadable (file cut short or damaged): {src!r}")
+            return None
+
+    html, meta = markdown_engine.render_markdown(body, base_path=base_path, image_size=local_size)
+    return html, meta, image_rels
 
 
 def is_page_relative_url(url):
@@ -1547,7 +1771,7 @@ def load_tangents_posts():
         slug = filename[:-3]
         if not TANGENT_SLUG_RE.match(slug):
             raise ValueError(
-                f"tangents: invalid slug {slug!r} (must be lowercase kebab-case [a-z0-9-]+)"
+                f"tangents: invalid slug {slug!r} (must be lowercase kebab-case [a-z0-9-]+, not all digits)"
             )
 
         path = os.path.join(TANGENTS_SRC_DIR, filename)
@@ -1564,9 +1788,8 @@ def load_tangents_posts():
         if not summary:
             raise ValueError(f"tangents/{filename}: missing required 'summary'")
 
-        body_html, meta = markdown_engine.render_markdown(
-            body, base_path=base_path_for(f"tangents/{slug}/")
-        )
+        post_base_path = base_path_for(f"tangents/{slug}/")
+        body_html, meta, image_rels = render_page_markdown(body, f"tangents/{slug}", post_base_path, f"tangents/{filename}")
         for warning in meta["warnings"]:
             log_warning(f"tangents/{filename}: {warning}")
 
@@ -1579,10 +1802,12 @@ def load_tangents_posts():
         # A missing image only warns: the page shows a placeholder in its place.
         for src in ([feature_image] if feature_image else []) + meta["images"]:
             local_path = local_image_path(src, f"tangents/{slug}")
-            if local_path and not os.path.isfile(local_path):
+            if local_path and not isfile_exact_case(OUTPUT_DIR, local_path):
                 log_warning(f"tangents/{filename}: image not found: {src!r}")
 
-        content_hash = hashlib.sha256(body_html.encode("utf-8")).hexdigest()
+        # Automatic image sizes stay out of the hash, so replacing an image does not mark the post updated.
+        authored_html, _ = markdown_engine.render_markdown(body, base_path=post_base_path)
+        content_hash = hashlib.sha256(authored_html.encode("utf-8")).hexdigest()
         fm_published = front.get("published")  # date or None (front-matter override)
         fm_updated = front.get("updated")
 
@@ -1626,6 +1851,7 @@ def load_tangents_posts():
             "body_html": body_html,
             "needs_video_js": meta["needs_video_js"],
             "has_images": bool(meta["images"]),
+            "image_rels": image_rels,
             "social_image": front.get("socialImage"),
             "feature_image": feature_image,
             "feature_image_alt": front.get("featureImageAlt", ""),
@@ -1653,11 +1879,14 @@ def build_tangents_posts(base_template, navbar_html, footer_html, post_template,
         # depends on their sources too. A neighbour retitle changes that dep's
         # hash; a neighbour added or removed changes the dependency set, which
         # should_build detects even though the dropped path leaves dep_rels.
-        deps = [md_rel, post_tpl_rel, *REPO_PANEL_TEMPLATE_RELS, CONTACT_TEMPLATE_REL]
+        deps = [md_rel, post_tpl_rel, *REPO_PANEL_TEMPLATE_RELS, CONTACT_TEMPLATE_REL, *post.get("image_rels", [])]
         if i > 0:
             deps.append(_rel(os.path.join(TANGENTS_SRC_DIR, f"{posts[i - 1]['slug']}.md")))
         if i < total - 1:
             deps.append(_rel(os.path.join(TANGENTS_SRC_DIR, f"{posts[i + 1]['slug']}.md")))
+
+        # og:image:width/height come from the generated card's canvas, so a resized card rebuilds the page.
+        deps.append(f"tangents/{slug}/{generate_social_images.generated_name(slug)}")
         # A custom socialImage names a file whose presence flips the page's
         # og:image between the custom name and the generated card. Depending on
         # it (even while absent, via source_hash's "" sentinel) rebuilds the page
@@ -1750,11 +1979,7 @@ def build_tangents_posts(base_template, navbar_html, footer_html, post_template,
             ld["image"] = og_image
         ld_script = ld_json_script_tag(ld)
 
-        extra_head_parts = [
-            ld_script,
-            '<link rel="alternate" type="application/atom+xml" '
-            'title="XeduR - Tangents" href="{{basePath}}tangents/feed.xml">',
-        ]
+        extra_head_parts = [ld_script, TANGENTS_FEED_LINK]
         if post["needs_video_js"]:
             extra_head_parts.append('<script defer src="{{basePath}}js/video-consent.js"></script>')
         if post["feature_image"] or post["has_images"]:
@@ -1780,18 +2005,20 @@ def build_tangents_list_pages(base_template, navbar_html, footer_html,
     card_width, card_height = generated_card_size()
     contact_html = contact_section("tangents-list")
 
-    def render_item(post):
+    def render_item(post, first_row):
         image_html = ""
         if post["feature_image"]:
-            src = post["feature_image"]
-            if is_page_relative_url(src):
+            src = escape_html(post["feature_image"])
+            if is_page_relative_url(post["feature_image"]):
                 src = "{{basePath}}tangents/" + post["slug"] + "/" + src
+            # The first row's thumbnail is in the initial viewport and is the phone LCP.
+            loading_attr = 'fetchpriority="high"' if first_row else 'loading="lazy"'
             # The title link already names the post, so the image link is a
             # mouse/touch shortcut kept out of the tab order and accessibility tree.
             image_html = (
                 '<a class="post-item-image" href="{{basePath}}tangents/' + post["slug"]
-                + '/" tabindex="-1" aria-hidden="true"><img src="' + escape_html(src)
-                + '" alt="" loading="lazy"></a>'
+                + '/" tabindex="-1" aria-hidden="true"><img src="' + src
+                + '" alt="" ' + loading_attr + '></a>'
             )
         row = item_template
         row = row.replace("{{itemClass}}", " has-image" if image_html else "")
@@ -1862,17 +2089,17 @@ def build_tangents_list_pages(base_template, navbar_html, footer_html,
             base_path = base_path_for(url_dir)
             canonical = f"{SITE_BASE_URL}/{url_dir}"
             page_title = page_title_base if page_no == 1 else f"{page_title_base} (page {page_no})"
-            list_scripts = ['<script defer src="{{basePath}}js/page-jump.js"></script>']
+            list_head = [TANGENTS_FEED_LINK, '<script defer src="{{basePath}}js/page-jump.js"></script>']
             if tag_counts:
-                list_scripts.append('<script defer src="{{basePath}}js/tag-filter.js"></script>')
+                list_head.append('<script defer src="{{basePath}}js/tag-filter.js"></script>')
             if any(p["feature_image"] for p in page_posts):
-                list_scripts.append(IMAGE_FALLBACK_SCRIPT)
+                list_head.append(IMAGE_FALLBACK_SCRIPT)
 
             body = list_template
             body = body.replace("{{listHeading}}", heading_html)
             body = body.replace("{{listIntro}}", intro)
             body = replace_indented(body, "{{tagFilter}}", build_tag_filter(active_label))
-            body = replace_indented(body, "{{postItems}}", "\n".join(render_item(p) for p in page_posts))
+            body = replace_indented(body, "{{postItems}}", "\n".join(render_item(p, row == 0) for row, p in enumerate(page_posts)))
             body = replace_indented(body, "{{pageNav}}", build_page_nav(url_prefix, page_no, n))
             body = replace_indented(body, "{{contactSection}}", contact_html)
 
@@ -1893,7 +2120,7 @@ def build_tangents_list_pages(base_template, navbar_html, footer_html,
                 meta_description=meta_desc,
                 og_tags=og_tags,
                 base_path=base_path,
-                extra_head="\n".join(list_scripts),
+                extra_head="\n".join(list_head),
                 canonical_url=canonical,
             )
             write_file(os.path.join(OUTPUT_DIR, url_dir, "index.html"), page)
@@ -1964,7 +2191,7 @@ def check_images(manifests, demos_by_stem):
                 image = demo.get("image", "")
                 if image:
                     img_path = os.path.join(ROOT_DIR, image.replace("/", os.sep))
-                    if not os.path.isfile(img_path):
+                    if not isfile_exact_case(ROOT_DIR, img_path):
                         missing.append(f"{image} (external: {demo.get('title', '')})")
             else:
                 folder = demo.get("folder")
@@ -1973,24 +2200,59 @@ def check_images(manifests, demos_by_stem):
                 for suffix in ("small", "large"):
                     img_name = f"{folder}-{suffix}.jpg"
                     img_path = os.path.join(ROOT_DIR, "demo", folder, img_name)
-                    if not os.path.isfile(img_path):
+                    if not isfile_exact_case(ROOT_DIR, img_path):
                         missing.append(f"demo/{folder}/{img_name}")
 
     for m in missing:
         log_warning(f"image not found: {m}")
 
 
+def asset_file_hash(rel, abs_path):
+    """sha256 of an asset, reused from the build cache while its size and mtime match.
+
+    The stat data only saves re-reading unchanged files; the hash alone decides changes.
+    """
+    stat = os.stat(abs_path)
+    prev = _PREV_ASSET_STATS.get(rel)
+    if prev and prev[:2] == [stat.st_size, stat.st_mtime_ns]:
+        digest = prev[2]
+    else:
+        digest = _file_sha256(abs_path)
+    _NEW_ASSET_STATS[rel] = [stat.st_size, stat.st_mtime_ns, digest]
+    return digest
+
+
+def demo_asset_hash(scan_dirs, skip_rels):
+    """One content hash over every file path and its bytes under scan_dirs."""
+    combined = hashlib.sha256()
+    for scan_dir in scan_dirs:
+        for dirpath, dirnames, filenames in os.walk(scan_dir):
+            dirnames.sort()
+            for fname in sorted(filenames):
+                fpath = os.path.join(dirpath, fname)
+                rel = os.path.relpath(fpath, ROOT_DIR).replace("\\", "/")
+                if rel in skip_rels:
+                    continue
+                combined.update(f"{rel}\0{asset_file_hash(rel, fpath)}\n".encode("utf-8"))
+    return combined.hexdigest()
+
+
 def check_demo_assets(manifests, demos_by_stem):
     """Detect non-generated asset changes in demo and standalone directories.
 
-    For regular demos, scans ``demo/<folder>/app/`` (excluding the generated
-    ``index.html``).  For standalone pages, scans both the output directory
-    ``demo/<folder>/`` and the source directory ``tools/standalone/<folder>/``.
+    For regular demos, hashes ``demo/<folder>/app/``.  For standalone pages,
+    hashes both the output directory ``demo/<folder>/`` and the source
+    directory ``tools/standalone/<folder>/``. Generated pages and the social
+    card are skipped.
 
-    Any demo whose assets were modified after its stored sitemap date is
-    added to CHANGED_FILES so that build_sitemap bumps the lastmod.
+    A demo whose hash differs from the one stored in sitemap_dates.json is
+    added to CHANGED_FILES so that build_sitemap bumps the lastmod. A demo
+    with no stored hash only gets its hash recorded. Returns
+    {sitemap_path: hash} for build_sitemap to persist.
     """
     existing_dates = read_json_file(SITEMAP_DATES_FILE, required=False)
+    stored_hashes = existing_dates.get(SITEMAP_ASSET_HASHES_KEY, {})
+    asset_hashes = {}
 
     for cat_name in CATEGORIES:
         if cat_name not in manifests:
@@ -2005,55 +2267,29 @@ def check_demo_assets(manifests, demos_by_stem):
             if not folder:
                 continue
 
-            sitemap_path = f"/demo/{folder}/"
-            stored_date = existing_dates.get(sitemap_path)
-            if not stored_date:
-                continue  # New page — build_sitemap assigns today's date.
-
-            output_file = f"demo/{folder}/index.html"
-            if output_file in CHANGED_FILES:
-                continue  # Already marked changed by the build step.
-
-            stored_date_obj = date.fromisoformat(stored_date)
-
             # Collect directories to scan and generated files to skip.
+            output_file = f"demo/{folder}/index.html"
             dirs_to_scan = []
-            generated = {output_file}
+            generated = {output_file, generate_social_images.demo_card_rel(folder)}
 
             if is_standalone(demo):
                 dirs_to_scan.append(os.path.join(OUTPUT_DIR, "demo", folder))
-                standalone_src = os.path.join(STANDALONE_DIR, folder)
-                if os.path.isdir(standalone_src):
-                    dirs_to_scan.append(standalone_src)
+                dirs_to_scan.append(os.path.join(STANDALONE_DIR, folder))
             else:
-                app_dir = os.path.join(OUTPUT_DIR, "demo", folder, "app")
-                if os.path.isdir(app_dir):
-                    dirs_to_scan.append(app_dir)
+                dirs_to_scan.append(os.path.join(OUTPUT_DIR, "demo", folder, "app"))
                 generated.add(f"demo/{folder}/app/index.html")
 
-            # Walk directories looking for any file newer than the stored date.
-            asset_changed = False
-            for scan_dir in dirs_to_scan:
-                if not os.path.isdir(scan_dir):
-                    continue
-                for dirpath, _, filenames in os.walk(scan_dir):
-                    for fname in filenames:
-                        fpath = os.path.join(dirpath, fname)
-                        rel = os.path.relpath(fpath, ROOT_DIR).replace("\\", "/")
-                        if rel in generated:
-                            continue
-                        mtime = date.fromtimestamp(os.path.getmtime(fpath))
-                        if mtime > stored_date_obj:
-                            asset_changed = True
-                            break
-                    if asset_changed:
-                        break
-                if asset_changed:
-                    break
+            sitemap_path = f"/demo/{folder}/"
+            digest = demo_asset_hash(dirs_to_scan, generated)
+            asset_hashes[sitemap_path] = digest
+            stored_hash = stored_hashes.get(sitemap_path)
+            if stored_hash is None or stored_hash == digest or output_file in CHANGED_FILES:
+                continue
 
-            if asset_changed:
-                CHANGED_FILES.add(output_file)
-                print(f"  Asset changed: demo/{folder}/")
+            CHANGED_FILES.add(output_file)
+            print(f"  Asset changed: demo/{folder}/")
+
+    return asset_hashes
 
 
 def build_llms_txt(manifests, demos_by_stem):
@@ -2126,7 +2362,7 @@ def build_llms_txt(manifests, demos_by_stem):
     write_file(os.path.join(OUTPUT_DIR, "llms.txt"), "\n".join(lines))
 
 
-def build_sitemap(site_paths, tangents_lastmod=None):
+def build_sitemap(site_paths, tangents_lastmod=None, demo_asset_hashes=None):
     """Generate sitemap.xml, updating lastmod only for pages whose content changed.
 
     A persistent JSON file (sitemap_dates.json) stores the last-modified date
@@ -2134,6 +2370,7 @@ def build_sitemap(site_paths, tangents_lastmod=None):
     all others keep their previously stored date.  Pages appearing for the
     first time also receive today's date.  tangents_lastmod overrides the
     heuristic for post pages with the post's own updated/published date.
+    demo_asset_hashes (from check_demo_assets) is persisted beside the dates.
     """
     tangents_lastmod = tangents_lastmod or {}
     today = date.today().isoformat()
@@ -2159,7 +2396,9 @@ def build_sitemap(site_paths, tangents_lastmod=None):
             # Brand-new page with no prior record.
             updated_dates[path] = today
 
-    # Persist the updated dates for the next build.
+    # Persist the updated dates and demo asset hashes for the next build.
+    if demo_asset_hashes:
+        updated_dates[SITEMAP_ASSET_HASHES_KEY] = demo_asset_hashes
     write_json_file(SITEMAP_DATES_FILE, updated_dates, indent=4)
 
     # Generate sitemap.xml.
@@ -2259,7 +2498,7 @@ def main():
             raise markdown_engine.MarkdownError(f"directive 'github' has a disallowed URL scheme: url={url!r}")
         return repo_public.replace("{{repository}}", escape_html(url)).rstrip("\n")
 
-    markdown_engine.register_directive("github", _github_directive)
+    markdown_engine.register_directive("github", _github_directive, ("repo", "url"))
 
     # Load demo manifests and per-demo markdown front matter
     manifests, demos_by_stem = load_demo_data()
@@ -2343,7 +2582,7 @@ def main():
     )
     build_tangents_feed(tangents_posts)
     check_images(manifests, demos_by_stem)
-    check_demo_assets(manifests, demos_by_stem)
+    demo_asset_hashes = check_demo_assets(manifests, demos_by_stem)
     build_llms_txt(manifests, demos_by_stem)
 
     # Post pages carry their own updated/published lastmod (more meaningful than
@@ -2352,7 +2591,7 @@ def main():
         f"/tangents/{p['slug']}/": (p["updated"] or p["published"]).isoformat()
         for p in tangents_posts
     }
-    build_sitemap(site_paths, tangents_lastmod)
+    build_sitemap(site_paths, tangents_lastmod, demo_asset_hashes)
 
     # Prune orphaned outputs, persist the manifest, and write the build log.
     pruned = prune_orphans()

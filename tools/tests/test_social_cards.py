@@ -36,6 +36,14 @@ SITE = update_website.SITE_BASE_URL
 STYLES_CSS = os.path.join(TOOLS_DIR, "css", "styles.css")
 
 
+def case_folding_isfile(path):
+    """os.path.isfile as the Windows-backed /workspace mount answers it: letter case ignored."""
+    directory, name = os.path.split(path)
+    return os.path.isdir(directory) and any(
+        entry.lower() == name.lower() and os.path.isfile(os.path.join(directory, entry))
+        for entry in os.listdir(directory))
+
+
 class TempRootMixin:
     """Point the generator at a throwaway root holding only the logo."""
 
@@ -472,6 +480,24 @@ class TestPostCardNames(TempRootMixin, unittest.TestCase):
                     [{"slug": "my-post", "title": "T", "socialImage": name}], prune=False)
                 self.assertEqual(result["og_image"]["my-post"], f"tangents/my-post/{name}")
 
+    @needs_pillow
+    def test_custom_filename_needs_exact_case(self):
+        post = {"slug": "my-post", "title": "T", "socialImage": "Cover.png"}
+        self.touch("tangents/my-post/cover.png")
+        real_isfile = os.path.isfile
+        with mock.patch("os.path.isfile", lambda path: real_isfile(path) or case_folding_isfile(path)):
+            result = gen.resolve_and_generate([post], prune=False)
+        self.assertEqual(result["og_image"]["my-post"], "tangents/my-post/my-post-social.png")
+        self.assertEqual(result["custom"], [])
+        self.assertIn("'Cover.png' not found", result["warnings"][0])
+
+    @needs_pillow
+    def test_custom_filename_without_post_folder_warns(self):
+        result = gen.resolve_and_generate(
+            [{"slug": "my-post", "title": "T", "socialImage": "cover.png"}], prune=False)
+        self.assertEqual(result["og_image"]["my-post"], "tangents/my-post/my-post-social.png")
+        self.assertIn("'cover.png' not found", result["warnings"][0])
+
     def test_cli_rejects_malformed_slug(self):
         source_dir = os.path.join(self.root, "posts")
         os.makedirs(source_dir)
@@ -480,6 +506,38 @@ class TestPostCardNames(TempRootMixin, unittest.TestCase):
         with mock.patch.object(gen, "TANGENTS_SRC_DIR", source_dir):
             with self.assertRaises(ValueError):
                 gen._load_posts_from_disk()
+
+
+class TestGlyphCoverage(TempRootMixin, unittest.TestCase):
+    def setUp(self):
+        super().setUp()
+        self.config = gen.load_card_config()
+
+    def test_drops_characters_the_font_lacks(self):
+        self.assertEqual(gen.card_title(self.config, "Launch \U0001F680 day \u65e5\u672c ok"),
+                         ("Launch day ok", "\U0001F680\u65e5\u672c"))
+
+    def test_missing_glyph_box_is_not_coverage(self):
+        for ch in ("\uffff", "\U0001F680", "\U0001F44D\U0001F3FD"):
+            with self.subTest(ch=ch):
+                self.assertEqual(gen.card_title(self.config, f"A{ch}B")[0], "AB")
+
+    def test_covered_title_is_unchanged(self):
+        title = "Kävin  tänään Hämeenlinnassa: «Æsir» → 50 °C"
+        self.assertEqual(gen.card_title(self.config, title), (title, ""))
+
+    @needs_pillow
+    def test_post_and_demo_cards_drop_and_warn(self):
+        result = gen.resolve_and_generate(
+            [{"slug": "my-post", "title": "Rockets \U0001F680 fly", "socialImage": None}],
+            demos=[{"folder": "autotile", "title": "\u65e5\u672c Autotile"}])
+        self.assertEqual(len(result["warnings"]), 2)
+        self.assertTrue(result["warnings"][0].startswith("tangents/my-post: "))
+        self.assertTrue(result["warnings"][1].startswith("demo/autotile: "))
+        for rel, kind, text in (("tangents/my-post/my-post-social.png", "post", "Rockets fly"),
+                                ("demo/autotile/autotile-social.png", "demo", "Autotile")):
+            with open(os.path.join(self.root, rel), "rb") as f:
+                self.assertEqual(f.read(), gen.render_card(kind, text), rel)
 
 
 class TestJsonDataFiles(unittest.TestCase):

@@ -913,6 +913,17 @@ button.load:hover,
     font-size: 1rem;
 }
 
+.stay-button {
+    padding: 0 18px;
+    margin-top: 16px;
+    color: var(--accent);
+    cursor: pointer;
+}
+
+.stay-button:active {
+    background: var(--accent-wash);
+}
+
 .page-404 .home-link {
     margin-top: 24px;
 }
@@ -955,13 +966,12 @@ button.load:hover,
     display: none;
 }
 
-.back-button {
+.back-button,
+.stay-button {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     height: 48px;
-    padding: 0 18px 0 12px;
-    margin-bottom: 20px;
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius);
@@ -973,7 +983,13 @@ button.load:hover,
     transition: border-color var(--motion);
 }
 
-.back-button:hover {
+.back-button {
+    padding: 0 18px 0 12px;
+    margin-bottom: 20px;
+}
+
+.back-button:hover,
+.stay-button:hover {
     border-color: var(--accent);
     text-decoration: none;
 }

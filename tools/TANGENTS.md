@@ -9,7 +9,7 @@ How to write a post for Tangents (`/tangents/`): the post file, its front matter
 3. Put the post's images in `tangents/<slug>/` (the folder beside the generated page, not in `tools/`).
 4. Run `python update_website.py min` from `tools/`.
 
-The file name is the slug and the URL: `tools/tangents/my-post.md` becomes `/tangents/my-post/`. Slugs are lowercase letters, digits, and hyphens only. Renaming the file changes the URL, so retitle a post by editing `title` instead.
+The file name is the slug and the URL: `tools/tangents/my-post.md` becomes `/tangents/my-post/`. Slugs are lowercase letters, digits, and hyphens only, and never all digits, because `/tangents/2/` is list page 2. Renaming the file changes the URL, so retitle a post by editing `title` instead.
 
 ## Front matter
 
@@ -48,12 +48,14 @@ draft:
 - Tags that differ only by case or punctuation (`Solar2D` and `solar2d`) stop the build, because they would share one tag page.
 - Tag page addresses keep only the letters a to z and digits, so a tag like `Ääkköset` gets a mangled address. Stick to ASCII tag names.
 - `socialImage` takes a bare file name, never a path, using only letters, digits, `-`, `_`, and `.`, and not starting with `.`. Any other name stops the build. 1200x630 is the recommended size.
+- The `socialImage` name must match the file's letter case exactly. A mismatch warns and the build draws a card instead.
+- Characters the card font cannot draw, such as emoji and CJK, are left out of the generated card's title with a build warning. The page title and og:title keep them.
 
 ## Feature image
 
 `featureImage` takes a file name relative to the post (`cover.png` for `tangents/<slug>/cover.png`), a root-relative path (`/img/cover.png`), or a full `https://` URL.
 
-The image is scaled to fit a 16:9 area without cropping or a visible frame, and a horizontal divider separates it from the body. On list pages it becomes a thumbnail that links to the post. If the image cannot load, an "Image unavailable" panel with the alt text takes its place; a missing local file also logs a build warning.
+The image is scaled to fit a 16:9 area without cropping or a visible frame, and a horizontal divider separates it from the body. On list pages it becomes a thumbnail that links to the post. If the image cannot load, an "Image unavailable" panel with the alt text takes its place; a missing local file also logs a build warning. A local file name must match the file's letter case exactly, because the live site is case-sensitive; a mismatch counts as a missing file.
 
 ## Text
 
@@ -78,6 +80,8 @@ Inline formatting:
 
 - Formatting works inside a word (`un**believ**able`) and inside link text.
 - Link addresses may contain one level of parentheses, as in `[Lua](https://en.wikipedia.org/wiki/Lua_(programming_language))`. Deeper nesting leaves the whole link as plain text.
+- A link can carry a tooltip title in double or single quotes after the address: `[link text](https://example.com "Tooltip")`. The title is shown as typed, formatting and code spans included.
+- Link addresses cannot contain spaces; write `%20` instead. An address with a space leaves the whole link as plain text.
 - Underscores inside a word stay as they are, so `snake_case_name` needs no escaping.
 - Anything inside backticks stays literal: `` `**not bold**` ``.
 - HTML tags and entities are shown as typed, never interpreted.
@@ -124,7 +128,10 @@ Use `##` to `######`. The post title is the page's only top-level heading, so a 
 ```
 
 - `*` works as well as `-` for unordered lists.
-- Ordered lists always count from 1, whatever numbers you write.
+- An ordered list counts on from the first number you write; the numbers on later items are ignored.
+- Blank lines between numbered items keep them in one list.
+- A numbered list that resumes after a code block, paragraph, or other block continues from the number you write, so steps separated by code stay numbered 1, 2, 3.
+- A long item can wrap onto indented lines, which join the item with a space as paragraph lines do. An unindented line starts a new paragraph.
 - Nested lists and multi-paragraph items are not supported: indented items join the same flat list.
 
 ## Blockquotes
@@ -133,6 +140,8 @@ Use `##` to `######`. The post title is the page's only top-level heading, so a 
 > A quote can be written across
 > several lines and joins into one paragraph.
 ```
+
+A line without `>` right after a quote line continues the quote, so a wrapped quote needs `>` only on its first line.
 
 A blockquote holds one paragraph. Two quotes need a blank line between them and render as two separate quotes.
 
@@ -158,6 +167,8 @@ end
 
 Everything inside is shown exactly as written, including indentation, HTML, and markdown. Long lines scroll sideways instead of wrapping.
 
+The block ends at a line holding only backticks, at least as many as the opening fence. To show a code block inside one, as above, open the outer block with four backticks.
+
 ## Links
 
 Links accept `https://`, `http://`, `mailto:`, root-relative (`/demo/`), relative (`../`), and `#` addresses. Any other scheme, such as `javascript:`, shows the whole link as plain text so the mistake is visible. The same schemes apply to `[[image]]`, `[[github]]`, and `featureImage` addresses, where any other scheme stops the build. Full `http`/`https` addresses get an external-link icon and `mailto:` links an email icon automatically.
@@ -172,7 +183,7 @@ Directives add things markdown has no syntax for. Each one sits alone on its own
 [[name key="value" other="value"]]
 ```
 
-A directive name that does not exist, or a malformed value list, stops the build with an error.
+Each directive takes only the values listed for it below, and a value cannot contain a double quote. A directive name that does not exist, a value name it does not take, or anything else in the value list that is not a `key="value"` pair stops the build with an error.
 
 ### Images
 
@@ -184,7 +195,9 @@ A directive name that does not exist, or a malformed value list, stops the build
 - `alt` describes the image; leaving it out logs a build warning.
 - `caption` is optional text under the image.
 - `width` and `height` are optional and force the displayed size in pixels; without them the image shows at its own size, shrunk to fit narrow screens.
+- Without `width` and `height`, the build writes a local PNG, JPEG, GIF, or WebP file's own size into the page, so the text does not jump when the image loads.
 - A missing image shows the same "Image unavailable" panel as a feature image.
+- A local `src` must match the file's letter case exactly, as with a feature image; a mismatch counts as a missing file.
 
 ### YouTube videos
 
@@ -204,7 +217,7 @@ A directive name that does not exist, or a malformed value list, stops the build
 [[github]]
 ```
 
-The first two show a panel linking to the repository; the bare form shows a panel saying the source is not public yet, with a contact link.
+The first two show a panel linking to the repository; the bare form shows a panel saying the source is not public yet, with a contact link. `repo` and `url` are the only values it takes.
 
 ### Empty line
 
@@ -212,7 +225,7 @@ The first two show a panel linking to the repository; the bare form shows a pane
 [[break]]
 ```
 
-See "Line breaks and extra space" above.
+It takes no values. See "Line breaks and extra space" above.
 
 ### Callout boxes
 

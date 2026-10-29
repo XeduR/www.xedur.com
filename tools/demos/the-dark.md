@@ -18,4 +18,4 @@ The Dark is my COMPO entry for Ludum Dare 46. The theme is **"Keep it alive"**. 
 
 **This game requires a keyboard to be played, so it will most likely not work on your mobile device.**
 
-[[github url="https://github.com/XeduR/theDark"]]
+[[github url="https://github.com/XeduR/Solar2D-Projects/tree/master/Games/theDark"]]

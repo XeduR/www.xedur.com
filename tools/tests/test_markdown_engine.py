@@ -8,6 +8,7 @@ implementation fails.
 
 import os
 import sys
+import time
 import unittest
 from datetime import date
 
@@ -223,6 +224,85 @@ class TestBlockParser(unittest.TestCase):
         self.assertEqual(html, "<ul>\n<li>a</li>\n</ul>\n<p>text</p>")
 
 
+class TestCodeFenceLength(unittest.TestCase):
+    def test_shorter_fence_inside_a_longer_one_is_content(self):
+        html, _ = render_markdown("````markdown\n```lua\nprint(1)\n```\n````\nafter")
+        self.assertEqual(html, (
+            '<pre tabindex="0"><code class="language-markdown">```lua\nprint(1)\n```</code></pre>\n'
+            "<p>after</p>"
+        ))
+
+    def test_backtick_line_with_text_does_not_close(self):
+        html, _ = render_markdown("```\n```lua\n```")
+        self.assertEqual(html, '<pre tabindex="0"><code>```lua</code></pre>')
+
+    def test_longer_backtick_line_closes(self):
+        html, _ = render_markdown("```\ncode\n`````\nafter")
+        self.assertEqual(html, '<pre tabindex="0"><code>code</code></pre>\n<p>after</p>')
+
+    def test_long_fence_inside_a_callout_keeps_the_close_literal(self):
+        text = "[[callout]]\n````\n```\n[[/callout]]\n````\nin\n[[/callout]]\nafter"
+        html, _ = render_markdown(text)
+        self.assertIn('<pre tabindex="0"><code>```\n[[/callout]]</code></pre>\n<p>in</p>\n</div>', html)
+        self.assertTrue(html.endswith("</div>\n<p>after</p>"))
+
+
+class TestOrderedListContinuity(unittest.TestCase):
+    def test_blank_line_between_items_keeps_one_list(self):
+        html, _ = render_markdown("1. one\n\n2. two")
+        self.assertEqual(html, "<ol>\n<li>one</li>\n<li>two</li>\n</ol>")
+
+    def test_list_after_a_code_block_starts_at_its_written_number(self):
+        html, _ = render_markdown("1. one\n\n```\ncode\n```\n\n2. two\n3. three")
+        self.assertEqual(html, (
+            "<ol>\n<li>one</li>\n</ol>\n"
+            '<pre tabindex="0"><code>code</code></pre>\n'
+            '<ol start="2">\n<li>two</li>\n<li>three</li>\n</ol>'
+        ))
+
+    def test_later_item_numbers_are_ignored(self):
+        html, _ = render_markdown("1. a\n1. b\n7. c")
+        self.assertEqual(html, "<ol>\n<li>a</li>\n<li>b</li>\n<li>c</li>\n</ol>")
+
+    def test_paragraph_after_a_blank_closes_the_list(self):
+        html, _ = render_markdown("1. a\n\ntext\n\n2. b")
+        self.assertEqual(html, '<ol>\n<li>a</li>\n</ol>\n<p>text</p>\n<ol start="2">\n<li>b</li>\n</ol>')
+
+    def test_unordered_list_after_a_blank_closes_the_ordered_list(self):
+        html, _ = render_markdown("1. a\n\n- b")
+        self.assertEqual(html, "<ol>\n<li>a</li>\n</ol>\n<ul>\n<li>b</li>\n</ul>")
+
+
+class TestBlockContinuation(unittest.TestCase):
+    def test_indented_line_continues_a_list_item(self):
+        html, _ = render_markdown("- An item that is\n  wrapped across lines\n- next")
+        self.assertEqual(html, "<ul>\n<li>An item that is wrapped across lines</li>\n<li>next</li>\n</ul>")
+
+    def test_indented_line_continues_an_ordered_item(self):
+        html, _ = render_markdown("1. first\n\tmore\n2. second")
+        self.assertEqual(html, "<ol>\n<li>first more</li>\n<li>second</li>\n</ol>")
+
+    def test_continued_item_honours_backslash_break(self):
+        html, _ = render_markdown("- top\\\n  bottom")
+        self.assertEqual(html, "<ul>\n<li>top<br>\nbottom</li>\n</ul>")
+
+    def test_unindented_line_after_an_item_starts_a_paragraph(self):
+        html, _ = render_markdown("- item\ntext")
+        self.assertEqual(html, "<ul>\n<li>item</li>\n</ul>\n<p>text</p>")
+
+    def test_indented_marker_still_adds_an_item(self):
+        html, _ = render_markdown("- a\n  - b")
+        self.assertEqual(html, "<ul>\n<li>a</li>\n<li>b</li>\n</ul>")
+
+    def test_lazy_line_continues_a_quote(self):
+        html, _ = render_markdown("> quoted line\nlazy continuation\n> more")
+        self.assertEqual(html, "<blockquote><p>quoted line lazy continuation more</p></blockquote>")
+
+    def test_blank_line_ends_a_quote(self):
+        html, _ = render_markdown("> quoted\n\ntext")
+        self.assertEqual(html, "<blockquote><p>quoted</p></blockquote>\n<p>text</p>")
+
+
 class TestInlineParser(unittest.TestCase):
     def test_bold(self):
         self.assertEqual(inline("**bold**"), "<strong>bold</strong>")
@@ -361,6 +441,40 @@ class TestUrlSchemes(unittest.TestCase):
     def test_disallowed_link_with_parentheses_renders_whole_as_plain_text(self):
         self.assertEqual(inline("[x](javascript:alert(1)) now"), "[x](javascript:alert(1)) now")
 
+    def test_link_title_becomes_an_attribute(self):
+        self.assertEqual(inline('[x](https://a.com "Title")'), '<a href="https://a.com" title="Title">x</a>')
+        self.assertEqual(inline("[x](https://a.com 'Title')"), '<a href="https://a.com" title="Title">x</a>')
+
+    def test_link_title_is_escaped_and_keeps_emphasis_literal(self):
+        self.assertEqual(
+            inline('[x](/a "<b> & *star*")'), '<a href="/a" title="&lt;b&gt; &amp; *star*">x</a>'
+        )
+
+    def test_link_title_after_parenthesised_url(self):
+        self.assertEqual(
+            inline('[Lua](https://en.wikipedia.org/wiki/Lua_(programming_language) "Lua")'),
+            '<a href="https://en.wikipedia.org/wiki/Lua_(programming_language)" title="Lua">Lua</a>',
+        )
+
+    def test_link_title_may_hold_parentheses(self):
+        self.assertEqual(inline('[x](u "a(b)c")'), '<a href="u" title="a(b)c">x</a>')
+        self.assertEqual(inline('[x](u "a)b")'), '<a href="u" title="a)b">x</a>')
+        self.assertEqual(inline("[x](u 'a)b')"), '<a href="u" title="a)b">x</a>')
+
+    def test_code_span_in_link_title_stays_literal(self):
+        self.assertEqual(inline('[x](u "a `<c>` b")'), '<a href="u" title="a `&lt;c&gt;` b">x</a>')
+
+    def test_unclosed_link_input_parses_in_linear_time(self):
+        for text in ("[x](" + " " * 50000, "[x](u" + " " * 50000, "[x](" + "a" * 50000,
+                     '[x](u "' + "a" * 50000, "[x](a(" + "b" * 50000):
+            with self.subTest(text=text[:8]):
+                start = time.perf_counter()
+                inline(text)
+                self.assertLess(time.perf_counter() - start, 0.5)
+
+    def test_disallowed_link_with_title_renders_whole_as_plain_text(self):
+        self.assertEqual(inline('[x](javascript:alert(1) "t")'), "[x](javascript:alert(1) &quot;t&quot;)")
+
     def test_colon_after_path_is_relative(self):
         self.assertEqual(inline("[x](a/b:c)"), '<a href="a/b:c">x</a>')
 
@@ -422,6 +536,35 @@ class TestImageDirective(unittest.TestCase):
         self.assertIn('src="diagram.png"', html)
         self.assertNotIn("../../diagram.png", html)
 
+    def test_size_lookup_fills_an_unsized_image(self):
+        asked = []
+
+        def lookup(src):
+            asked.append(src)
+            return (1200, 630)
+
+        html, meta = render_markdown('[[image src="shot.jpg" alt="s"]]', image_size=lookup)
+        self.assertIn('<img src="shot.jpg" alt="s" loading="lazy" width="1200" height="630">', html)
+        self.assertEqual(asked, ["shot.jpg"])
+        self.assertNotIn("image_size", meta)
+
+    def test_size_lookup_never_overrides_author_sizes(self):
+        def lookup(src):
+            raise AssertionError("looked up a sized image")
+
+        for params, attrs in (
+            ('width="64" height="32"', ' width="64" height="32"'),
+            ('width="64"', ' width="64"'),
+            ('height="32"', ' height="32"'),
+        ):
+            with self.subTest(params=params):
+                html, _ = render_markdown(f'[[image src="a.png" alt="a" {params}]]', image_size=lookup)
+                self.assertIn(f'loading="lazy"{attrs}>', html)
+
+    def test_size_lookup_without_an_answer_adds_no_size(self):
+        html, _ = render_markdown('[[image src="https://example.com/a.png" alt="a"]]', image_size=lambda src: None)
+        self.assertIn('alt="a" loading="lazy">', html)
+
 
 class TestYoutubeDirective(unittest.TestCase):
     def test_output_and_flag(self):
@@ -475,7 +618,7 @@ class TestGithubDirective(unittest.TestCase):
                 return "PRIVATE_PANEL"
             return f"PUBLIC:{url}"
 
-        register_directive("github", handler)
+        register_directive("github", handler, ("repo", "url"))
 
     def tearDown(self):
         markdown_engine.DIRECTIVES.pop("github", None)
@@ -739,6 +882,91 @@ class TestIntegration(unittest.TestCase):
         self.assertIs(meta["needs_video_js"], True)
         self.assertIs(meta["needs_demo_js"], False)
         self.assertEqual(meta["images"], ["pic.png"])
+
+
+class TestPlaceholderEscaping(unittest.TestCase):
+    """The site fills {{placeholders}} after splicing in engine output, so author text must never carry one."""
+
+    def assert_escaped(self, html, count):
+        self.assertNotIn("{{", html)
+        self.assertEqual(html.count("&#123;&#123;basePath}}"), count)
+
+    def test_paragraph_text(self):
+        html, _ = render_markdown("Write {{basePath}} here.")
+        self.assertEqual(html, "<p>Write &#123;&#123;basePath}} here.</p>")
+
+    def test_inline_code(self):
+        html, _ = render_markdown("Use `{{basePath}}` here.")
+        self.assertEqual(html, "<p>Use <code>&#123;&#123;basePath}}</code> here.</p>")
+
+    def test_fenced_code(self):
+        html, _ = render_markdown('```html\n<a href="{{basePath}}">\n```')
+        self.assertEqual(html, '<pre tabindex="0"><code class="language-html">&lt;a href="&#123;&#123;basePath}}"&gt;</code></pre>')
+
+    def test_link_text_url_and_title(self):
+        html, _ = render_markdown('[{{basePath}}](a/{{basePath}} "{{basePath}}")')
+        self.assert_escaped(html, 3)
+
+    def test_image_directive_values(self):
+        html, _ = render_markdown(
+            '[[image src="{{basePath}}a.png" alt="{{basePath}}" caption="{{basePath}}" width="{{basePath}}"]]'
+        )
+        self.assert_escaped(html, 4)
+
+    def test_youtube_title(self):
+        html, _ = render_markdown('[[youtube id="dQw4w9WgXcQ" title="{{basePath}}"]]')
+        self.assert_escaped(html, 1)
+
+    def test_callout_title_and_body(self):
+        html, _ = render_markdown('[[callout title="{{basePath}}"]]\n{{basePath}}\n[[/callout]]')
+        self.assert_escaped(html, 2)
+
+    def test_single_braces_stay_literal(self):
+        html, _ = render_markdown("`local t = { a = {} }`")
+        self.assertEqual(html, "<p><code>local t = { a = {} }</code></p>")
+
+    def test_registered_directive_markup_keeps_its_placeholders(self):
+        register_directive("panel", lambda params, meta, base_path: '<img src="{{basePath}}x.svg">', ())
+        self.addCleanup(markdown_engine.DIRECTIVES.pop, "panel", None)
+        html, _ = render_markdown("[[panel]]")
+        self.assertEqual(html, '<img src="{{basePath}}x.svg">')
+
+
+class TestDirectiveParameterStrictness(unittest.TestCase):
+    def assert_error(self, line, *fragments):
+        with self.assertRaises(MarkdownError) as caught:
+            render_markdown(line)
+        for fragment in fragments:
+            self.assertIn(fragment, str(caught.exception))
+
+    def test_unclosed_quote_raises(self):
+        self.assert_error('[[image src="a.png" caption="Oops]]', "'image'", 'caption="Oops')
+
+    def test_double_quote_inside_a_value_raises(self):
+        self.assert_error('[[image src="a.png" alt="The "best" one"]]', "'image'", 'best')
+
+    def test_single_quoted_value_raises(self):
+        self.assert_error("[[image src=\"a.png\" alt='x']]", "'image'", "alt='x'")
+
+    def test_unknown_key_raises(self):
+        self.assert_error('[[image src="a.png" atl="x"]]', "'image'", "'atl'")
+
+    def test_unknown_key_on_each_builtin_raises(self):
+        for line in ('[[break x="1"]]', '[[youtube id="dQw4w9WgXcQ" name="x"]]', '[[callout tilte="x"]]\nx\n[[/callout]]'):
+            with self.subTest(line=line):
+                with self.assertRaises(MarkdownError):
+                    render_markdown(line)
+
+    def test_unknown_key_on_a_registered_directive_raises(self):
+        register_directive("panel", lambda params, meta, base_path: "PANEL", ("url",))
+        self.addCleanup(markdown_engine.DIRECTIVES.pop, "panel", None)
+        self.assert_error('[[panel repo="x"]]', "'panel'", "'repo'")
+        self.assertEqual(render_markdown('[[panel url="x"]]')[0], "PANEL")
+
+    def test_every_accepted_key_parses(self):
+        html, _ = render_markdown('[[image src="a.png" alt="A" caption="C" width="1" height="2"]]')
+        self.assertIn('alt="A" loading="lazy" width="1" height="2"', html)
+        self.assertIn("<figcaption>C</figcaption>", html)
 
 
 if __name__ == "__main__":

@@ -110,7 +110,7 @@ This paragraph sits at the normal distance.
 2. Second step with a [link](https://www.xedur.com)
 3. Third step
 
-Numbers are ignored and the list always counts from one:
+The list counts on from its first number, and later numbers are ignored:
 
 5. Written as five
 9. Written as nine

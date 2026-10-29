@@ -9,7 +9,7 @@ var contactAnchor = document.getElementById(CONTACT_ID);
 document.querySelectorAll("a").forEach(function(link) {
 link.addEventListener("click", function(event) {
 if (this.classList.contains("heading-link")) return;
-if (this.hash !== "" && this.href.split("#")[0] === location.href.split("#")[0]) {
+if (this.hash !== "" && this.origin === location.origin && pagePath(this.pathname) === pagePath(location.pathname)) {
 var target = document.getElementById(this.hash.slice(1));
 if (target) {
 event.preventDefault();
@@ -55,6 +55,9 @@ toggleMobileNav(event);
 });
 });
 });
+function pagePath(pathname) {
+return pathname.replace(/index\.html$/, "");
+}
 function scrollBehavior() {
 return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
 }
@@ -133,7 +136,8 @@ function easeInOut(progress) {
 return progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(2 - 2 * progress, 3) / 2;
 }
 function toggleMobileNav(event) {
-document.querySelector(".bar1").classList.toggle("bar1-active");
+var open = document.querySelector(".bar1").classList.toggle("bar1-active");
+document.querySelector(".toggle button").setAttribute("aria-expanded", String(open));
 document.querySelector(".bar2").classList.toggle("bar2-active");
 document.querySelector(".bar3").classList.toggle("bar3-active");
 document.querySelectorAll(".item").forEach(function(item) {

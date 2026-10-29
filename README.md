@@ -81,7 +81,7 @@ The committed site is built with `min`. A plain run rewrites every page and `js/
 | `demo/<folder>/<folder>-social.png` | Social card for each demo page, standalone pages included |
 | `js/*.js` | Copied from `tools/js/` (minified with `min`) |
 
-Apart from the generated social cards listed above, the build never touches `img/` or `fonts/`, and in `demo/<folder>/` it writes only the pages and the card, never the hand-managed screenshots, app binaries, or assets. CSS lives in `tools/css/styles.css` and is inlined into every page, so there is no root `css/` folder. A sitemap entry gets today's date only when its page's content changed.
+Apart from the generated social cards listed above, the build never touches `img/` or `fonts/`, and in `demo/<folder>/` it writes only the pages and the card, never the hand-managed screenshots, app binaries, or assets. CSS lives in `tools/css/styles.css` and is inlined into every page, so there is no root `css/` folder. A sitemap entry gets today's date only when its page's content changed. A demo page also gets today's date when its app files change (`demo/<folder>/app/`; for a standalone page, `demo/<folder>/` and `tools/standalone/<folder>/`, minus the generated page and social card), compared by a content hash kept in `sitemap_dates.json`, so a fresh clone or a touched file never moves a date.
 
 ### Incremental builds and caching
 
@@ -90,13 +90,13 @@ The builder regenerates only what changed and prunes output that no longer has a
 - Per-item pages (each demo page, its app loader, each Tangents post, and each copied `js/*.js`) are skipped when none of their sources changed.
 - Change detection hashes each source file's bytes rather than reading modification times, so a fresh `git clone` does not force a rebuild.
 - Aggregate pages (`index.html`, `demo/index.html`, the Tangents list and tag pages, the feed, `404.html`, `sitemap.xml`, `llms.txt`) are regenerated every run. A byte-identical result is never written, so repeated runs cause no git churn.
-- A change to `base.html`, `navbar.html`, `footer.html`, `tools/css/styles.css`, `update_website.py`, or `markdown_engine.py` rebuilds every per-item page, because each of them affects every page.
+- A change to `base.html`, `navbar.html`, the navbar logo `img/xedur-code-portfolio.png`, `footer.html`, `tools/css/styles.css`, `update_website.py`, or `markdown_engine.py` rebuilds every per-item page, because each of them affects every page.
 - Switching between normal and `min` output also rebuilds every page.
 - A generated page whose source is gone (a deleted demo `.md`, a dropped manifest entry, a deleted post, a pagination page that no longer exists) is deleted, along with its now-empty directory.
 - Pruning only ever deletes paths that match a known generated-output pattern. Any other stale cache entry is logged as a warning and left alone, so a corrupted cache can never remove a manual asset such as `img/`, demo thumbnails, app binaries, or a custom `socialImage` file.
 - `force` rebuilds every page regardless of the cache, while pruning and the app-loader listing check keep working.
 
-The cache lives at `tools/.build_cache.json` (gitignored). Deleting it triggers one full rebuild with byte-identical output, and a corrupt cache is treated as absent.
+The cache lives at `tools/.build_cache.json` (gitignored). Deleting it triggers one full rebuild with byte-identical output, and a corrupt cache is treated as absent. It also keeps each demo asset's size and modification time, so only changed assets are re-hashed for the sitemap check.
 
 ### Build log
 
@@ -237,7 +237,7 @@ ogImageAlt: Alt text for the preview image
 
 ## Tangents (writing system)
 
-Tangents is the markdown-written writing section at `/tangents/`: paginated list pages, per-tag pages, post pages, and an Atom feed. Posts live in `tools/tangents/<slug>.md`, where the file stem is the slug and the URL is `/tangents/<slug>/`. Slugs are lowercase kebab-case (`[a-z0-9-]`).
+Tangents is the markdown-written writing section at `/tangents/`: paginated list pages, per-tag pages, post pages, and an Atom feed. Posts live in `tools/tangents/<slug>.md`, where the file stem is the slug and the URL is `/tangents/<slug>/`. Slugs are lowercase kebab-case (`[a-z0-9-]`) and not all digits; an invalid slug is a build error.
 
 ### Writing a post
 
@@ -257,7 +257,7 @@ An unreadable `tangents_dates.json` stops the build instead of being overwritten
 
 A post's `featureImage` sits in an invisible 16:9 frame above the body, scaled to fit without cropping or a visible box around it, and the build puts a horizontal divider between it and the body. On list pages it becomes a thumbnail beside the row that links to the post like the title does. A relative path resolves against the post URL, so list pages rewrite it to reach the post folder.
 
-An image that fails to load, whether a feature image or an `[[image]]`, is swapped for a striped "Image unavailable" panel showing its alt text, by `js/image-fallback.js`. That script loads only on pages with images. A relative or root-relative image whose file is missing from the repo also logs a build warning; remote images are not checked at build time.
+An image that fails to load, whether a feature image or an `[[image]]`, is swapped for a striped "Image unavailable" panel showing its alt text, by `js/image-fallback.js`. That script loads only on pages with images. A relative or root-relative image whose file is missing from the repo also logs a build warning; remote images are not checked at build time. A local file name whose letter case differs from the file's counts as missing, because GitHub Pages is case-sensitive. An `[[image]]` without `width` and `height` gets its local file's size written in at build time, so the page does not shift while it loads.
 
 ### Pagination, tags, feed
 
@@ -265,7 +265,7 @@ The tag chips on list pages come with a "Sort by" menu (most or fewest tangents,
 
 Post pages link the neighbouring posts as "Previous:" and "Next:", each limited to 46% of the column width.
 
-List pages hold 10 posts, newest first (`/tangents/`, `/tangents/2/`, and so on). Every list page ends with a pagination bar: "Newer posts" and "Older posts" links, faded at either end of the range, around a "Page N out of TOTAL" field. `js/page-jump.js` jumps to the typed page on Enter or when the field loses focus, clamps numbers past the last page to it, and restores the current number for anything that is not a positive integer. Each tag gets its own paginated set at `/tangents/tag/<slug>/`. Two tag spellings that slugify to the same value (`Solar2D` and `solar2d`) are a build error. The feed at `/tangents/feed.xml` carries the newest 20 posts and is linked from every post.
+List pages hold 10 posts, newest first (`/tangents/`, `/tangents/2/`, and so on). Every list page ends with a pagination bar: "Newer posts" and "Older posts" links, faded at either end of the range, around a "Page N out of TOTAL" field. `js/page-jump.js` jumps to the typed page on Enter or when the field loses focus, clamps numbers past the last page to it, and restores the current number for anything that is not a positive integer. Each tag gets its own paginated set at `/tangents/tag/<slug>/`. Two tag spellings that slugify to the same value (`Solar2D` and `solar2d`) are a build error. The feed at `/tangents/feed.xml` carries the newest 20 posts and is linked from every post, list, and tag page.
 
 ### YouTube consent
 
@@ -311,7 +311,7 @@ HTML templates live in `tools/components/templates/` and use `{{placeholder}}` t
 | Template | Purpose |
 |----------|---------|
 | `base.html` | Root HTML document (head, meta tags, favicons, font preloads, navbar, footer) |
-| `navbar.html` | Navigation bar (desktop and mobile) |
+| `navbar.html` | Navigation bar (desktop and mobile). `{{navLogo}}` is `img/xedur-code-portfolio.png` embedded as a data URI, so the logo paints with the page's first frame instead of waiting on the browser cache |
 | `footer.html` | Page footer |
 | `frontpage.html` | Homepage layout (intro, sections, Roso Games, contact) |
 | `section.html` | Homepage section with numbered heading, description, and card grid |

@@ -6,14 +6,14 @@
     <link rel="self" href="https://www.xedur.com/tangents/feed.xml"/>
     <icon>https://www.xedur.com/favicon-96x96.png</icon>
     <logo>https://www.xedur.com/img/xedur-code-portfolio.png</logo>
-    <updated>2026-10-24T00:00:00Z</updated>
+    <updated>2026-10-25T00:00:00Z</updated>
     <author><name>Eetu Rantanen</name></author>
     <entry>
         <title>Tangents: initial tests</title>
         <id>https://www.xedur.com/tangents/initial-tests/</id>
         <link rel="alternate" href="https://www.xedur.com/tangents/initial-tests/"/>
         <published>2026-10-24T00:00:00Z</published>
-        <updated>2026-10-24T00:00:00Z</updated>
+        <updated>2026-10-25T00:00:00Z</updated>
         <summary>A thorough test of the markdown features, behaviour and layout cases for Tangents, and some other unsupported cases.</summary>
     </entry>
 </feed>

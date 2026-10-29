@@ -13,7 +13,9 @@ import os
 import re
 import sys
 import json
+import struct
 import hashlib
+import functools
 from dataclasses import dataclass
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -76,6 +78,67 @@ def _read_bytes(path, *, required=True):
 def _generator_hash():
     """SHA-256 of this script's own bytes; any edit invalidates every card."""
     return hashlib.sha256(_read_bytes(_SELF_PATH)).hexdigest()
+
+
+# ------------------------------------------------------------------------------------
+# Glyph coverage (no Pillow needed here)
+
+@functools.cache
+def _font_codepoints(path: str) -> frozenset[int]:
+    """Codepoints the font maps to a real glyph in its format 4 and 12 cmap subtables.
+    A codepoint mapped to glyph 0 is the missing-glyph box, so it does not count."""
+    data = _read_bytes(path)
+    for i in range(struct.unpack_from(">H", data, 4)[0]):
+        tag, _, cmap, _ = struct.unpack_from(">4sIII", data, 12 + 16 * i)
+        if tag == b"cmap":
+            break
+
+    covered = set()
+    for i in range(struct.unpack_from(">H", data, cmap + 2)[0]):
+        sub = cmap + struct.unpack_from(">I", data, cmap + 8 + 8 * i)[0]
+        subtable_format = struct.unpack_from(">H", data, sub)[0]
+
+        if subtable_format == 4:
+            seg_count = struct.unpack_from(">H", data, sub + 6)[0] // 2
+            ends = struct.unpack_from(f">{seg_count}H", data, sub + 14)
+            starts = struct.unpack_from(f">{seg_count}H", data, sub + 16 + 2 * seg_count)
+            deltas = struct.unpack_from(f">{seg_count}H", data, sub + 16 + 4 * seg_count)
+            range_base = sub + 16 + 6 * seg_count
+            range_offsets = struct.unpack_from(f">{seg_count}H", data, range_base)
+            for seg, (start, end, delta, range_offset) in enumerate(zip(starts, ends, deltas, range_offsets)):
+                for code in range(start, end + 1):
+                    if range_offset:
+                        glyph_pos = range_base + 2 * seg + range_offset + 2 * (code - start)
+                        glyph = struct.unpack_from(">H", data, glyph_pos)[0]
+                        glyph = (glyph + delta) & 0xFFFF if glyph else 0
+                    else:
+                        glyph = (code + delta) & 0xFFFF
+                    if glyph:
+                        covered.add(code)
+
+        elif subtable_format == 12:
+            for group in range(struct.unpack_from(">I", data, sub + 12)[0]):
+                start, end, start_glyph = struct.unpack_from(">III", data, sub + 16 + 12 * group)
+                covered.update(range(start + (start_glyph == 0), end + 1))
+
+    return frozenset(covered)
+
+
+def card_title(config: dict, text: str) -> tuple[str, str]:
+    """The title as the card font can draw it, and the characters it dropped."""
+    covered = _font_codepoints(_font_path(config, config["styles"]["name"]["font"]))
+    missing = "".join(dict.fromkeys(ch for ch in text if ord(ch) not in covered and not ch.isspace()))
+    if not missing:
+        return text, ""
+    return " ".join("".join(ch for ch in text if ch not in missing).split()), missing
+
+
+def _drawable_title(config: dict, label: str, text: str, warnings: list) -> str:
+    title, missing = card_title(config, text)
+    if missing:
+        warnings.append(f"{label}: the social card font has no glyph for {missing!r}; "
+                        f"the card title leaves them out")
+    return title
 
 
 def load_card_config() -> dict:
@@ -460,6 +523,7 @@ def resolve_and_generate(posts, force=False, prune=True, demos=()):
     }
 
     gen_hash = _generator_hash()
+    config = load_card_config()
 
     for post in posts:
         slug = post["slug"]
@@ -482,8 +546,9 @@ def resolve_and_generate(posts, force=False, prune=True, demos=()):
                     f"generated-card name; rename the custom file or drop the key"
                 )
             custom_rel = f"tangents/{slug}/{social_image}"
-            custom_abs = os.path.join(ROOT_DIR, custom_rel.replace("/", os.sep))
-            if os.path.isfile(custom_abs):
+            post_dir = os.path.join(ROOT_DIR, "tangents", slug)
+            # An exact listing match, as isfile ignores case on the Windows-backed mount and Pages does not.
+            if os.path.isdir(post_dir) and social_image in os.listdir(post_dir):
                 result["og_image"][slug] = custom_rel
                 result["custom"].append((slug, custom_rel))
                 print(f"  Custom image: {custom_rel}")
@@ -495,6 +560,7 @@ def resolve_and_generate(posts, force=False, prune=True, demos=()):
             result["warnings"].append(warning)
 
         result["og_image"][slug] = auto_rel
+        title = _drawable_title(config, f"tangents/{slug}", title, result["warnings"])
         _process_auto_target(auto_rel, "post", title, gen_hash, prev_images, new_images,
                              result, force)
 
@@ -508,7 +574,8 @@ def resolve_and_generate(posts, force=False, prune=True, demos=()):
         for demo in demos:
             if not demo["title"].strip():
                 raise SocialImageError(f"demo/{demo['folder']}: a demo page needs a title for its social card")
-            _process_auto_target(demo_card_rel(demo["folder"]), "demo", demo["title"], gen_hash,
+            title = _drawable_title(config, f"demo/{demo['folder']}", demo["title"], result["warnings"])
+            _process_auto_target(demo_card_rel(demo["folder"]), "demo", title, gen_hash,
                                  prev_images, new_images, result, force)
 
     if prune:
@@ -539,7 +606,7 @@ def _load_posts_from_disk():
         # The slug becomes the card's output directory, so it gets the site build's check.
         if not update_website.TANGENT_SLUG_RE.match(slug):
             raise ValueError(
-                f"tangents: invalid slug {slug!r} (must be lowercase kebab-case [a-z0-9-]+)"
+                f"tangents: invalid slug {slug!r} (must be lowercase kebab-case [a-z0-9-]+, not all digits)"
             )
         path = os.path.join(TANGENTS_SRC_DIR, filename)
         with open(path, "r", encoding="utf-8") as f:

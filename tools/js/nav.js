@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function() {
             // Skip heading-link elements (handled separately for clipboard copy).
             if (this.classList.contains("heading-link")) return;
             // Use smooth scroll if the anchor target exists on the current page.
-            if (this.hash !== "" && this.href.split("#")[0] === location.href.split("#")[0]) {
+            if (this.hash !== "" && this.origin === location.origin && pagePath(this.pathname) === pagePath(location.pathname)) {
                 var target = document.getElementById(this.hash.slice(1));
                 if (target) {
                     event.preventDefault();
@@ -72,6 +72,11 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 });
+
+// The query string and a trailing index.html still address the same page.
+function pagePath(pathname) {
+    return pathname.replace(/index\.html$/, "");
+}
 
 function scrollBehavior() {
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
@@ -174,7 +179,8 @@ function easeInOut(progress) {
 }
 
 function toggleMobileNav(event) {
-    document.querySelector(".bar1").classList.toggle("bar1-active");
+    var open = document.querySelector(".bar1").classList.toggle("bar1-active");
+    document.querySelector(".toggle button").setAttribute("aria-expanded", String(open));
     document.querySelector(".bar2").classList.toggle("bar2-active");
     document.querySelector(".bar3").classList.toggle("bar3-active");
     document.querySelectorAll(".item").forEach(function(item) {

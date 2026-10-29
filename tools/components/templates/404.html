@@ -3,10 +3,13 @@
     <p class="attempted-url">The page <strong id="attempted-path"></strong> does not exist.</p>
     <div id="suggestion" style="display:none;">
         <p class="suggestion-text">Perhaps you were looking for <a id="suggestion-link" href="#"><strong id="suggestion-path"></strong></a>?</p>
-        <div class="countdown-bar-container">
-            <div class="countdown-bar" id="countdown-bar"></div>
+        <div id="countdown">
+            <div class="countdown-bar-container">
+                <div class="countdown-bar" id="countdown-bar"></div>
+            </div>
+            <p class="countdown-text" aria-live="polite" aria-atomic="true">Redirecting in <span id="countdown-number">5</span> seconds...</p>
+            <button type="button" class="stay-button" id="stay-button">Stay here</button>
         </div>
-        <p class="countdown-text">Redirecting in <span id="countdown-number">5</span> seconds...</p>
         <img class="img-404" src="{{basePath}}img/xedur.png" alt="404">
     </div>
     <div id="no-suggestion" style="display:none;">
@@ -91,6 +94,12 @@
                 window.location.replace(bestMatch);
             }
         }, 1000);
+
+        document.getElementById("stay-button").addEventListener("click", function() {
+            clearInterval(interval);
+            document.getElementById("countdown").hidden = true;
+            linkEl.focus();
+        });
     } else {
         document.getElementById("no-suggestion").style.display = "block";
     }

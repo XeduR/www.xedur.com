@@ -9,4 +9,4 @@ metaDescription: Performance Meter is a customisable on-screen widget for tracki
 ---
 Performance Meter is a customisable on-screen widget for keeping track of FPS, texture memory, and memory usage in [Solar2D](https://solar2d.com/) apps.
 
-[[github url="https://github.com/SpyricGames/performance"]]
+[[github url="https://github.com/SpyricGames/Solar2D-Plugins-Public/tree/main/Performance"]]
